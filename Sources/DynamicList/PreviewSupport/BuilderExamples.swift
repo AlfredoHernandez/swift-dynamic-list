@@ -58,6 +58,7 @@ enum BuilderExample: Hashable {
     case searchableWithPredicate
     case searchableWithStrategy
     case searchableWithPlacement
+    case searchableWithConfiguration
 }
 
 // MARK: - Builder Examples
@@ -86,6 +87,7 @@ struct BuilderExamplesView: View {
                     NavigationLink("Searchable with Predicate", value: BuilderExample.searchableWithPredicate)
                     NavigationLink("Searchable with Strategy", value: BuilderExample.searchableWithStrategy)
                     NavigationLink("Searchable with Placement", value: BuilderExample.searchableWithPlacement)
+                    NavigationLink("Searchable with Configuration", value: BuilderExample.searchableWithConfiguration)
                 }
             }
             .navigationTitle("DynamicList Builder")
@@ -115,6 +117,8 @@ struct BuilderExamplesView: View {
                     SearchableWithStrategyExample()
                 case .searchableWithPlacement:
                     SearchableWithPlacementExample()
+                case .searchableWithConfiguration:
+                    SearchableWithConfigurationExample()
                 }
             }
         }
@@ -886,8 +890,59 @@ struct SearchableWithPlacementExample: View {
             .title("Usuarios - Búsqueda con Placement")
             .searchable(
                 prompt: "Buscar usuarios...",
-                placement: .navigationBarDrawer(displayMode: .always),
+                placement: .automatic,
             )
+            .rowContent { user in
+                HStack {
+                    Text(user.avatar)
+                        .font(.title2)
+                    VStack(alignment: .leading) {
+                        Text(user.name)
+                            .font(.headline)
+                        Text(user.email)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                }
+                .padding(.vertical, 4)
+            }
+            .detailContent { user in
+                VStack(spacing: 20) {
+                    Text(user.avatar)
+                        .font(.system(size: 80))
+
+                    Text(user.name)
+                        .font(.title)
+                        .fontWeight(.bold)
+
+                    Text(user.email)
+                        .font(.body)
+                        .foregroundColor(.secondary)
+
+                    Spacer()
+                }
+                .padding()
+                .navigationTitle(DynamicListPresenter.profile)
+            }
+            .buildWithoutNavigation()
+    }
+}
+
+// MARK: - Example: Searchable with Configuration Struct
+
+struct SearchableWithConfigurationExample: View {
+    var body: some View {
+        let searchConfig = SearchConfiguration<User>(
+            prompt: "Buscar usuarios...",
+            strategy: TokenizedMatchStrategy(),
+            placement: .automatic,
+        )
+
+        return DynamicListBuilder<User>()
+            .items(User.sampleUsers)
+            .title("Usuarios - Búsqueda con Configuración")
+            .searchConfiguration(searchConfig)
             .rowContent { user in
                 HStack {
                     Text(user.avatar)

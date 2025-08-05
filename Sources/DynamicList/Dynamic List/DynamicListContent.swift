@@ -18,10 +18,7 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
     private let skeletonContent: (() -> AnyView)?
     private let title: String?
     private let navigationBarHidden: Bool
-    private let searchPrompt: String?
-    private let searchPredicate: ((Item, String) -> Bool)?
-    private let searchStrategy: SearchStrategy?
-    private let searchPlacement: SearchFieldPlacement
+    private let searchConfiguration: SearchConfiguration<Item>?
 
     init(
         viewModel: DynamicListViewModel<Item>,
@@ -31,10 +28,7 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
         skeletonContent: (() -> AnyView)?,
         title: String?,
         navigationBarHidden: Bool,
-        searchPrompt: String?,
-        searchPredicate: ((Item, String) -> Bool)?,
-        searchStrategy: SearchStrategy?,
-        searchPlacement: SearchFieldPlacement,
+        searchConfiguration: SearchConfiguration<Item>?,
     ) {
         _viewModel = State(initialValue: viewModel)
         self.rowContent = rowContent
@@ -43,10 +37,7 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
         self.skeletonContent = skeletonContent
         self.title = title
         self.navigationBarHidden = navigationBarHidden
-        self.searchPrompt = searchPrompt
-        self.searchPredicate = searchPredicate
-        self.searchStrategy = searchStrategy
-        self.searchPlacement = searchPlacement
+        self.searchConfiguration = searchConfiguration
     }
 
     var body: some View {
@@ -76,8 +67,8 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
         #endif
             .searchable(
                 text: $searchText,
-                placement: searchPlacement,
-                prompt: searchPrompt ?? "Buscar...",
+                placement: searchConfiguration?.placement ?? .automatic,
+                prompt: searchConfiguration?.prompt ?? "Buscar...",
             )
     }
 
@@ -108,15 +99,17 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
         }
 
         return viewModel.viewState.items.filter { item in
-            if let searchPredicate {
-                return searchPredicate(item, searchText)
-            } else if let searchableItem = item as? Searchable {
-                let strategy = searchStrategy ?? PartialMatchStrategy()
-                return strategy.matches(query: searchText, in: searchableItem)
-            } else {
-                // Fallback: try to use description if available
-                return String(describing: item).lowercased().contains(searchText.lowercased())
+            if let searchConfiguration {
+                if let predicate = searchConfiguration.predicate {
+                    return predicate(item, searchText)
+                } else if let searchableItem = item as? Searchable {
+                    let strategy = searchConfiguration.strategy ?? PartialMatchStrategy()
+                    return strategy.matches(query: searchText, in: searchableItem)
+                }
             }
+
+            // Fallback: try to use description if available
+            return String(describing: item).lowercased().contains(searchText.lowercased())
         }
     }
 }

@@ -5,6 +5,84 @@
 import Combine
 import SwiftUI
 
+// MARK: - Search Configuration
+
+/// Configuration struct for search functionality in DynamicList.
+///
+/// This struct encapsulates all search-related properties to simplify
+/// initializers and improve code organization.
+public struct SearchConfiguration<Item: Identifiable & Hashable> {
+    /// Optional prompt text for the search field.
+    public let prompt: String?
+
+    /// Optional custom search predicate for filtering items.
+    public let predicate: ((Item, String) -> Bool)?
+
+    /// Optional search strategy for Searchable items.
+    public let strategy: SearchStrategy?
+
+    /// Placement configuration for the search field.
+    public let placement: SearchFieldPlacement
+
+    /// Creates a new SearchConfiguration instance.
+    ///
+    /// - Parameters:
+    ///   - prompt: Optional prompt text for the search field.
+    ///   - predicate: Optional custom search predicate for filtering items.
+    ///   - strategy: Optional search strategy for Searchable items.
+    ///   - placement: Placement configuration for the search field.
+    public init(
+        prompt: String? = nil,
+        predicate: ((Item, String) -> Bool)? = nil,
+        strategy: SearchStrategy? = nil,
+        placement: SearchFieldPlacement = .automatic,
+    ) {
+        self.prompt = prompt
+        self.predicate = predicate
+        self.strategy = strategy
+        self.placement = placement
+    }
+
+    /// Creates a SearchConfiguration with only a prompt.
+    ///
+    /// - Parameter prompt: The prompt text for the search field.
+    /// - Returns: A SearchConfiguration instance with the specified prompt.
+    public static func prompt(_ prompt: String) -> SearchConfiguration<Item> {
+        SearchConfiguration(prompt: prompt)
+    }
+
+    /// Creates a SearchConfiguration with prompt and placement.
+    ///
+    /// - Parameters:
+    ///   - prompt: The prompt text for the search field.
+    ///   - placement: The placement configuration for the search field.
+    /// - Returns: A SearchConfiguration instance with the specified prompt and placement.
+    public static func prompt(_ prompt: String, placement: SearchFieldPlacement) -> SearchConfiguration<Item> {
+        SearchConfiguration(prompt: prompt, placement: placement)
+    }
+
+    /// Creates a SearchConfiguration with prompt and strategy.
+    ///
+    /// - Parameters:
+    ///   - prompt: The prompt text for the search field.
+    ///   - strategy: The search strategy to use.
+    /// - Returns: A SearchConfiguration instance with the specified prompt and strategy.
+    public static func prompt(_ prompt: String, strategy: SearchStrategy) -> SearchConfiguration<Item> {
+        SearchConfiguration(prompt: prompt, strategy: strategy)
+    }
+
+    /// Creates a SearchConfiguration with prompt, strategy, and placement.
+    ///
+    /// - Parameters:
+    ///   - prompt: The prompt text for the search field.
+    ///   - strategy: The search strategy to use.
+    ///   - placement: The placement configuration for the search field.
+    /// - Returns: A SearchConfiguration instance with the specified parameters.
+    public static func prompt(_ prompt: String, strategy: SearchStrategy, placement: SearchFieldPlacement) -> SearchConfiguration<Item> {
+        SearchConfiguration(prompt: prompt, strategy: strategy, placement: placement)
+    }
+}
+
 // MARK: - DynamicList Builder
 
 /// A fluent builder class that simplifies the creation of DynamicList instances.
@@ -86,17 +164,8 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     /// Whether to hide the navigation bar
     private var navigationBarHidden: Bool = false
 
-    /// Search prompt text for the search field
-    private var searchPrompt: String?
-
-    /// Custom search predicate for filtering items
-    private var searchPredicate: ((Item, String) -> Bool)?
-
-    /// Search strategy for Searchable items
-    private var searchStrategy: SearchStrategy?
-
-    /// Search placement configuration
-    private var searchPlacement: SearchFieldPlacement = .automatic
+    /// Search configuration for the list
+    private var searchConfiguration: SearchConfiguration<Item>?
 
     // MARK: - Initialization
 
@@ -403,7 +472,7 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     /// - Or use `searchable(prompt:predicate:)` for custom search logic
     @discardableResult
     public func searchable(prompt: String) -> Self {
-        searchPrompt = prompt
+        searchConfiguration = SearchConfiguration.prompt(prompt)
         return self
     }
 
@@ -436,8 +505,7 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
         prompt: String,
         placement: SearchFieldPlacement,
     ) -> Self {
-        searchPrompt = prompt
-        searchPlacement = placement
+        searchConfiguration = SearchConfiguration.prompt(prompt, placement: placement)
         return self
     }
 
@@ -469,8 +537,10 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
         prompt: String,
         predicate: @escaping (Item, String) -> Bool,
     ) -> Self {
-        searchPrompt = prompt
-        searchPredicate = predicate
+        searchConfiguration = SearchConfiguration(
+            prompt: prompt,
+            predicate: predicate,
+        )
         return self
     }
 
@@ -505,9 +575,11 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
         predicate: @escaping (Item, String) -> Bool,
         placement: SearchFieldPlacement,
     ) -> Self {
-        searchPrompt = prompt
-        searchPredicate = predicate
-        searchPlacement = placement
+        searchConfiguration = SearchConfiguration(
+            prompt: prompt,
+            predicate: predicate,
+            placement: placement,
+        )
         return self
     }
 
@@ -536,8 +608,7 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
         prompt: String,
         strategy: SearchStrategy,
     ) -> Self {
-        searchPrompt = prompt
-        searchStrategy = strategy
+        searchConfiguration = SearchConfiguration.prompt(prompt, strategy: strategy)
         return self
     }
 
@@ -569,9 +640,7 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
         strategy: SearchStrategy,
         placement: SearchFieldPlacement,
     ) -> Self {
-        searchPrompt = prompt
-        searchStrategy = strategy
-        searchPlacement = placement
+        searchConfiguration = SearchConfiguration.prompt(prompt, strategy: strategy, placement: placement)
         return self
     }
 
@@ -592,7 +661,43 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     /// ```
     @discardableResult
     public func searchPlacement(_ placement: SearchFieldPlacement) -> Self {
-        searchPlacement = placement
+        if let existingConfig = searchConfiguration {
+            searchConfiguration = SearchConfiguration(
+                prompt: existingConfig.prompt,
+                predicate: existingConfig.predicate,
+                strategy: existingConfig.strategy,
+                placement: placement,
+            )
+        } else {
+            searchConfiguration = SearchConfiguration(placement: placement)
+        }
+        return self
+    }
+
+    /// Sets the search configuration directly.
+    ///
+    /// Use this method when you want to set the complete search configuration
+    /// at once, rather than using individual search methods.
+    ///
+    /// - Parameter configuration: The search configuration to use.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// let searchConfig = SearchConfiguration<User>(
+    ///     prompt: "Buscar usuarios...",
+    ///     strategy: TokenizedMatchStrategy(),
+    ///     placement: .automatic
+    /// )
+    ///
+    /// DynamicListBuilder<User>()
+    ///     .items(users)
+    ///     .searchConfiguration(searchConfig)
+    ///     .build()
+    /// ```
+    @discardableResult
+    public func searchConfiguration(_ configuration: SearchConfiguration<Item>) -> Self {
+        searchConfiguration = configuration
         return self
     }
 
@@ -677,10 +782,7 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
             skeletonContent: skeletonContent,
             title: title,
             navigationBarHidden: navigationBarHidden,
-            searchPrompt: searchPrompt,
-            searchPredicate: searchPredicate,
-            searchStrategy: searchStrategy,
-            searchPlacement: searchPlacement,
+            searchConfiguration: searchConfiguration,
         )
     }
 
@@ -744,10 +846,7 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
             skeletonContent: skeletonContent,
             title: title,
             navigationBarHidden: navigationBarHidden,
-            searchPrompt: searchPrompt,
-            searchPredicate: searchPredicate,
-            searchStrategy: searchStrategy,
-            searchPlacement: searchPlacement,
+            searchConfiguration: searchConfiguration,
         )
     }
 }
