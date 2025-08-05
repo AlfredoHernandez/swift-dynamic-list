@@ -38,13 +38,6 @@ public final class DynamicListPresenter {
         comment: "Network error message when connection fails",
     )
 
-    /// Data not available message
-    public static let dataNotAvailable = NSLocalizedString(
-        "data_not_available",
-        bundle: Bundle.module,
-        comment: "Message shown when no data is available",
-    )
-
     /// Server error message
     public static let serverError = NSLocalizedString(
         "server_error",
@@ -87,13 +80,6 @@ public final class DynamicListPresenter {
         "cancel",
         bundle: Bundle.module,
         comment: "Cancel button text",
-    )
-
-    /// Refresh button text
-    public static let refresh = NSLocalizedString(
-        "refresh",
-        bundle: Bundle.module,
-        comment: "Refresh button text",
     )
 
     // MARK: - Navigation
@@ -170,13 +156,6 @@ public final class DynamicListPresenter {
         "error_loading",
         bundle: Bundle.module,
         comment: "Error loading title",
-    )
-
-    /// Something went wrong title
-    public static let somethingWentWrong = NSLocalizedString(
-        "something_went_wrong",
-        bundle: Bundle.module,
-        comment: "Something went wrong title",
     )
 
     // MARK: - Default Views

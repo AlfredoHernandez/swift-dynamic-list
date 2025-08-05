@@ -7,7 +7,6 @@
 
 /* Error Messages */
 "network_error" = "Error de conexión de red. Verifica tu conexión a internet.";
-"data_not_available" = "No hay datos disponibles en este momento.";
 "server_error" = "Error del servidor. Inténtalo de nuevo más tarde.";
 "unauthorized_access" = "No tienes permisos para acceder a este recurso.";
 "data_corrupted" = "Los datos recibidos están corruptos y no se pueden procesar.";
@@ -16,7 +15,6 @@
 /* Error Actions */
 "retry" = "Reintentar";
 "cancel" = "Cancelar";
-"refresh" = "Actualizar";
 
 /* Navigation */
 "profile" = "Perfil";
@@ -33,7 +31,6 @@
 
 /* Error View Titles */
 "error_loading" = "Error al Cargar";
-"something_went_wrong" = "¡Ups! Algo salió mal";
 
 /* Default Views */
 "item_detail" = "Detalle del Item";

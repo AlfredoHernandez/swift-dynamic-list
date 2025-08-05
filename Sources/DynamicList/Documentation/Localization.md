@@ -137,7 +137,6 @@ if isLoading {
 
 ### Error Messages
 - `networkError` - Error de red
-- `dataNotAvailable` - Datos no disponibles
 - `serverError` - Error del servidor
 - `unauthorizedAccess` - Acceso no autorizado
 - `dataCorrupted` - Datos corruptos
@@ -146,7 +145,6 @@ if isLoading {
 ### Error Actions
 - `retry` - Reintentar
 - `cancel` - Cancelar
-- `refresh` - Actualizar
 
 ### Navigation
 - `profile` - Perfil
@@ -163,7 +161,6 @@ if isLoading {
 
 ### Error View Titles
 - `errorLoading` - Error al cargar
-- `somethingWentWrong` - Algo salió mal
 
 ### Default Views
 - `itemDetail` - Detalle del item

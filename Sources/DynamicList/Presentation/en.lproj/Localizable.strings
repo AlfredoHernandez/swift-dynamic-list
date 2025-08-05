@@ -7,7 +7,6 @@
 
 /* Error Messages */
 "network_error" = "Network connection failed. Please check your internet connection.";
-"data_not_available" = "No data available at the moment.";
 "server_error" = "Server error. Please try again later.";
 "unauthorized_access" = "You don't have permission to access this resource.";
 "data_corrupted" = "The received data is corrupted and cannot be processed.";
@@ -16,7 +15,6 @@
 /* Error Actions */
 "retry" = "Retry";
 "cancel" = "Cancel";
-"refresh" = "Refresh";
 
 /* Navigation */
 "profile" = "Profile";
@@ -33,7 +31,6 @@
 
 /* Error View Titles */
 "error_loading" = "Error Loading";
-"something_went_wrong" = "Oops! Something went wrong";
 
 /* Default Views */
 "item_detail" = "Item Detail";
