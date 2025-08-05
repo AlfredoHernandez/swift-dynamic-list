@@ -28,3 +28,34 @@ public struct DefaultErrorView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
+
+// MARK: - Preview Support
+
+private enum PreviewError: Error, LocalizedError {
+    case networkTimeout
+
+    var errorDescription: String? {
+        switch self {
+        case .networkTimeout:
+            "La conexión tardó demasiado tiempo. Verifica tu conexión a internet."
+        }
+    }
+}
+
+// MARK: - Previews
+
+#Preview("Network error") {
+    DefaultErrorView(error: PreviewError.networkTimeout)
+}
+
+#Preview("Long error message") {
+    struct LongError: LocalizedError {
+        var errorDescription: String? {
+            """
+            Este es un mensaje de error muy largo que debe mostrar cómo se comporta la vista cuando tiene que mostrar múltiples líneas de texto. El mensaje debe ajustarse correctamente y ser legible.
+            """
+        }
+    }
+
+    return DefaultErrorView(error: LongError())
+}

@@ -17,7 +17,7 @@ let package = Package(
     targets: [
         .target(
             name: "DynamicList",
-            exclude: ["Documentation/", "Examples/", "PreviewSupport/"],
+            exclude: ["Documentation/", "Examples/"],
         ),
         .testTarget(name: "DynamicListTests", dependencies: ["DynamicList"]),
     ],
