@@ -7,12 +7,18 @@ let package = Package(
     defaultLocalization: "en",
     platforms: [
         .iOS(.v17),
+        .macOS(.v14),
+        .watchOS(.v10),
+        .tvOS(.v17),
     ],
     products: [
         .library(name: "DynamicList", targets: ["DynamicList"]),
     ],
     targets: [
-        .target(name: "DynamicList"),
+        .target(
+            name: "DynamicList",
+            exclude: ["Documentation/", "Examples/"],
+        ),
         .testTarget(name: "DynamicListTests", dependencies: ["DynamicList"]),
     ],
 )
