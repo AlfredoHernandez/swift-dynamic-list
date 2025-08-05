@@ -37,36 +37,48 @@ struct Product: Identifiable, Hashable {
     ]
 }
 
+// MARK: - Navigation Types
+
+@available(iOS 17.0, macOS 14.0, watchOS 10.0, tvOS 17.0, *)
+enum BuilderExample: Hashable {
+    case simpleList
+    case reactiveList
+    case simulatedLoading
+    case customError
+    case completeExample
+}
+
 // MARK: - Builder Examples
 
 @available(iOS 17.0, macOS 14.0, watchOS 10.0, tvOS 17.0, *)
 struct BuilderExamplesView: View {
+    @State private var navigationPath = NavigationPath()
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navigationPath) {
             List {
                 Section("Builder Pattern Examples") {
-                    NavigationLink("Simple List") {
-                        SimpleListExample()
-                    }
-
-                    NavigationLink("Reactive List") {
-                        ReactiveListExample()
-                    }
-
-                    NavigationLink("Simulated Loading") {
-                        SimulatedLoadingExample()
-                    }
-
-                    NavigationLink("Custom Error View") {
-                        CustomErrorExample()
-                    }
-
-                    NavigationLink("Complete Example") {
-                        CompleteExample()
-                    }
+                    NavigationLink("Simple List", value: BuilderExample.simpleList)
+                    NavigationLink("Reactive List", value: BuilderExample.reactiveList)
+                    NavigationLink("Simulated Loading", value: BuilderExample.simulatedLoading)
+                    NavigationLink("Custom Error View", value: BuilderExample.customError)
+                    NavigationLink("Complete Example", value: BuilderExample.completeExample)
                 }
             }
             .navigationTitle("DynamicList Builder")
+            .navigationDestination(for: BuilderExample.self) { example in
+                switch example {
+                case .simpleList:
+                    SimpleListExample()
+                case .reactiveList:
+                    ReactiveListExample()
+                case .simulatedLoading:
+                    SimulatedLoadingExample()
+                case .customError:
+                    CustomErrorExample()
+                case .completeExample:
+                    CompleteExample()
+                }
+            }
         }
     }
 }

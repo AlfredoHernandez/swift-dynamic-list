@@ -354,4 +354,89 @@ NavigationStack {
 ### Cuándo Usar Cada Método
 
 - **`build()`**: Cuando el `DynamicListBuilder` es la vista raíz o no hay navegación existente
-- **`buildWithoutNavigation()`**: Cuando ya hay un `NavigationStack` en el contexto padre 
+- **`buildWithoutNavigation()`**: Cuando ya hay un `NavigationStack` en el contexto padre
+
+## 🆕 Solución Moderna: NavigationStack(path:)
+
+### Problema de Navegación Anidada
+
+Cuando tienes una lista de ejemplos que navega a otras listas, cada una con su propio `NavigationStack`, puedes experimentar comportamientos extraños:
+
+```swift
+// ❌ Problema: NavigationStack anidados
+NavigationStack {
+    List {
+        NavigationLink("Example") {
+            DynamicListBuilder<User>() // Tiene su propio NavigationStack
+                .items(users)
+                .build()
+        }
+    }
+}
+```
+
+### Solución con NavigationStack(path:)
+
+`NavigationStack(path:)` es la solución moderna que permite manejar múltiples niveles de navegación sin crear stacks anidados:
+
+```swift
+// ✅ Solución moderna - NavigationStack(path:) con enum
+enum BuilderExample: Hashable {
+    case simpleList
+    case reactiveList
+    case customError
+}
+
+struct BuilderExamplesView: View {
+    @State private var navigationPath = NavigationPath()
+    
+    var body: some View {
+        NavigationStack(path: $navigationPath) {
+            List {
+                NavigationLink("Simple List", value: BuilderExample.simpleList)
+                NavigationLink("Reactive List", value: BuilderExample.reactiveList)
+                NavigationLink("Custom Error", value: BuilderExample.customError)
+            }
+            .navigationDestination(for: BuilderExample.self) { example in
+                switch example {
+                case .simpleList:
+                    DynamicListBuilder<User>()
+                        .items(users)
+                        .build() // Funciona perfectamente
+                case .reactiveList:
+                    DynamicListBuilder<Product>()
+                        .publisher(publisher)
+                        .build() // Funciona perfectamente
+                case .customError:
+                    DynamicListBuilder<User>()
+                        .publisher(failingPublisher)
+                        .build() // Funciona perfectamente
+                }
+            }
+        }
+    }
+}
+```
+
+### Ventajas de NavigationStack(path:)
+
+- ✅ **Sin NavigationStack anidados** - Evita comportamientos extraños
+- ✅ **Navegación fluida** - Transiciones suaves entre vistas
+- ✅ **Control total** - Manejo programático del stack de navegación
+- ✅ **Compatibilidad** - Funciona perfectamente con DynamicListBuilder
+- ✅ **Escalabilidad** - Fácil agregar más niveles de navegación
+
+### Cuándo Usar NavigationStack(path:)
+
+- **Listas de ejemplos** que navegan a otras listas
+- **Menús de navegación** con múltiples niveles
+- **Flujos complejos** que requieren control del stack
+- **Apps modernas** que usan iOS 16+ y SwiftUI NavigationStack
+
+### Comparación de Soluciones
+
+| Método | Ventajas | Desventajas | Uso Recomendado |
+|--------|----------|-------------|-----------------|
+| `build()` | Simple, directo | Puede crear stacks anidados | Vistas principales |
+| `buildWithoutNavigation()` | Evita stacks anidados | Requiere navegación externa | Dentro de NavigationView |
+| `NavigationStack(path:)` | Control total, sin problemas | Más código inicial | Listas de ejemplos, flujos complejos | 
