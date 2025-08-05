@@ -12,6 +12,7 @@ Esta guía está diseñada para desarrolladores que quieren integrar **DynamicLi
 - **🧭 Navegación**: Navegación automática a vistas de detalle
 - **📋 Secciones**: Soporte para listas con múltiples secciones y headers/footers
 - **💀 Skeleton Loading**: Estados de carga con placeholders configurables
+- **🔍 Búsqueda Avanzada**: Sistema de búsqueda con múltiples estrategias
 - **🏗️ Arquitectura Modular**: Componentes separados para diferentes tipos de listas
 
 ## 🏗️ Arquitectura Modular
@@ -278,6 +279,165 @@ DynamicListBuilder<User>()
     .build()
 ```
 
+## 🔍 Sistema de Búsqueda Avanzado
+
+`DynamicList` incluye un sistema de búsqueda avanzado que permite múltiples estrategias de búsqueda y personalización completa.
+
+### Protocolo Searchable
+
+Para habilitar la búsqueda en tus modelos, conforma el protocolo `Searchable`:
+
+```swift
+struct User: Identifiable, Hashable, Searchable {
+    let id: String
+    let name: String
+    let email: String
+    let role: String
+    let department: String
+    
+    var searchKeys: [String] {
+        [name, email, role, department]
+    }
+}
+```
+
+### Estrategias de Búsqueda Disponibles
+
+#### PartialMatchStrategy (Por Defecto)
+
+Búsqueda parcial insensible a mayúsculas. Busca la query dentro de cualquier clave de búsqueda:
+
+```swift
+DynamicListBuilder<User>()
+    .items(users)
+    .searchable(prompt: "Buscar usuarios...")
+    .build()
+```
+
+#### ExactMatchStrategy
+
+Coincidencia exacta insensible a mayúsculas. Requiere que la query coincida exactamente con una clave:
+
+```swift
+DynamicListBuilder<User>()
+    .items(users)
+    .searchable(
+        prompt: "Buscar usuarios (coincidencia exacta)...",
+        strategy: ExactMatchStrategy()
+    )
+    .build()
+```
+
+#### TokenizedMatchStrategy
+
+Búsqueda por tokens/palabras. Divide la query en palabras y busca que todas estén presentes:
+
+```swift
+DynamicListBuilder<User>()
+    .items(users)
+    .searchable(
+        prompt: "Buscar por palabras...",
+        strategy: TokenizedMatchStrategy()
+    )
+    .build()
+```
+
+### Búsqueda con Predicado Personalizado
+
+Para lógica de búsqueda completamente personalizada:
+
+```swift
+DynamicListBuilder<User>()
+    .items(users)
+    .searchable(
+        prompt: "Buscar por nombre o email...",
+        predicate: { user, query in
+            let searchLower = query.lowercased()
+            return user.name.lowercased().contains(searchLower) ||
+                   user.email.lowercased().contains(searchLower) ||
+                   user.role.lowercased().contains(searchLower)
+        }
+    )
+    .build()
+```
+
+### Estrategias Personalizadas
+
+Puedes crear tus propias estrategias de búsqueda:
+
+```swift
+struct FuzzyMatchStrategy: SearchStrategy {
+    func matches(query: String, in item: Searchable) -> Bool {
+        let queryLower = query.lowercased()
+        return item.searchKeys.contains { key in
+            // Implementa lógica de búsqueda difusa
+            key.lowercased().contains(queryLower) ||
+            key.lowercased().fuzzyMatch(queryLower)
+        }
+    }
+}
+
+// Uso
+DynamicListBuilder<User>()
+    .items(users)
+    .searchable(
+        prompt: "Búsqueda difusa...",
+        strategy: FuzzyMatchStrategy()
+    )
+    .build()
+```
+
+### Casos de Uso Comunes
+
+#### Búsqueda en Listas de Productos
+
+```swift
+struct Product: Identifiable, Hashable, Searchable {
+    let id: String
+    let name: String
+    let category: String
+    let tags: [String]
+    let price: Double
+    
+    var searchKeys: [String] {
+        [name, category] + tags + [String(format: "%.2f", price)]
+    }
+}
+
+DynamicListBuilder<Product>()
+    .items(products)
+    .searchable(
+        prompt: "Buscar productos...",
+        strategy: TokenizedMatchStrategy()
+    )
+    .build()
+```
+
+#### Búsqueda en Listas de Contactos
+
+```swift
+struct Contact: Identifiable, Hashable, Searchable {
+    let id: String
+    let firstName: String
+    let lastName: String
+    let email: String
+    let phone: String
+    let company: String
+    
+    var searchKeys: [String] {
+        [firstName, lastName, email, phone, company]
+    }
+}
+
+DynamicListBuilder<Contact>()
+    .items(contacts)
+    .searchable(
+        prompt: "Buscar contactos...",
+        strategy: PartialMatchStrategy()
+    )
+    .build()
+```
+
 ## 🧪 Testing
 
 ### Convención de Nombres de Tests
@@ -359,6 +519,131 @@ struct DynamicListTests {
         let itemsFromMirror = viewModelFromMirror?.wrappedValue.viewState.items
         
         #expect(itemsFromMirror == items)
+    }
+}
+```
+
+### Testing de Estrategias de Búsqueda
+
+```swift
+import Testing
+import DynamicList
+
+// Modelo de test para Searchable
+struct TestSearchableItem: Searchable {
+    let id = UUID()
+    let name: String
+    let description: String
+    let tags: [String]
+    
+    var searchKeys: [String] {
+        [name, description] + tags
+    }
+}
+
+@Suite("SearchStrategy Tests")
+struct SearchStrategyTests {
+    
+    // Tests para PartialMatchStrategy
+    @Test("when query matches name returns true")
+    func test_whenQueryMatchesName_returnsTrue() throws {
+        let strategy = PartialMatchStrategy()
+        let item = TestSearchableItem(
+            name: "iPhone 15 Pro",
+            description: "Latest smartphone",
+            tags: ["mobile", "apple"]
+        )
+        
+        let result = strategy.matches(query: "iPhone", in: item)
+        
+        #expect(result == true)
+    }
+    
+    @Test("when query is empty returns true")
+    func test_whenQueryIsEmpty_returnsTrue() throws {
+        let strategy = PartialMatchStrategy()
+        let item = TestSearchableItem(
+            name: "Test Item",
+            description: "A test description",
+            tags: ["tag1", "tag2"]
+        )
+        
+        let result = strategy.matches(query: "", in: item)
+        
+        #expect(result == true)
+    }
+    
+    // Tests para ExactMatchStrategy
+    @Test("when query exactly matches name returns true")
+    func test_whenQueryExactlyMatchesName_returnsTrue() throws {
+        let strategy = ExactMatchStrategy()
+        let item = TestSearchableItem(
+            name: "iPhone 15 Pro",
+            description: "Latest smartphone",
+            tags: ["mobile", "apple"]
+        )
+        
+        let result = strategy.matches(query: "iPhone 15 Pro", in: item)
+        
+        #expect(result == true)
+    }
+    
+    @Test("when query is partial match returns false")
+    func test_whenQueryIsPartialMatch_returnsFalse() throws {
+        let strategy = ExactMatchStrategy()
+        let item = TestSearchableItem(
+            name: "iPhone 15 Pro",
+            description: "Latest smartphone",
+            tags: ["mobile", "apple"]
+        )
+        
+        let result = strategy.matches(query: "iPhone", in: item)
+        
+        #expect(result == false)
+    }
+    
+    // Tests para TokenizedMatchStrategy
+    @Test("when all query tokens match returns true")
+    func test_whenAllQueryTokensMatch_returnsTrue() throws {
+        let strategy = TokenizedMatchStrategy()
+        let item = TestSearchableItem(
+            name: "iPhone 15 Pro Max",
+            description: "Latest smartphone with advanced features",
+            tags: ["mobile device", "apple product"]
+        )
+        
+        let result = strategy.matches(query: "iPhone Pro", in: item)
+        
+        #expect(result == true)
+    }
+    
+    @Test("when query tokens match across different keys returns true")
+    func test_whenQueryTokensMatchAcrossDifferentKeys_returnsTrue() throws {
+        let strategy = TokenizedMatchStrategy()
+        let item = TestSearchableItem(
+            name: "iPhone 15",
+            description: "Latest smartphone with advanced features",
+            tags: ["mobile device", "apple product"]
+        )
+        
+        let result = strategy.matches(query: "iPhone advanced", in: item)
+        
+        #expect(result == true)
+    }
+    
+    // Tests para casos edge
+    @Test("when searchable item has empty search keys returns false")
+    func test_whenSearchableItemHasEmptySearchKeys_returnsFalse() throws {
+        let strategy = PartialMatchStrategy()
+        let item = TestSearchableItem(
+            name: "",
+            description: "",
+            tags: []
+        )
+        
+        let result = strategy.matches(query: "test", in: item)
+        
+        #expect(result == false)
     }
 }
 ```

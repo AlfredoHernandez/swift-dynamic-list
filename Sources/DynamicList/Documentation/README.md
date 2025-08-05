@@ -17,6 +17,7 @@ Una biblioteca SwiftUI moderna y modular para crear listas dinámicas con soport
 - Contenido de filas y detalles completamente configurable
 - Vistas de error personalizables
 - Skeleton loading configurables
+- Búsqueda avanzada con estrategias personalizables
 
 ### 🏗️ **Arquitectura Modular**
 - Componentes separados por funcionalidad
@@ -77,6 +78,7 @@ struct ContentView: View {
                 }
             }
             .title("Usuarios")
+            .searchable(prompt: "Buscar usuarios...")
             .build()
     }
 }
@@ -157,6 +159,14 @@ Core Components/
 ├── Sectioned Dynamic List/ # Listas con secciones
 ├── Shared/                 # Componentes compartidos
 └── Default Views/          # Vistas por defecto
+
+Domain/
+├── Searchable.swift        # Protocolo para items buscables
+├── SearchStrategy.swift    # Protocolo de estrategias de búsqueda
+└── Strategies/             # Implementaciones de estrategias
+    ├── PartialMatchStrategy.swift
+    ├── ExactMatchStrategy.swift
+    └── TokenizedMatchStrategy.swift
 ```
 
 ### 🎯 **Dynamic List**
@@ -216,6 +226,69 @@ DynamicListBuilder<User>()
         .redacted(reason: .placeholder)
     }
     .build()
+```
+
+### Búsqueda Avanzada
+
+`DynamicList` incluye un sistema de búsqueda avanzado con múltiples estrategias:
+
+#### Búsqueda Simple
+
+```swift
+DynamicListBuilder<User>()
+    .items(users)
+    .searchable(prompt: "Buscar usuarios...")
+    .build()
+```
+
+#### Búsqueda con Estrategia Personalizada
+
+```swift
+DynamicListBuilder<User>()
+    .items(users)
+    .searchable(
+        prompt: "Buscar usuarios (coincidencia exacta)...",
+        strategy: ExactMatchStrategy()
+    )
+    .build()
+```
+
+#### Búsqueda con Predicado Personalizado
+
+```swift
+DynamicListBuilder<User>()
+    .items(users)
+    .searchable(
+        prompt: "Buscar por nombre o email...",
+        predicate: { user, query in
+            user.name.lowercased().contains(query.lowercased()) ||
+            user.email.lowercased().contains(query.lowercased())
+        }
+    )
+    .build()
+```
+
+#### Estrategias de Búsqueda Disponibles
+
+- **`PartialMatchStrategy`** (por defecto): Búsqueda parcial insensible a mayúsculas
+- **`ExactMatchStrategy`**: Coincidencia exacta insensible a mayúsculas
+- **`TokenizedMatchStrategy`**: Búsqueda por tokens/palabras
+
+#### Protocolo Searchable
+
+Para usar las estrategias de búsqueda, tus modelos deben conformar `Searchable`:
+
+```swift
+struct User: Identifiable, Hashable, Searchable {
+    let id: String
+    let name: String
+    let email: String
+    let role: String
+    
+    var searchKeys: [String] {
+        [name, email, role]
+    }
+}
 ```
 
 ### Vistas de Error Personalizadas

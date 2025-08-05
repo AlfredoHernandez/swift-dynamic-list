@@ -13,6 +13,13 @@ DynamicList/
 │       │   ├── Sectioned Dynamic List/ # Componentes para listas con secciones
 │       │   ├── Shared/                 # Componentes compartidos
 │       │   └── Default Views/          # Vistas por defecto
+│       ├── Domain/                     # Dominio de búsqueda
+│       │   ├── Searchable.swift        # Protocolo para items buscables
+│       │   ├── SearchStrategy.swift    # Protocolo de estrategias de búsqueda
+│       │   └── Strategies/             # Implementaciones de estrategias
+│       │       ├── PartialMatchStrategy.swift
+│       │       ├── ExactMatchStrategy.swift
+│       │       └── TokenizedMatchStrategy.swift
 │       ├── Documentation/              # Documentación del proyecto
 │       ├── Presentation/               # Componentes de presentación
 │       └── PreviewSupport/             # Soporte para SwiftUI Previews
@@ -94,6 +101,26 @@ Default Views/
 - Manejo de errores consistente
 - UI reutilizable entre componentes
 
+### 🔍 Domain
+Dominio de búsqueda y estrategias de filtrado.
+
+```
+Domain/
+├── Searchable.swift               # Protocolo para items buscables
+├── SearchStrategy.swift           # Protocolo de estrategias de búsqueda
+└── Strategies/                    # Implementaciones de estrategias
+    ├── PartialMatchStrategy.swift # Búsqueda parcial (por defecto)
+    ├── ExactMatchStrategy.swift   # Coincidencia exacta
+    └── TokenizedMatchStrategy.swift # Búsqueda por tokens
+```
+
+**Características:**
+- Protocolo `Searchable` para items buscables
+- Protocolo `SearchStrategy` para estrategias personalizables
+- Estrategias predefinidas: parcial, exacta y tokenizada
+- Separación clara entre datos y lógica de búsqueda
+- Extensible para estrategias personalizadas
+
 ## 📚 Documentation
 
 Documentación completa del proyecto.
@@ -142,6 +169,7 @@ Tests unitarios y de UI.
 Tests/DynamicListTests/
 ├── DynamicListTests.swift         # Tests de UI para listas simples
 ├── DynamicListViewModelTests.swift # Tests unitarios para ViewModels
+├── SearchStrategyTests.swift      # Tests para estrategias de búsqueda
 └── Helpers/
     └── TestItem.swift             # Modelo de test
 ```
@@ -154,7 +182,8 @@ DynamicList
 ├── DynamicListViewModel
 ├── DynamicListViewState
 ├── LoadingState (Shared)
-└── Default Views
+├── Default Views
+└── Domain (Searchable, SearchStrategy)
 ```
 
 ### Dependencias de Sectioned Dynamic List
@@ -177,6 +206,13 @@ Shared/
 Default Views/
 ├── DynamicList (usa)
 └── SectionedDynamicList (usa)
+
+Domain/
+├── Searchable
+│   ├── DynamicList (usa)
+│   └── SearchStrategy (usa)
+└── SearchStrategy
+    └── DynamicList (usa)
 ```
 
 ## 🎯 Principios de Organización
