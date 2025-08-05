@@ -163,19 +163,19 @@ import SwiftUI
 }
 
 #Preview("Minimal Custom Error") {
-    @Previewable @State var viewModel: DynamicListViewModel<Task> = {
-        let publisher = Fail<[Task], Error>(error: SimpleError.failed)
+    @Previewable @State var viewModel: DynamicListViewModel<Fruit> = {
+        let publisher = Fail<[Fruit], Error>(error: SimpleError.failed)
             .eraseToAnyPublisher()
-        return DynamicListViewModel<Task>(publisher: publisher)
+        return DynamicListViewModel<Fruit>(publisher: publisher)
     }()
 
     DynamicList(
         viewModel: viewModel,
-        rowContent: { task in
-            Text(task.title)
+        rowContent: { fruit in
+            Text(fruit.name)
         },
-        detailContent: { task in
-            Text("Detail: \(task.title)")
+        detailContent: { fruit in
+            Text("Detail: \(fruit.name)")
         },
         errorContent: { error in
             // Vista de error minimalista

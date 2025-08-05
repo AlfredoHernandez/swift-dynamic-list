@@ -295,7 +295,7 @@ struct CompleteExample: View {
                             .font(.subheadline)
                             .fontWeight(.semibold)
                             .foregroundColor(.green)
-                        Text(DynamicListPresenter.available)
+                        Text("Available")
                             .font(.caption2)
                             .foregroundColor(.green)
                     }
@@ -321,7 +321,7 @@ struct CompleteExample: View {
 
                         VStack(spacing: 16) {
                             HStack {
-                                Text("\(DynamicListPresenter.price):")
+                                Text("Price:")
                                     .font(.headline)
                                 Spacer()
                                 Text("$\(product.price, specifier: "%.2f")")
@@ -333,7 +333,7 @@ struct CompleteExample: View {
                             Divider()
 
                             HStack {
-                                Text("\(DynamicListPresenter.category):")
+                                Text("Category:")
                                     .font(.headline)
                                 Spacer()
                                 Text(product.category)
@@ -341,10 +341,10 @@ struct CompleteExample: View {
                             }
                         }
                         .padding()
-                        .background(Color(.systemGray6))
+                        .background(.regularMaterial)
                         .cornerRadius(12)
 
-                        Button(DynamicListPresenter.buyNow) {
+                        Button("Buy Now") {
                             // Purchase action
                         }
                         .buttonStyle(.borderedProminent)
@@ -361,7 +361,7 @@ struct CompleteExample: View {
                     Text("⚠️")
                         .font(.system(size: 80))
 
-                    Text(DynamicListPresenter.errorLoading)
+                    Text("Error Loading")
                         .font(.title)
                         .fontWeight(.bold)
 
@@ -376,7 +376,7 @@ struct CompleteExample: View {
                         }
                         .buttonStyle(.borderedProminent)
 
-                        Button(DynamicListPresenter.cancel) {
+                        Button("Cancel") {
                             // Cancel action
                         }
                         .buttonStyle(.bordered)

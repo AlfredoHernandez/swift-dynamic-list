@@ -133,40 +133,14 @@ Sources/DynamicList/
   - Demostraciones de diferentes configuraciones
   - Modelos de preview específicos para el builder
 
-### Examples
-
-#### `DataServiceExamples.swift`
-- **Propósito**: Ejemplos prácticos de integración con servicios de datos
-- **Contenido**:
-  - `LocalJSONService` - Carga desde archivos locales
-  - `APIService` - Integración con APIs REST
-  - `DatabaseService` - Simulación de base de datos reactiva
-  - `FirebaseService` - Simulación de tiempo real
-  - Tipos de error y comentarios de uso
-
-#### `ViewStateExamples.swift`
-- **Propósito**: Ejemplos avanzados usando ViewState directamente
-- **Contenido**:
-  - `AdvancedDynamicList` - Implementación con control granular
-  - Vistas de soporte (EmptyStateView, LoadingView, ErrorView, etc.)
-  - Overlays para diferentes estados
-  - Ejemplos de uso en comentarios
-
-#### `BuilderExamples.swift`
+#### `BuilderExamples.swift` (490 líneas)
 - **Propósito**: Ejemplos prácticos del DynamicListBuilder
 - **Contenido**:
   - Ejemplos de builder pattern
   - Casos de uso con diferentes fuentes de datos
   - Vistas de error personalizadas
   - Factory methods en acción
-
-#### `LocalizationExamples.swift`
-- **Propósito**: Ejemplos de uso del sistema de localización
-- **Contenido**:
-  - Demostraciones de cadenas localizadas
-  - Vistas de error en diferentes idiomas
-  - Estados de carga localizados
-  - Demo multi-idioma
+  - Modelos de ejemplo (User, Product)
 
 ## Beneficios de esta Organización
 
