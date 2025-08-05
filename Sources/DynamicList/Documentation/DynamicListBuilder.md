@@ -402,15 +402,15 @@ struct BuilderExamplesView: View {
                 case .simpleList:
                     DynamicListBuilder<User>()
                         .items(users)
-                        .build() // Funciona perfectamente
+                        .buildWithoutNavigation() // Sin NavigationStack interno
                 case .reactiveList:
                     DynamicListBuilder<Product>()
                         .publisher(publisher)
-                        .build() // Funciona perfectamente
+                        .buildWithoutNavigation() // Sin NavigationStack interno
                 case .customError:
                     DynamicListBuilder<User>()
                         .publisher(failingPublisher)
-                        .build() // Funciona perfectamente
+                        .buildWithoutNavigation() // Sin NavigationStack interno
                 }
             }
         }
@@ -438,5 +438,5 @@ struct BuilderExamplesView: View {
 | Método | Ventajas | Desventajas | Uso Recomendado |
 |--------|----------|-------------|-----------------|
 | `build()` | Simple, directo | Puede crear stacks anidados | Vistas principales |
-| `buildWithoutNavigation()` | Evita stacks anidados | Requiere navegación externa | Dentro de NavigationView |
+| `buildWithoutNavigation()` | Evita stacks anidados | Requiere navegación externa | Dentro de NavigationStack |
 | `NavigationStack(path:)` | Control total, sin problemas | Más código inicial | Listas de ejemplos, flujos complejos | 
