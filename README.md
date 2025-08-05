@@ -37,7 +37,7 @@ Una biblioteca SwiftUI moderna y modular para crear listas dinámicas con soport
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/tu-usuario/DynamicList.git", from: "1.0.0")
+    .package(url: "https://github.com/AlfredoHernandez/swift-dynamic-list.git", from: "1.0.0")
 ]
 ```
 
