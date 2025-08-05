@@ -60,16 +60,24 @@ public final class DynamicListPresenter {
 ```
 Sources/DynamicList/
 ├── Core Components/
-│   └── DynamicListPresenter.swift
-└── Resources/
-    ├── en.lproj/
-    │   └── Localizable.strings
-    ├── es-MX.lproj/
-    │   └── Localizable.strings
-    ├── fr.lproj/
-    │   └── Localizable.strings
-    └── pt.lproj/
-        └── Localizable.strings
+│   ├── DynamicList.swift
+│   ├── DynamicListViewModel.swift
+│   ├── DynamicListBuilder.swift
+│   ├── ViewState.swift
+│   └── DefaultErrorView.swift
+├── Presentation/
+│   ├── DynamicListPresenter.swift
+│   ├── en.lproj/
+│   │   └── Localizable.strings
+│   ├── es-MX.lproj/
+│   │   └── Localizable.strings
+│   ├── fr.lproj/
+│   │   └── Localizable.strings
+│   └── pt.lproj/
+│       └── Localizable.strings
+├── Examples/
+├── Documentation/
+└── PreviewSupport/
 ```
 
 ## 🚀 Uso Básico
@@ -147,7 +155,7 @@ if isLoading {
 - `productDetail` - Detalle de producto
 
 ### Content Labels
-- `itemId` - ID del item
+- `itemID` - ID del item
 - `price` - Precio
 - `category` - Categoría
 - `available` - Disponible
@@ -212,13 +220,13 @@ let package = Package(
     targets: [
         .target(
             name: "DynamicList",
-            resources: [
-                .process("Resources")
-            ]
+            exclude: ["Documentation/", "Examples/"],
         ),
     ],
 )
 ```
+
+**Nota:** Los recursos de localización se incluyen automáticamente en el bundle del módulo sin necesidad de configuración adicional en `Package.swift`.
 
 ## 📱 Integración con DynamicListBuilder
 
@@ -297,7 +305,7 @@ Para agregar soporte para un nuevo idioma:
 
 1. **Crear la carpeta de idioma:**
    ```bash
-   mkdir -p Sources/DynamicList/Resources/it.lproj
+   mkdir -p Sources/DynamicList/Presentation/it.lproj
    ```
 
 2. **Crear el archivo de strings:**
