@@ -106,27 +106,27 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
         return self
     }
 
-    /// Sets static arrays for the list with optional titles.
+    /// Sets grouped items for the list with optional section titles.
     ///
     /// Use this method when you have arrays of arrays representing sections with optional titles.
     ///
     /// - Parameters:
-    ///   - arrays: Array of arrays representing sections
+    ///   - groupedItems: Array of arrays representing sections
     ///   - titles: Optional titles for each section
     /// - Returns: The builder instance for method chaining.
     ///
     /// ## Example
     /// ```swift
     /// SectionedDynamicListBuilder<Fruit>()
-    ///     .arrays([redFruits, greenFruits, yellowFruits], titles: ["Rojas", "Verdes", "Amarillas"])
+    ///     .groupedItems([redFruits, greenFruits, yellowFruits], titles: ["Rojas", "Verdes", "Amarillas"])
     ///     .rowContent { fruit in
     ///         Text(fruit.name)
     ///     }
     ///     .build()
     /// ```
     @discardableResult
-    public func arrays(_ arrays: [[Item]], titles: [String?] = []) -> Self {
-        let sections = zip(arrays, titles).map { items, title in
+    public func groupedItems(_ groupedItems: [[Item]], titles: [String?] = []) -> Self {
+        let sections = zip(groupedItems, titles).map { items, title in
             ListSection(title: title, items: items)
         }
         self.sections = sections

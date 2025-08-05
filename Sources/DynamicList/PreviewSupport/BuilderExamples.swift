@@ -423,7 +423,7 @@ struct SectionedListExample: View {
 
     var body: some View {
         SectionedDynamicListBuilder<User>()
-            .arrays(sectionedUsers, titles: sectionTitles)
+            .groupedItems(sectionedUsers, titles: sectionTitles)
             .title("Usuarios por Rol")
             .rowContent { user in
                 HStack {

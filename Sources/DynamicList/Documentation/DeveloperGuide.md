@@ -69,7 +69,7 @@ SectionedDynamicListBuilder<Fruit>()
 
 // Con arrays de arrays
 SectionedDynamicListBuilder<Fruit>()
-    .arrays([redFruits, greenFruits], titles: ["Rojas", "Verdes"])
+    .groupedItems([redFruits, greenFruits], titles: ["Rojas", "Verdes"])
     .rowContent { fruit in FruitRowView(fruit: fruit) }
     .detailContent { fruit in FruitDetailView(fruit: fruit) }
     .build()
@@ -487,7 +487,7 @@ SectionedDynamicListBuilder<Fruit>()
 #### **Con Arrays de Arrays**
 ```swift
 SectionedDynamicListBuilder<Fruit>()
-    .arrays(arrays, titles: titles)
+    .groupedItems(arrays, titles: titles)
     .rowContent { fruit in
         FruitRowView(fruit: fruit)
     }

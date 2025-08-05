@@ -399,9 +399,9 @@ import SwiftUI
         .build()
 }
 
-#Preview("Sectioned List - Arrays") {
+#Preview("Sectioned List - Grouped Items") {
     SectionedDynamicListBuilder<Fruit>()
-        .arrays(
+        .groupedItems(
             [
                 [
                     Fruit(name: "Manzana", symbol: "🍎", color: .red),
