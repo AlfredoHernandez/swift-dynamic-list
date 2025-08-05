@@ -8,13 +8,13 @@ El código ha sido reorganizado para mejorar la mantenibilidad y separar respons
 
 ```
 Sources/DynamicList/
-├── Core Components/
+├── CoreComponents/
 │   ├── DynamicList.swift                    # Vista principal del componente
 │   ├── DynamicListViewModel.swift           # ViewModel con manejo de estado
 │   ├── ViewState.swift                      # Estados y tipos relacionados
 │   └── DefaultErrorView.swift               # Vista de error por defecto
 │
-├── Preview Support/
+├── PreviewSupport/
 │   ├── DynamicListPreviews.swift           # Todos los previews de SwiftUI
 │   └── PreviewModels.swift                 # Modelos usados solo en previews
 │
@@ -30,7 +30,7 @@ Sources/DynamicList/
 
 ## Detalles de cada archivo
 
-### Core Components
+### CoreComponents
 
 #### `DynamicList.swift` (90 líneas)
 - **Propósito**: Vista principal del componente
@@ -63,7 +63,7 @@ Sources/DynamicList/
   - Ícono de advertencia, título y descripción del error
   - Diseño responsive y centrado
 
-### Preview Support
+### PreviewSupport
 
 #### `DynamicListPreviews.swift` (194 líneas)
 - **Propósito**: Todos los previews de SwiftUI para demostrar funcionalidad
