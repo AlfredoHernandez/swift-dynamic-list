@@ -13,47 +13,55 @@ Esta guía está diseñada para desarrolladores que quieren integrar **DynamicLi
 - **📋 Secciones**: Soporte para listas con múltiples secciones y headers/footers
 - **💀 Skeleton Loading**: Estados de carga con placeholders configurables
 - **🔍 Búsqueda Avanzada**: Sistema de búsqueda con múltiples estrategias
-- **🏗️ Arquitectura Modular**: Componentes separados para diferentes tipos de listas
+- **🏗️ Arquitectura Modular**: APIs públicas bien definidas con implementación privada encapsulada
 
-## 🏗️ Arquitectura Modular
+## 🏗️ Arquitectura del Proyecto
 
 `DynamicList` está organizado en una arquitectura modular que separa claramente las responsabilidades:
 
 ### 📁 Estructura de Componentes
 
 ```
-Core Components/
-├── Dynamic List/           # Listas simples sin secciones
-├── Sectioned Dynamic List/ # Listas con secciones
-├── Shared/                 # Componentes compartidos
-└── Default Views/          # Vistas por defecto
+Sources/DynamicList/
+├── Public/                    # APIs públicas del paquete
+├── Private/                   # Implementaciones internas
+│   ├── UI/                    # Componentes de interfaz de usuario
+│   │   ├── Dynamic List/      # Componentes para listas simples
+│   │   ├── Sectioned Dynamic List/ # Componentes para listas con secciones
+│   │   ├── Default Views/     # Vistas por defecto
+│   │   └── Shared/            # Componentes compartidos
+│   ├── Domain/                # Lógica de dominio
+│   │   └── Strategies/        # Estrategias de búsqueda
+│   └── Presentation/          # Componentes de presentación
+├── PreviewSupport/            # Soporte para SwiftUI Previews
+└── Documentation/             # Documentación del proyecto
 ```
 
-### 🎯 Dynamic List (Listas Simples)
+### 🎯 APIs Públicas
 
-Para listas tradicionales con items planos:
+#### **DynamicListBuilder**
+API principal para crear listas dinámicas simples:
 
 ```swift
 import DynamicList
 
 // Uso directo
-DynamicList(
-    viewModel: DynamicListViewModel(items: users),
-    rowContent: { user in UserRowView(user: user) },
-    detailContent: { user in UserDetailView(user: user) }
-)
-
-// Con Builder Pattern
 DynamicListBuilder<User>()
     .items(users)
     .rowContent { user in UserRowView(user: user) }
     .detailContent { user in UserDetailView(user: user) }
     .build()
+
+// Con Factory Methods
+DynamicListBuilder.simple(
+    items: users,
+    rowContent: { user in Text(user.name) },
+    detailContent: { user in Text("Detalle de \(user.name)") }
+)
 ```
 
-### 📋 Sectioned Dynamic List (Listas con Secciones)
-
-Para listas organizadas en secciones con headers y footers:
+#### **SectionedDynamicListBuilder**
+API para crear listas dinámicas con secciones:
 
 ```swift
 import DynamicList
@@ -130,9 +138,6 @@ struct ContentView: View {
 ### Uso Básico - Lista con Secciones
 
 ```swift
-import SwiftUI
-import DynamicList
-
 struct SectionedContentView: View {
     let sections = [
         ListSection(
@@ -171,7 +176,7 @@ struct SectionedContentView: View {
 
 ## 🔄 Integración con Combine
 
-### Lista Simple con Publisher
+### Lista Reactiva Simple
 
 ```swift
 struct ReactiveListView: View {
@@ -731,8 +736,8 @@ struct AppView: View {
                         .items(users)
                         .buildWithoutNavigation()
                 case "products":
-                    SectionedDynamicListBuilder<Product>()
-                        .sections(productSections)
+                    DynamicListBuilder<Product>()
+                        .items(products)
                         .buildWithoutNavigation()
                 default:
                     EmptyView()
@@ -746,195 +751,28 @@ struct AppView: View {
 ### Factory Methods
 
 ```swift
-// Lista simple rápida
+// Lista simple estática
 DynamicListBuilder.simple(
     items: users,
     rowContent: { user in Text(user.name) },
     detailContent: { user in Text("Detalle de \(user.name)") }
 )
 
-// Lista reactiva rápida
+// Lista reactiva
 DynamicListBuilder.reactive(
     publisher: userService.fetchUsers(),
+    rowContent: { user in UserRowView(user: user) },
+    detailContent: { user in UserDetailView(user: user) }
+)
+
+// Lista con simulación de carga
+DynamicListBuilder.simulated(
+    items: users,
+    delay: 2.0,
     rowContent: { user in Text(user.name) },
     detailContent: { user in Text("Detalle de \(user.name)") }
 )
 ```
-
-## 🌍 Localización
-
-```swift
-import DynamicList
-
-// Las cadenas se localizan automáticamente
-DynamicListBuilder<User>()
-    .title(DynamicListPresenter.userListTitle)
-    .errorContent { error in
-        VStack {
-            Text(DynamicListPresenter.errorTitle)
-            Text(error.localizedDescription)
-            Button(DynamicListPresenter.retryButton) {
-                // Retry logic
-            }
-        }
-    }
-    .build()
-```
-
-## 📋 Listas con Secciones
-
-### Tipos de Datos Estructurados
-
-#### **Con Secciones Explícitas**
-```swift
-let sections = [
-    ListSection(
-        title: "Frutas Rojas",
-        items: [manzana, sandia, fresa],
-        footer: "3 frutas rojas disponibles"
-    ),
-    ListSection(
-        title: "Frutas Verdes", 
-        items: [pera, uvaVerde],
-        footer: "2 frutas verdes disponibles"
-    ),
-    ListSection(
-        title: "Frutas Amarillas",
-        items: [platano, pina, limon]
-    )
-]
-```
-
-#### **Con Arrays de Arrays**
-```swift
-let arrays = [
-    [manzana, sandia, fresa],      // Sección 1
-    [pera, uvaVerde],              // Sección 2  
-    [platano, pina, limon]         // Sección 3
-]
-let titles = ["Rojas", "Verdes", "Amarillas"]
-```
-
-### API para Listas con Secciones
-
-#### **SectionedDynamicListBuilder (Recomendado)**
-```swift
-SectionedDynamicListBuilder<Fruit>()
-    .sections(sections)
-    .rowContent { fruit in
-        FruitRowView(fruit: fruit)
-    }
-    .detailContent { fruit in
-        FruitDetailView(fruit: fruit)
-    }
-    .title("Frutas por Color")
-    .build()
-```
-
-#### **Con Arrays de Arrays**
-```swift
-SectionedDynamicListBuilder<Fruit>()
-    .groupedItems(arrays, titles: titles)
-    .rowContent { fruit in
-        FruitRowView(fruit: fruit)
-    }
-    .detailContent { fruit in
-        FruitDetailView(fruit: fruit)
-    }
-    .build()
-```
-
-#### **Con Publisher Reactivo**
-```swift
-SectionedDynamicListBuilder<Fruit>()
-    .publisher(apiService.fetchFruitsByCategory())
-    .rowContent { fruit in
-        FruitRowView(fruit: fruit)
-    }
-    .detailContent { fruit in
-        FruitDetailView(fruit: fruit)
-    }
-    .skeletonContent {
-        DefaultSectionedSkeletonView()
-    }
-    .build()
-```
-
-### Características de las Secciones
-
-#### **Headers y Footers**
-- **Headers**: Títulos de sección opcionales
-- **Footers**: Texto informativo opcional al final de cada sección
-- **Estilo nativo**: Usa los estilos de SwiftUI automáticamente
-
-#### **Navegación**
-- **Navegación por sección**: Cada item mantiene su contexto de sección
-- **Detalles consistentes**: Misma experiencia de detalle que listas simples
-- **Pull-to-refresh**: Funciona en toda la lista, no por sección
-
-#### **Estados de Carga**
-- **Skeleton por sección**: `DefaultSectionedSkeletonView` muestra estructura de secciones
-- **Loading states**: Manejo automático de estados de carga
-- **Error handling**: Errores se muestran a nivel de lista completa
-
-### Ejemplos de Uso
-
-#### **Lista de Contactos por Categoría**
-```swift
-SectionedDynamicListBuilder<Contact>()
-    .sections([
-        ListSection(title: "Familia", items: familyContacts),
-        ListSection(title: "Trabajo", items: workContacts),
-        ListSection(title: "Amigos", items: friendContacts)
-    ])
-    .rowContent { contact in
-        ContactRowView(contact: contact)
-    }
-    .detailContent { contact in
-        ContactDetailView(contact: contact)
-    }
-    .build()
-```
-
-#### **Productos por Categoría (Reactivo)**
-```swift
-SectionedDynamicListBuilder<Product>()
-    .publisher(apiService.fetchProductsByCategory())
-    .rowContent { product in
-        ProductRowView(product: product)
-    }
-    .detailContent { product in
-        ProductDetailView(product: product)
-    }
-    .skeletonContent {
-        // Skeleton personalizado que coincide con el diseño real
-        List {
-            ForEach(0..<3, id: \.self) { sectionIndex in
-                Section {
-                    ForEach(0..<(sectionIndex + 2), id: \.self) { _ in
-                        ProductSkeletonRow()
-                    }
-                } header: {
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(Color.gray.opacity(0.4))
-                        .frame(height: 20)
-                        .frame(maxWidth: .infinity * 0.5)
-                }
-            }
-        }
-        .redacted(reason: .placeholder)
-    }
-    .build()
-```
-
-### Ventajas de las Listas con Secciones
-
-1. **Organización Visual**: Datos agrupados lógicamente
-2. **Mejor UX**: Headers y footers proporcionan contexto
-3. **Flexibilidad**: Soporte para datos estáticos y reactivos
-4. **Consistencia**: Misma API que listas simples
-5. **Performance**: Renderizado eficiente de secciones
-6. **Accesibilidad**: Headers y footers mejoran la navegación
 
 ## 🎯 Mejores Prácticas
 
@@ -957,19 +795,69 @@ SectionedDynamicListBuilder<Product>()
 - Implementa `Equatable` para optimizaciones de SwiftUI
 - Considera lazy loading para listas grandes
 
-### 5. **Testing**
+### 5. **Implementa Búsqueda Efectiva**
+- Conforma `Searchable` en tus modelos
+- Elige la estrategia de búsqueda apropiada
+- Considera el placement de la barra de búsqueda
+
+### 6. **Testing Completo**
 - Usa la convención de nombres `test_whenCondition_expectedBehavior()`
-- Prueba estados de carga, error y éxito
+- Testea ViewModels con `CombineSchedulers.immediate`
+- Incluye tests para estrategias de búsqueda
+
+## 🆘 Solución de Problemas
+
+### Problemas Comunes
+
+#### 1. **Error de Compilación: "Cannot find type"**
+- Asegúrate de importar `DynamicList`
+- Verifica que el tipo `Item` conforme a `Identifiable` y `Hashable`
+
+#### 2. **La búsqueda no funciona**
+- Verifica que tu modelo conforme a `Searchable`
+- Implementa `searchKeys` correctamente
+- Asegúrate de que las claves de búsqueda no estén vacías
+
+#### 3. **Los tests fallan**
 - Usa `CombineSchedulers.immediate` para tests síncronos
+- Verifica que los publishers completen correctamente
+- Asegúrate de que los estados cambien como esperas
 
-## 🔗 Recursos Adicionales
+#### 4. **Problemas de navegación**
+- Usa `buildWithoutNavigation()` cuando embedas en navegación existente
+- Verifica que no haya conflictos de NavigationStack
 
-- [📁 Estructura de Archivos](FileStructure.md)
-- [🔄 Integración con Combine](CombineIntegration.md)
-- [🎨 Vistas de Error Personalizadas](CustomErrorViews.md)
-- [🏗️ Builder Pattern](DynamicListBuilder.md)
-- [🌍 Localización](Localization.md)
+### Debugging
+
+#### 1. **Verificar Estados**
+```swift
+.onReceive(viewModel.$viewState) { state in
+    print("ViewState changed: \(state)")
+}
+```
+
+#### 2. **Debugging de Búsqueda**
+```swift
+.onReceive($searchText) { query in
+    print("Search query: '\(query)'")
+}
+```
+
+#### 3. **Verificar Datos**
+```swift
+.onReceive(viewModel.$items) { items in
+    print("Items updated: \(items.count) items")
+}
+```
+
+## 📚 Recursos Adicionales
+
+- **[Estructura de Archivos](FileStructure.md)** - Documentación de la arquitectura
+- **[Ejemplos de Código](PreviewSupport/)** - Ejemplos completos y funcionales
+- **[Tests](Tests/)** - Ejemplos de testing y mejores prácticas
 
 ---
 
-¡Con esta guía deberías poder integrar `DynamicList` en tu proyecto de manera efectiva! Si tienes preguntas o necesitas ayuda adicional, consulta la documentación específica o los ejemplos incluidos en el paquete. 
+**¿Listo para empezar?** Comienza con una [lista simple](#uso-básico---lista-simple) y luego avanza a [datos reactivos](#integración-con-combine).
+
+¡Happy coding! 🎉 

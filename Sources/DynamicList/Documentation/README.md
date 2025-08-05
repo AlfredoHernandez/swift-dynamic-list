@@ -1,6 +1,6 @@
 # 📱 DynamicList
 
-Una biblioteca SwiftUI moderna y modular para crear listas dinámicas con soporte completo para datos reactivos, estados de carga, y múltiples tipos de listas.
+Una biblioteca SwiftUI moderna y modular para crear listas dinámicas con soporte completo para datos reactivos, estados de carga, búsqueda avanzada y múltiples tipos de listas.
 
 ## ✨ Características Principales
 
@@ -19,9 +19,16 @@ Una biblioteca SwiftUI moderna y modular para crear listas dinámicas con soport
 - Skeleton loading configurables
 - Búsqueda avanzada con estrategias personalizables
 
+### 🔍 **Sistema de Búsqueda Avanzado**
+- Múltiples estrategias de búsqueda (parcial, exacta, tokenizada)
+- Configuración de placement de barra de búsqueda
+- Protocolo `Searchable` para items buscables
+- Estrategias personalizables
+
 ### 🏗️ **Arquitectura Modular**
-- Componentes separados por funcionalidad
-- Código reutilizable y mantenible
+- APIs públicas bien definidas
+- Implementación privada encapsulada
+- Separación clara de responsabilidades
 - Fácil extensión y personalización
 
 ## 🚀 Instalación
@@ -144,6 +151,10 @@ struct ReactiveListView: View {
                     UserSkeletonRow()
                 }
             }
+            .searchable(
+                prompt: "Buscar usuarios...",
+                strategy: TokenizedMatchStrategy()
+            )
             .build()
     }
 }
@@ -154,19 +165,19 @@ struct ReactiveListView: View {
 `DynamicList` está organizado en una arquitectura modular que separa claramente las responsabilidades:
 
 ```
-Core Components/
-├── Dynamic List/           # Listas simples sin secciones
-├── Sectioned Dynamic List/ # Listas con secciones
-├── Shared/                 # Componentes compartidos
-└── Default Views/          # Vistas por defecto
-
-Domain/
-├── Searchable.swift        # Protocolo para items buscables
-├── SearchStrategy.swift    # Protocolo de estrategias de búsqueda
-└── Strategies/             # Implementaciones de estrategias
-    ├── PartialMatchStrategy.swift
-    ├── ExactMatchStrategy.swift
-    └── TokenizedMatchStrategy.swift
+Sources/DynamicList/
+├── Public/                    # APIs públicas del paquete
+├── Private/                   # Implementaciones internas
+│   ├── UI/                    # Componentes de interfaz de usuario
+│   │   ├── Dynamic List/      # Listas simples
+│   │   ├── Sectioned Dynamic List/ # Listas con secciones
+│   │   ├── Default Views/     # Vistas por defecto
+│   │   └── Shared/            # Componentes compartidos
+│   ├── Domain/                # Lógica de dominio
+│   │   └── Strategies/        # Estrategias de búsqueda
+│   └── Presentation/          # Componentes de presentación
+├── PreviewSupport/            # Soporte para SwiftUI Previews
+└── Documentation/             # Documentación del proyecto
 ```
 
 ### 🎯 **Dynamic List**
@@ -174,6 +185,7 @@ Domain/
 - `DynamicListViewModel.swift` - ViewModel
 - `DynamicListBuilder.swift` - Builder pattern
 - `DynamicListViewState.swift` - Estados de vista
+- `SearchConfiguration.swift` - Configuración de búsqueda
 
 ### 📋 **Sectioned Dynamic List**
 - `SectionedDynamicList.swift` - Vista principal
@@ -253,18 +265,6 @@ DynamicListBuilder<User>()
     .build()
 ```
 
-#### Búsqueda con Placement Personalizado
-
-```swift
-DynamicListBuilder<User>()
-    .items(users)
-    .searchable(
-        prompt: "Buscar usuarios...",
-        placement: .navigationBarDrawer // Siempre visible
-    )
-    .build()
-```
-
 #### Búsqueda con Predicado Personalizado
 
 ```swift
@@ -276,6 +276,18 @@ DynamicListBuilder<User>()
             user.name.lowercased().contains(query.lowercased()) ||
             user.email.lowercased().contains(query.lowercased())
         }
+    )
+    .build()
+```
+
+#### Búsqueda con Placement Personalizado
+
+```swift
+DynamicListBuilder<User>()
+    .items(users)
+    .searchable(
+        prompt: "Buscar usuarios...",
+        placement: .navigationBarDrawer // Siempre visible
     )
     .build()
 ```
@@ -340,7 +352,102 @@ DynamicListBuilder<User>()
     .build()
 ```
 
-### Embedding en Navegación Existente
+## 🧪 Testing
+
+### Convención de Nombres de Tests
+
+Usa la convención `test_whenCondition_expectedBehavior()` para todos los tests:
+
+```swift
+@Test("when initialized with items displays correct items")
+func test_whenInitializedWithItems_displaysCorrectItems() {
+    // Test implementation
+}
+
+@Test("when data provider fails shows error state")
+func test_whenDataProviderFails_showsErrorState() {
+    // Test implementation
+}
+```
+
+### Testing de ViewModels
+
+```swift
+import Testing
+import DynamicList
+import CombineSchedulers
+
+@Suite("DynamicListViewModel Tests")
+struct DynamicListViewModelTests {
+    
+    @Test("when initialized with items displays correct items")
+    func test_whenInitializedWithItems_displaysCorrectItems() {
+        let items = [TestItem(name: "Test")]
+        let viewModel = DynamicListViewModel(items: items)
+        
+        #expect(viewModel.viewState.items == items)
+        #expect(viewModel.viewState.loadingState == .loaded)
+    }
+    
+    @Test("when data provider sends items updates state")
+    func test_whenDataProviderSendsItems_updatesState() {
+        let pts = PassthroughSubject<[TestItem], Error>()
+        let viewModel = DynamicListViewModel(
+            dataProvider: { pts.eraseToAnyPublisher() },
+            scheduler: .immediate
+        )
+        
+        let items = [TestItem(name: "Updated")]
+        pts.send(items)
+        
+        #expect(viewModel.viewState.items == items)
+        #expect(viewModel.viewState.loadingState == .loaded)
+    }
+}
+```
+
+### Testing de Estrategias de Búsqueda
+
+```swift
+import Testing
+import DynamicList
+
+@Suite("SearchStrategy Tests")
+struct SearchStrategyTests {
+    
+    @Test("when query matches name returns true")
+    func test_whenQueryMatchesName_returnsTrue() throws {
+        let strategy = PartialMatchStrategy()
+        let item = TestSearchableItem(
+            name: "iPhone 15 Pro",
+            description: "Latest smartphone",
+            tags: ["mobile", "apple"]
+        )
+        
+        let result = strategy.matches(query: "iPhone", in: item)
+        
+        #expect(result == true)
+    }
+    
+    @Test("when query is empty returns true")
+    func test_whenQueryIsEmpty_returnsTrue() throws {
+        let strategy = PartialMatchStrategy()
+        let item = TestSearchableItem(
+            name: "Test Item",
+            description: "A test description",
+            tags: ["tag1", "tag2"]
+        )
+        
+        let result = strategy.matches(query: "", in: item)
+        
+        #expect(result == true)
+    }
+}
+```
+
+## 🔧 Configuración Avanzada
+
+### Embedding en Navigation Existente
 
 ```swift
 struct AppView: View {
@@ -359,8 +466,8 @@ struct AppView: View {
                         .items(users)
                         .buildWithoutNavigation()
                 case "products":
-                    SectionedDynamicListBuilder<Product>()
-                        .sections(productSections)
+                    DynamicListBuilder<Product>()
+                        .items(products)
                         .buildWithoutNavigation()
                 default:
                     EmptyView()
@@ -371,97 +478,56 @@ struct AppView: View {
 }
 ```
 
-## 🧪 Testing
-
-### Convención de Nombres
-
-Usa la convención `test_whenCondition_expectedBehavior()`:
+### Factory Methods
 
 ```swift
-@Test("when initialized with items displays correct items")
-func test_whenInitializedWithItems_displaysCorrectItems() {
-    let items = [TestItem(name: "Test")]
-    let viewModel = DynamicListViewModel(items: items)
-    
-    #expect(viewModel.viewState.items == items)
-    #expect(viewModel.viewState.loadingState == .loaded)
-}
+// Lista simple estática
+DynamicListBuilder.simple(
+    items: users,
+    rowContent: { user in Text(user.name) },
+    detailContent: { user in Text("Detalle de \(user.name)") }
+)
+
+// Lista reactiva
+DynamicListBuilder.reactive(
+    publisher: userService.fetchUsers(),
+    rowContent: { user in UserRowView(user: user) },
+    detailContent: { user in UserDetailView(user: user) }
+)
+
+// Lista con simulación de carga
+DynamicListBuilder.simulated(
+    items: users,
+    delay: 2.0,
+    rowContent: { user in Text(user.name) },
+    detailContent: { user in Text("Detalle de \(user.name)") }
+)
 ```
 
-### Testing con CombineSchedulers
+## 🌍 Localización
 
-```swift
-@Test("when data provider sends items updates state")
-func test_whenDataProviderSendsItems_updatesState() {
-    let pts = PassthroughSubject<[TestItem], Error>()
-    let viewModel = DynamicListViewModel(
-        dataProvider: { pts.eraseToAnyPublisher() },
-        scheduler: .immediate
-    )
-    
-    let items = [TestItem(name: "Updated")]
-    pts.send(items)
-    
-    #expect(viewModel.viewState.items == items)
-    #expect(viewModel.viewState.loadingState == .loaded)
-}
-```
+`DynamicList` incluye soporte completo para localización:
+
+- **Inglés** (en)
+- **Español Mexicano** (es-MX)
+- **Francés** (fr)
+- **Portugués** (pt)
+
+Los textos se localizan automáticamente según el idioma del dispositivo.
 
 ## 📚 Documentación
 
-- [🚀 Guía de Desarrollador](DeveloperGuide.md) - Guía completa de uso
-- [📁 Estructura de Archivos](FileStructure.md) - Organización del código
-- [🔄 Integración con Combine](CombineIntegration.md) - Uso con publishers
-- [🎨 Vistas de Error Personalizadas](CustomErrorViews.md) - Personalización de errores
-- [🏗️ Builder Pattern](DynamicListBuilder.md) - Documentación del builder
-- [🌍 Localización](Localization.md) - Soporte multiidioma
-
-## 🎯 Mejores Prácticas
-
-### 1. **Elige el Tipo Correcto de Lista**
-- **DynamicList**: Para listas simples sin agrupación
-- **SectionedDynamicList**: Para listas con categorías o secciones
-
-### 2. **Usa el Builder Pattern**
-- Más legible y mantenible
-- API fluida y encadenable
-- Configuración por defecto automática
-
-### 3. **Maneja Estados de Carga**
-- Proporciona skeleton loading personalizado
-- Maneja errores de forma elegante
-- Usa pull-to-refresh para recargas
-
-### 4. **Optimiza Performance**
-- Usa `Identifiable` y `Hashable` en tus modelos
-- Implementa `Equatable` para optimizaciones de SwiftUI
-- Considera lazy loading para listas grandes
+- **[Guía de Desarrollador](DeveloperGuide.md)** - Guía completa para desarrolladores
+- **[Estructura de Archivos](FileStructure.md)** - Documentación de la arquitectura del proyecto
 
 ## 🤝 Contribución
 
-¡Las contribuciones son bienvenidas! Por favor:
-
-1. Fork el repositorio
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
+Las contribuciones son bienvenidas. Por favor, lee las guías de contribución antes de enviar un pull request.
 
 ## 📄 Licencia
 
-Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
-
-## 🆘 Soporte
-
-Si encuentras problemas:
-
-1. **Revisa la documentación** - La mayoría de problemas están cubiertos
-2. **Verifica compatibilidad** - Asegúrate de usar iOS 17.0+
-3. **Revisa ejemplos** - El código de ejemplo es funcional
-4. **Abre un issue** - Describe el problema con detalles
+Este proyecto está licenciado bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
 
 ---
 
-**¿Listo para empezar?** Comienza con una [lista simple](DeveloperGuide.md#uso-básico---lista-simple) y luego avanza a [datos reactivos](DeveloperGuide.md#integración-con-combine).
-
-¡Happy coding! 🎉 
+**DynamicList** - Listas dinámicas modernas para SwiftUI 🚀 
