@@ -8,36 +8,61 @@ import SwiftUI
 /// A view that displays a list of items and navigates to a detail view for each item.
 ///
 /// This view is generic over the type of item, the content of the row, the content of the detail view,
-/// and optionally the content of the error view.
+/// and optionally the content of the error view and skeleton view.
 /// The `Item` type must conform to the `Identifiable` and `Hashable` protocols.
-struct DynamicList<Item, RowContent, DetailContent, ErrorContent>: View where Item: Identifiable & Hashable, RowContent: View, DetailContent: View,
-    ErrorContent: View
+struct DynamicList<Item, RowContent, DetailContent, ErrorContent, SkeletonContent>: View where Item: Identifiable & Hashable, RowContent: View,
+    DetailContent: View,
+    ErrorContent: View, SkeletonContent: View
 {
     @State private var viewModel: DynamicListViewModel<Item>
     private let rowContent: (Item) -> RowContent
     private let detailContent: (Item) -> DetailContent
     private let errorContent: ((Error) -> ErrorContent)?
+    private let skeletonContent: (() -> SkeletonContent)?
 
-    /// Creates a new DynamicList with a view model and custom error view.
+    /// Creates a new DynamicList with a view model, custom error view, and custom skeleton view.
     ///
     /// - Parameters:
     ///   - viewModel: The view model that contains the items to display.
     ///   - rowContent: A view builder that creates the view for each row in the list.
     ///   - detailContent: A view builder that creates the detail view for an item.
     ///   - errorContent: A view builder that creates the error view when loading fails.
+    ///   - skeletonContent: A view builder that creates the skeleton view when loading with no items.
     init(
         viewModel: DynamicListViewModel<Item>,
         @ViewBuilder rowContent: @escaping (Item) -> RowContent,
         @ViewBuilder detailContent: @escaping (Item) -> DetailContent,
         @ViewBuilder errorContent: @escaping (Error) -> ErrorContent,
+        @ViewBuilder skeletonContent: @escaping () -> SkeletonContent,
     ) {
         _viewModel = State(initialValue: viewModel)
         self.rowContent = rowContent
         self.detailContent = detailContent
         self.errorContent = errorContent
+        self.skeletonContent = skeletonContent
     }
 
-    /// Creates a new DynamicList with a view model using the default error view.
+    /// Creates a new DynamicList with a view model, custom skeleton view, and default error view.
+    ///
+    /// - Parameters:
+    ///   - viewModel: The view model that contains the items to display.
+    ///   - rowContent: A view builder that creates the view for each row in the list.
+    ///   - detailContent: A view builder that creates the detail view for an item.
+    ///   - skeletonContent: A view builder that creates the skeleton view when loading with no items.
+    init(
+        viewModel: DynamicListViewModel<Item>,
+        @ViewBuilder rowContent: @escaping (Item) -> RowContent,
+        @ViewBuilder detailContent: @escaping (Item) -> DetailContent,
+        @ViewBuilder skeletonContent: @escaping () -> SkeletonContent,
+    ) where ErrorContent == DefaultErrorView {
+        _viewModel = State(initialValue: viewModel)
+        self.rowContent = rowContent
+        self.detailContent = detailContent
+        errorContent = nil
+        self.skeletonContent = skeletonContent
+    }
+
+    /// Creates a new DynamicList with a view model using the default error view and default skeleton view.
     ///
     /// - Parameters:
     ///   - viewModel: The view model that contains the items to display.
@@ -47,11 +72,12 @@ struct DynamicList<Item, RowContent, DetailContent, ErrorContent>: View where It
         viewModel: DynamicListViewModel<Item>,
         @ViewBuilder rowContent: @escaping (Item) -> RowContent,
         @ViewBuilder detailContent: @escaping (Item) -> DetailContent,
-    ) where ErrorContent == DefaultErrorView {
+    ) where ErrorContent == DefaultErrorView, SkeletonContent == DefaultSkeletonView {
         _viewModel = State(initialValue: viewModel)
         self.rowContent = rowContent
         self.detailContent = detailContent
         errorContent = nil
+        skeletonContent = nil
     }
 
     var body: some View {
@@ -61,7 +87,7 @@ struct DynamicList<Item, RowContent, DetailContent, ErrorContent>: View where It
                     errorView
                 } else if viewModel.viewState.shouldShowLoading {
                     // Show skeleton loading when no items and loading
-                    skeletonLoadingView
+                    skeletonView
                 } else {
                     // Show normal list with items
                     List(viewModel.viewState.items) { item in
@@ -81,9 +107,33 @@ struct DynamicList<Item, RowContent, DetailContent, ErrorContent>: View where It
         }
     }
 
-    /// Skeleton loading view when no items are available
+    /// Skeleton view - uses custom content if provided, otherwise default
     @ViewBuilder
-    private var skeletonLoadingView: some View {
+    private var skeletonView: some View {
+        if let skeletonContent {
+            skeletonContent()
+        } else {
+            DefaultSkeletonView()
+        }
+    }
+
+    @ViewBuilder
+    private var errorView: some View {
+        if let errorContent,
+           let error = viewModel.viewState.error
+        {
+            errorContent(error)
+        } else if let error = viewModel.viewState.error {
+            DefaultErrorView(error: error)
+        }
+    }
+}
+
+// MARK: - Default Skeleton View
+
+/// Default skeleton view for loading states
+struct DefaultSkeletonView: View {
+    var body: some View {
         List(0 ..< 10, id: \.self) { _ in
             HStack {
                 RoundedRectangle(cornerRadius: 4)
@@ -107,16 +157,5 @@ struct DynamicList<Item, RowContent, DetailContent, ErrorContent>: View where It
             .padding(.vertical, 4)
         }
         .redacted(reason: .placeholder)
-    }
-
-    @ViewBuilder
-    private var errorView: some View {
-        if let errorContent,
-           let error = viewModel.viewState.error
-        {
-            errorContent(error)
-        } else if let error = viewModel.viewState.error {
-            DefaultErrorView(error: error)
-        }
     }
 }

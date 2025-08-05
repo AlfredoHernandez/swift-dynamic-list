@@ -313,6 +313,85 @@ El skeleton por defecto incluye:
 - **Título y subtítulo** con diferentes anchos
 - **Animación de placeholder** nativa de SwiftUI
 
+#### Configuración Personalizada del Skeleton
+
+Puedes personalizar completamente el skeleton para que coincida con tu diseño:
+
+```swift
+DynamicListBuilder<User>()
+    .publisher(apiService.fetchUsers())
+    .rowContent { user in
+        HStack {
+            AsyncImage(url: user.avatarURL) { image in
+                image.resizable()
+            } placeholder: {
+                Circle()
+                    .fill(Color.gray.opacity(0.3))
+            }
+            .frame(width: 50, height: 50)
+            
+            VStack(alignment: .leading) {
+                Text(user.name)
+                    .font(.headline)
+                Text(user.email)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            
+            Spacer()
+        }
+    }
+    .skeletonContent {
+        // Skeleton personalizado que coincide exactamente con el diseño real
+        List(0..<6, id: \.self) { _ in
+            HStack {
+                // Skeleton para avatar
+                Circle()
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(width: 50, height: 50)
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    // Skeleton para nombre
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.gray.opacity(0.3))
+                        .frame(height: 20)
+                        .frame(maxWidth: .infinity * 0.7)
+                    
+                    // Skeleton para email
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.gray.opacity(0.2))
+                        .frame(height: 16)
+                        .frame(maxWidth: .infinity * 0.9)
+                }
+                
+                Spacer()
+            }
+            .padding(.vertical, 8)
+        }
+        .redacted(reason: .placeholder)
+    }
+    .build()
+```
+
+#### Configuración Directa con DynamicList
+
+También puedes configurar el skeleton directamente:
+
+```swift
+DynamicList(
+    viewModel: viewModel,
+    rowContent: { user in
+        UserRowView(user: user)
+    },
+    detailContent: { user in
+        UserDetailView(user: user)
+    },
+    skeletonContent: {
+        CustomSkeletonView()
+    }
+)
+```
+
 ### Ejemplo de Uso
 
 ```swift

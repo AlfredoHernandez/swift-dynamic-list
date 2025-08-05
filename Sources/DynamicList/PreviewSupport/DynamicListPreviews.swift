@@ -120,12 +120,10 @@ import SwiftUI
     )
 }
 
-#Preview("Custom Error View") {
+#Preview("Custom Error") {
     @Previewable @State var viewModel: DynamicListViewModel<Fruit> = {
-        let publisher = Fail<[Fruit], Error>(error: LoadError.unauthorized)
-            .delay(for: .seconds(1), scheduler: DispatchQueue.main)
+        let publisher = Fail<[Fruit], Error>(error: SimpleError.failed)
             .eraseToAnyPublisher()
-
         return DynamicListViewModel<Fruit> {
             publisher
         }
@@ -163,6 +161,9 @@ import SwiftUI
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(.regularMaterial)
         },
+        skeletonContent: {
+            DefaultSkeletonView()
+        },
     )
 }
 
@@ -195,6 +196,9 @@ import SwiftUI
             .background(.regularMaterial)
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+        },
+        skeletonContent: {
+            DefaultSkeletonView()
         },
     )
 }
@@ -249,5 +253,83 @@ import SwiftUI
                 .navigationBarTitleDisplayMode(.inline)
             #endif
         },
+        skeletonContent: {
+            DefaultSkeletonView()
+        },
     )
+}
+
+#Preview("Custom Skeleton with Builder") {
+    DynamicListBuilder<Fruit>()
+        .publisher(
+            Just([
+                Fruit(name: "Sandía", symbol: "🍉", color: .red),
+                Fruit(name: "Pera", symbol: "🍐", color: .green),
+                Fruit(name: "Manzana", symbol: "🍎", color: .red),
+            ])
+            .delay(for: .seconds(3), scheduler: DispatchQueue.main)
+            .setFailureType(to: Error.self)
+            .eraseToAnyPublisher(),
+        )
+        .rowContent { fruit in
+            HStack {
+                Text(fruit.symbol)
+                    .font(.title2)
+                VStack(alignment: .leading) {
+                    Text(fruit.name)
+                        .font(.headline)
+                    Text("Color: \(String(describing: fruit.color))")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+            }
+            .padding(.vertical, 4)
+        }
+        .detailContent { fruit in
+            VStack(spacing: 20) {
+                Text(fruit.symbol)
+                    .font(.system(size: 100))
+                Text(fruit.name)
+                    .font(.largeTitle)
+                    .bold()
+                Text("Color: \(String(describing: fruit.color))")
+                    .font(.headline)
+                    .foregroundColor(.secondary)
+            }
+            .navigationTitle("Detalles")
+            #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+            #endif
+        }
+        .skeletonContent {
+            // Skeleton personalizado que coincide con el diseño real
+            List(0 ..< 8, id: \.self) { _ in
+                HStack {
+                    // Skeleton para el emoji
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.gray.opacity(0.3))
+                        .frame(width: 30, height: 30)
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        // Skeleton para el nombre
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Color.gray.opacity(0.3))
+                            .frame(height: 18)
+                            .frame(maxWidth: .infinity * 0.6)
+
+                        // Skeleton para el color
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Color.gray.opacity(0.2))
+                            .frame(height: 14)
+                            .frame(maxWidth: .infinity * 0.4)
+                    }
+
+                    Spacer()
+                }
+                .padding(.vertical, 6)
+            }
+            .redacted(reason: .placeholder)
+        }
+        .build()
 }

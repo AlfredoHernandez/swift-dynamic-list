@@ -77,6 +77,9 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     /// Custom error content builder
     private var errorContent: ((Error) -> AnyView)?
 
+    /// Custom skeleton content builder
+    private var skeletonContent: (() -> AnyView)?
+
     /// Navigation title for the list
     private var title: String?
 
@@ -317,6 +320,54 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
         return self
     }
 
+    /// Sets custom skeleton content for the loading state.
+    ///
+    /// Use this method to provide a custom skeleton view that will be displayed when the list
+    /// is in a loading state with no items available. This allows you to create skeleton
+    /// layouts that match your actual content structure.
+    ///
+    /// - Parameter content: A view builder that creates the skeleton view.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// DynamicListBuilder<User>()
+    ///     .publisher(apiService.fetchUsers())
+    ///     .skeletonContent {
+    ///         List(0..<5, id: \.self) { _ in
+    ///             HStack {
+    ///                 Circle()
+    ///                     .fill(Color.gray.opacity(0.3))
+    ///                     .frame(width: 50, height: 50)
+    ///
+    ///                 VStack(alignment: .leading) {
+    ///                     RoundedRectangle(cornerRadius: 4)
+    ///                         .fill(Color.gray.opacity(0.3))
+    ///                         .frame(height: 20)
+    ///                         .frame(maxWidth: .infinity * 0.8)
+    ///
+    ///                     RoundedRectangle(cornerRadius: 4)
+    ///                         .fill(Color.gray.opacity(0.2))
+    ///                         .frame(height: 16)
+    ///                         .frame(maxWidth: .infinity * 0.6)
+    ///                 }
+    ///
+    ///                 Spacer()
+    ///             }
+    ///             .padding(.vertical, 8)
+    ///         }
+    ///         .redacted(reason: .placeholder)
+    ///     }
+    ///     .build()
+    /// ```
+    @discardableResult
+    public func skeletonContent(@ViewBuilder _ content: @escaping () -> some View) -> Self {
+        skeletonContent = {
+            AnyView(content())
+        }
+        return self
+    }
+
     /// Sets the navigation title for the list.
     ///
     /// - Parameter title: The title to display in the navigation bar.
@@ -395,6 +446,7 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
                 AnyView(DefaultDetailView(item: item))
             },
             errorContent: errorContent,
+            skeletonContent: skeletonContent,
             title: title,
             navigationBarHidden: navigationBarHidden,
         )
@@ -457,6 +509,7 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
                 AnyView(DefaultDetailView(item: item))
             },
             errorContent: errorContent,
+            skeletonContent: skeletonContent,
             title: title,
             navigationBarHidden: navigationBarHidden,
         )
@@ -474,6 +527,7 @@ private struct DynamicListWrapper<Item: Identifiable & Hashable>: View {
     private let rowContent: (Item) -> AnyView
     private let detailContent: (Item) -> AnyView
     private let errorContent: ((Error) -> AnyView)?
+    private let skeletonContent: (() -> AnyView)?
     private let title: String?
     private let navigationBarHidden: Bool
 
@@ -482,6 +536,7 @@ private struct DynamicListWrapper<Item: Identifiable & Hashable>: View {
         rowContent: @escaping (Item) -> AnyView,
         detailContent: @escaping (Item) -> AnyView,
         errorContent: ((Error) -> AnyView)?,
+        skeletonContent: (() -> AnyView)?,
         title: String?,
         navigationBarHidden: Bool,
     ) {
@@ -489,6 +544,7 @@ private struct DynamicListWrapper<Item: Identifiable & Hashable>: View {
         self.rowContent = rowContent
         self.detailContent = detailContent
         self.errorContent = errorContent
+        self.skeletonContent = skeletonContent
         self.title = title
         self.navigationBarHidden = navigationBarHidden
     }
@@ -500,6 +556,7 @@ private struct DynamicListWrapper<Item: Identifiable & Hashable>: View {
                 rowContent: rowContent,
                 detailContent: detailContent,
                 errorContent: errorContent,
+                skeletonContent: skeletonContent,
                 title: title,
                 navigationBarHidden: navigationBarHidden,
             )
@@ -519,6 +576,7 @@ private struct DynamicListContent<Item: Identifiable & Hashable>: View {
     private let rowContent: (Item) -> AnyView
     private let detailContent: (Item) -> AnyView
     private let errorContent: ((Error) -> AnyView)?
+    private let skeletonContent: (() -> AnyView)?
     private let title: String?
     private let navigationBarHidden: Bool
 
@@ -527,6 +585,7 @@ private struct DynamicListContent<Item: Identifiable & Hashable>: View {
         rowContent: @escaping (Item) -> AnyView,
         detailContent: @escaping (Item) -> AnyView,
         errorContent: ((Error) -> AnyView)?,
+        skeletonContent: (() -> AnyView)?,
         title: String?,
         navigationBarHidden: Bool,
     ) {
@@ -534,6 +593,7 @@ private struct DynamicListContent<Item: Identifiable & Hashable>: View {
         self.rowContent = rowContent
         self.detailContent = detailContent
         self.errorContent = errorContent
+        self.skeletonContent = skeletonContent
         self.title = title
         self.navigationBarHidden = navigationBarHidden
     }
@@ -541,14 +601,14 @@ private struct DynamicListContent<Item: Identifiable & Hashable>: View {
     var body: some View {
         Group {
             if viewModel.viewState.shouldShowLoading {
-                ProgressView(DynamicListPresenter.loadingContent)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                skeletonView
             } else if viewModel.viewState.shouldShowError {
                 errorView
             } else {
                 List(viewModel.viewState.items) { item in
                     NavigationLink(value: item) {
                         rowContent(item)
+                            .redacted(reason: viewModel.viewState.isLoading ? .placeholder : [])
                     }
                 }
                 .refreshable {
@@ -563,6 +623,15 @@ private struct DynamicListContent<Item: Identifiable & Hashable>: View {
         #if os(iOS)
             .navigationBarHidden(navigationBarHidden)
         #endif
+    }
+
+    @ViewBuilder
+    private var skeletonView: some View {
+        if let skeletonContent {
+            skeletonContent()
+        } else {
+            DefaultSkeletonView()
+        }
     }
 
     @ViewBuilder

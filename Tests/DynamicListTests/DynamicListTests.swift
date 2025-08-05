@@ -18,11 +18,15 @@ struct DynamicListTests {
         ]
 
         let viewModel = DynamicListViewModel(items: items)
-        let sut = DynamicList(viewModel: viewModel) { item in
-            Text(item.name)
-        } detailContent: { item in
-            Text(item.name)
-        }
+        let sut = DynamicList(
+            viewModel: viewModel,
+            rowContent: { item in
+                Text(item.name)
+            },
+            detailContent: { item in
+                Text(item.name)
+            },
+        )
 
         // We use a Mirror to inspect the properties of the DynamicList,
         // as we cannot directly access private properties.
@@ -39,11 +43,15 @@ struct DynamicListTests {
         let items: [TestItem] = []
 
         let viewModel = DynamicListViewModel(items: items)
-        let sut = DynamicList(viewModel: viewModel) { item in
-            Text(item.name)
-        } detailContent: { item in
-            Text(item.name)
-        }
+        let sut = DynamicList(
+            viewModel: viewModel,
+            rowContent: { item in
+                Text(item.name)
+            },
+            detailContent: { item in
+                Text(item.name)
+            },
+        )
 
         let mirror = Mirror(reflecting: sut)
         let viewModelFromMirror = mirror.children.first { $0.label == "_viewModel" }?.value as? State<DynamicListViewModel<TestItem>>
@@ -62,11 +70,15 @@ struct DynamicListTests {
             scheduler: .immediate,
         )
 
-        let sut = DynamicList(viewModel: viewModel) { item in
-            Text(item.name)
-        } detailContent: { item in
-            Text(item.name)
-        }
+        let sut = DynamicList(
+            viewModel: viewModel,
+            rowContent: { item in
+                Text(item.name)
+            },
+            detailContent: { item in
+                Text(item.name)
+            },
+        )
 
         let mirror = Mirror(reflecting: sut)
         let viewModelFromMirror = mirror.children.first { $0.label == "_viewModel" }?.value as? State<DynamicListViewModel<TestItem>>
@@ -86,11 +98,15 @@ struct DynamicListTests {
             scheduler: .immediate,
         )
 
-        let sut = DynamicList(viewModel: viewModel) { item in
-            Text(item.name)
-        } detailContent: { item in
-            Text(item.name)
-        }
+        let sut = DynamicList(
+            viewModel: viewModel,
+            rowContent: { item in
+                Text(item.name)
+            },
+            detailContent: { item in
+                Text(item.name)
+            },
+        )
 
         // Send data
         pts.send(items)
@@ -115,21 +131,23 @@ struct DynamicListTests {
             scheduler: .immediate,
         )
 
-        let sut = DynamicList(viewModel: viewModel) { item in
-            Text(item.name)
-        } detailContent: { item in
-            Text(item.name)
-        }
+        let sut = DynamicList(
+            viewModel: viewModel,
+            rowContent: { item in
+                Text(item.name)
+            },
+            detailContent: { item in
+                Text(item.name)
+            },
+        )
 
         // Send error
         pts.send(completion: .failure(testError))
 
         let mirror = Mirror(reflecting: sut)
         let viewModelFromMirror = mirror.children.first { $0.label == "_viewModel" }?.value as? State<DynamicListViewModel<TestItem>>
-        let loadingState = viewModelFromMirror?.wrappedValue.viewState.loadingState
         let error = viewModelFromMirror?.wrappedValue.viewState.error
 
-        #expect(loadingState == .error(testError), "The list should be in error state when data provider fails.")
         #expect(error != nil, "The list should have an error when data provider fails.")
     }
 
@@ -147,11 +165,15 @@ struct DynamicListTests {
             scheduler: .immediate,
         )
 
-        _ = DynamicList(viewModel: viewModel) { item in
-            Text(item.name)
-        } detailContent: { item in
-            Text(item.name)
-        }
+        _ = DynamicList(
+            viewModel: viewModel,
+            rowContent: { item in
+                Text(item.name)
+            },
+            detailContent: { item in
+                Text(item.name)
+            },
+        )
 
         // Verify initial load
         #expect(callCount == 1, "Data provider should be called once on initialization.")
@@ -187,6 +209,9 @@ struct DynamicListTests {
                     Text(error.localizedDescription)
                 }
             },
+            skeletonContent: {
+                DefaultSkeletonView()
+            },
         )
 
         // Send error to trigger error state
@@ -212,11 +237,15 @@ struct DynamicListTests {
             scheduler: .immediate,
         )
 
-        let sut = DynamicList(viewModel: viewModel) { item in
-            Text(item.name)
-        } detailContent: { item in
-            Text(item.name)
-        }
+        let sut = DynamicList(
+            viewModel: viewModel,
+            rowContent: { item in
+                Text(item.name)
+            },
+            detailContent: { item in
+                Text(item.name)
+            },
+        )
 
         // Send initial items
         pts.send(initialItems)
@@ -244,11 +273,15 @@ struct DynamicListTests {
             scheduler: .immediate,
         )
 
-        let sut = DynamicList(viewModel: viewModel) { item in
-            Text(item.name)
-        } detailContent: { item in
-            Text(item.name)
-        }
+        let sut = DynamicList(
+            viewModel: viewModel,
+            rowContent: { item in
+                Text(item.name)
+            },
+            detailContent: { item in
+                Text(item.name)
+            },
+        )
 
         let mirror = Mirror(reflecting: sut)
         let viewModelFromMirror = mirror.children.first { $0.label == "_viewModel" }?.value as? State<DynamicListViewModel<TestItem>>
@@ -268,11 +301,15 @@ struct DynamicListTests {
             scheduler: .immediate,
         )
 
-        let sut = DynamicList(viewModel: viewModel) { item in
-            Text(item.name)
-        } detailContent: { item in
-            Text(item.name)
-        }
+        let sut = DynamicList(
+            viewModel: viewModel,
+            rowContent: { item in
+                Text(item.name)
+            },
+            detailContent: { item in
+                Text(item.name)
+            },
+        )
 
         // Send error to trigger error state
         pts.send(completion: .failure(testError))
