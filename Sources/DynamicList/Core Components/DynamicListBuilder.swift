@@ -258,9 +258,9 @@ private struct DefaultRowView<Item: Identifiable & Hashable>: View {
 
     var body: some View {
         VStack(alignment: .leading) {
-            Text("\(item)")
+            Text(String(describing: item))
                 .font(.body)
-            Text("ID: \(item.id)")
+            Text("ID: \(String(describing: item.id))")
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
@@ -277,10 +277,10 @@ private struct DefaultDetailView<Item: Identifiable & Hashable>: View {
                 .font(.largeTitle)
                 .fontWeight(.bold)
 
-            Text("\(item)")
+            Text("\(String(describing: item))")
                 .font(.body)
 
-            Text("\(DynamicListPresenter.itemID): \(item.id)")
+            Text("\(DynamicListPresenter.itemID): \(String(describing: item.id))")
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
