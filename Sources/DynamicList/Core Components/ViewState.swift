@@ -24,34 +24,22 @@ public enum LoadingState: Equatable {
 
     /// Returns true if the state is loading
     public var isLoading: Bool {
-        if case .loading = self {
-            return true
-        }
-        return false
+        if case .loading = self { true } else { false }
     }
 
     /// Returns the error if the state is error, nil otherwise
     public var error: Error? {
-        if case let .error(error) = self {
-            return error
-        }
-        return nil
+        if case let .error(error) = self { error } else { nil }
     }
 
     /// Returns true if the state has an error
     public var hasError: Bool {
-        if case .error = self {
-            return true
-        }
-        return false
+        if case .error = self { true } else { false }
     }
 
     /// Returns true if data has been loaded successfully
     public var isLoaded: Bool {
-        if case .loaded = self {
-            return true
-        }
-        return false
+        if case .loaded = self { true } else { false }
     }
 }
 
@@ -74,23 +62,23 @@ public struct ListViewState<Item: Identifiable & Hashable>: Equatable {
     }
 
     /// Creates an idle state with the given items
-    public static func idle(items: [Item] = []) -> ListViewState<Item> {
-        ListViewState(loadingState: .idle, items: items)
+    public static func idle(items: [Item] = []) -> Self {
+        Self(loadingState: .idle, items: items)
     }
 
     /// Creates a loading state with the given items (useful for showing previous data while loading new data)
-    public static func loading(items: [Item] = []) -> ListViewState<Item> {
-        ListViewState(loadingState: .loading, items: items)
+    public static func loading(items: [Item] = []) -> Self {
+        Self(loadingState: .loading, items: items)
     }
 
     /// Creates a loaded state with the given items
-    public static func loaded(items: [Item]) -> ListViewState<Item> {
-        ListViewState(loadingState: .loaded, items: items)
+    public static func loaded(items: [Item]) -> Self {
+        Self(loadingState: .loaded, items: items)
     }
 
     /// Creates an error state with the given error and items
-    public static func error(_ error: Error, items: [Item] = []) -> ListViewState<Item> {
-        ListViewState(loadingState: .error(error), items: items)
+    public static func error(_ error: Error, items: [Item] = []) -> Self {
+        Self(loadingState: .error(error), items: items)
     }
 }
 
@@ -99,42 +87,26 @@ public struct ListViewState<Item: Identifiable & Hashable>: Equatable {
 @available(iOS 17.0, macOS 14.0, watchOS 10.0, tvOS 17.0, *)
 public extension ListViewState {
     /// Returns true if the state is loading
-    var isLoading: Bool {
-        loadingState.isLoading
-    }
+    var isLoading: Bool { loadingState.isLoading }
 
     /// Returns the error if there is one
-    var error: Error? {
-        loadingState.error
-    }
+    var error: Error? { loadingState.error }
 
     /// Returns true if there is an error
-    var hasError: Bool {
-        loadingState.hasError
-    }
+    var hasError: Bool { loadingState.hasError }
 
     /// Returns true if data has been loaded successfully
-    var isLoaded: Bool {
-        loadingState.isLoaded
-    }
+    var isLoaded: Bool { loadingState.isLoaded }
 
     /// Returns true if the list is empty
-    var isEmpty: Bool {
-        items.isEmpty
-    }
+    var isEmpty: Bool { items.isEmpty }
 
     /// Returns true if should show loading indicator (loading and no items)
-    var shouldShowLoading: Bool {
-        isLoading && isEmpty
-    }
+    var shouldShowLoading: Bool { isLoading && isEmpty }
 
     /// Returns true if should show error state (has error and no items)
-    var shouldShowError: Bool {
-        hasError && isEmpty
-    }
+    var shouldShowError: Bool { hasError && isEmpty }
 
     /// Returns true if should show the list
-    var shouldShowList: Bool {
-        !isEmpty
-    }
+    var shouldShowList: Bool { !isEmpty }
 }
