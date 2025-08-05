@@ -122,6 +122,29 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
             navigationBarHidden: navigationBarHidden,
         )
     }
+
+    /// Builds a DynamicList without NavigationStack (for use within existing navigation)
+    @MainActor
+    public func buildWithoutNavigation() -> some View {
+        let viewModel: DynamicListViewModel<Item> = if let publisher {
+            DynamicListViewModel(publisher: publisher, initialItems: items)
+        } else {
+            DynamicListViewModel(items: items)
+        }
+
+        return DynamicListContent(
+            viewModel: viewModel,
+            rowContent: rowContent ?? { item in
+                AnyView(DefaultRowView(item: item))
+            },
+            detailContent: detailContent ?? { item in
+                AnyView(DefaultDetailView(item: item))
+            },
+            errorContent: errorContent,
+            title: title,
+            navigationBarHidden: navigationBarHidden,
+        )
+    }
 }
 
 // MARK: - DynamicList Wrapper
@@ -153,31 +176,70 @@ private struct DynamicListWrapper<Item: Identifiable & Hashable>: View {
 
     var body: some View {
         NavigationStack {
-            Group {
-                if viewModel.viewState.shouldShowLoading {
-                    ProgressView(DynamicListPresenter.loadingContent)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else if viewModel.viewState.shouldShowError {
-                    errorView
-                } else {
-                    List(viewModel.viewState.items) { item in
-                        NavigationLink(value: item) {
-                            rowContent(item)
-                        }
-                    }
-                    .refreshable {
-                        viewModel.refresh()
+            DynamicListContent(
+                viewModel: viewModel,
+                rowContent: rowContent,
+                detailContent: detailContent,
+                errorContent: errorContent,
+                title: title,
+                navigationBarHidden: navigationBarHidden,
+            )
+        }
+    }
+}
+
+// MARK: - DynamicList Content
+
+@available(iOS 17.0, macOS 14.0, watchOS 10.0, tvOS 17.0, *)
+private struct DynamicListContent<Item: Identifiable & Hashable>: View {
+    @State private var viewModel: DynamicListViewModel<Item>
+    private let rowContent: (Item) -> AnyView
+    private let detailContent: (Item) -> AnyView
+    private let errorContent: ((Error) -> AnyView)?
+    private let title: String?
+    private let navigationBarHidden: Bool
+
+    init(
+        viewModel: DynamicListViewModel<Item>,
+        rowContent: @escaping (Item) -> AnyView,
+        detailContent: @escaping (Item) -> AnyView,
+        errorContent: ((Error) -> AnyView)?,
+        title: String?,
+        navigationBarHidden: Bool,
+    ) {
+        _viewModel = State(initialValue: viewModel)
+        self.rowContent = rowContent
+        self.detailContent = detailContent
+        self.errorContent = errorContent
+        self.title = title
+        self.navigationBarHidden = navigationBarHidden
+    }
+
+    var body: some View {
+        Group {
+            if viewModel.viewState.shouldShowLoading {
+                ProgressView(DynamicListPresenter.loadingContent)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if viewModel.viewState.shouldShowError {
+                errorView
+            } else {
+                List(viewModel.viewState.items) { item in
+                    NavigationLink(value: item) {
+                        rowContent(item)
                     }
                 }
+                .refreshable {
+                    viewModel.refresh()
+                }
             }
-            .navigationDestination(for: Item.self) { item in
-                detailContent(item)
-            }
-            .navigationTitle(title ?? "")
-            #if os(iOS)
-                .navigationBarHidden(navigationBarHidden)
-            #endif
         }
+        .navigationDestination(for: Item.self) { item in
+            detailContent(item)
+        }
+        .navigationTitle(title ?? "")
+        #if os(iOS)
+            .navigationBarHidden(navigationBarHidden)
+        #endif
     }
 
     @ViewBuilder
@@ -247,7 +309,7 @@ public extension DynamicListBuilder {
             .items(items)
             .rowContent(rowContent)
             .detailContent(detailContent)
-            .build()
+            .buildWithoutNavigation()
     }
 
     /// Creates a list with a publisher data source
@@ -261,7 +323,7 @@ public extension DynamicListBuilder {
             .publisher(publisher)
             .rowContent(rowContent)
             .detailContent(detailContent)
-            .build()
+            .buildWithoutNavigation()
     }
 
     /// Creates a list with simulated loading
@@ -276,6 +338,6 @@ public extension DynamicListBuilder {
             .simulatedPublisher(items, delay: delay)
             .rowContent(rowContent)
             .detailContent(detailContent)
-            .build()
+            .buildWithoutNavigation()
     }
 }

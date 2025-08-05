@@ -112,7 +112,7 @@ struct SimpleListExample: View {
                 .padding()
                 .navigationTitle(DynamicListPresenter.profile)
             }
-            .build()
+            .buildWithoutNavigation()
     }
 }
 
@@ -172,7 +172,7 @@ struct ReactiveListExample: View {
                 .padding()
                 .navigationTitle(DynamicListPresenter.detail)
             }
-            .build()
+            .buildWithoutNavigation()
     }
 }
 
@@ -196,7 +196,7 @@ struct SimulatedLoadingExample: View {
                 Text("Detalle de \(user.name)")
                     .navigationTitle(DynamicListPresenter.userDetail)
             }
-            .build()
+            .buildWithoutNavigation()
     }
 }
 
@@ -244,7 +244,7 @@ struct CustomErrorExample: View {
                 .padding()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .build()
+            .buildWithoutNavigation()
     }
 }
 
@@ -385,7 +385,7 @@ struct CompleteExample: View {
                 .padding()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .build()
+            .buildWithoutNavigation()
     }
 }
 

@@ -320,4 +320,38 @@ DynamicListBuilder.simple(
 )
 ```
 
-¡El `DynamicListBuilder` hace que crear listas dinámicas sea tan simple como encadenar métodos! 🎉 
+¡El `DynamicListBuilder` hace que crear listas dinámicas sea tan simple como encadenar métodos! 🎉
+
+## ⚠️ Nota Importante: Navegación
+
+### Problema de NavigationStack Anidados
+
+Si experimentas problemas de navegación (como "pop" inesperado del stack), es probable que tengas `NavigationStack` anidados. Esto sucede cuando:
+
+1. Ya tienes un `NavigationStack` en el contexto padre
+2. El `DynamicListBuilder` crea su propio `NavigationStack` interno
+
+### Solución
+
+Usa `buildWithoutNavigation()` cuando ya tienes navegación en el contexto padre:
+
+```swift
+// ❌ Incorrecto - NavigationStack anidados
+NavigationStack {
+    DynamicListBuilder<User>()
+        .items(users)
+        .build() // Esto crea otro NavigationStack
+}
+
+// ✅ Correcto - Un solo NavigationStack
+NavigationStack {
+    DynamicListBuilder<User>()
+        .items(users)
+        .buildWithoutNavigation() // No crea NavigationStack adicional
+}
+```
+
+### Cuándo Usar Cada Método
+
+- **`build()`**: Cuando el `DynamicListBuilder` es la vista raíz o no hay navegación existente
+- **`buildWithoutNavigation()`**: Cuando ya hay un `NavigationStack` en el contexto padre 
