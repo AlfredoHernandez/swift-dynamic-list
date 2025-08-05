@@ -7,35 +7,152 @@ import SwiftUI
 
 // MARK: - DynamicList Builder
 
-/// A builder class that simplifies the creation of DynamicList instances
+/// A fluent builder class that simplifies the creation of DynamicList instances.
+///
+/// This builder provides a clean, chainable API for configuring and creating dynamic lists
+/// with support for static data, reactive publishers, custom UI components, and error handling.
+///
+/// ## Basic Usage
+/// ```swift
+/// DynamicListBuilder<User>()
+///     .items(users)
+///     .rowContent { user in
+///         Text(user.name)
+///     }
+///     .detailContent { user in
+///         UserDetailView(user: user)
+///     }
+///     .build()
+/// ```
+///
+/// ## Reactive Data Source
+/// ```swift
+/// DynamicListBuilder<Product>()
+///     .publisher(apiService.fetchProducts())
+///     .title("Productos")
+///     .rowContent { product in
+///         ProductRowView(product: product)
+///     }
+///     .detailContent { product in
+///         ProductDetailView(product: product)
+///     }
+///     .build()
+/// ```
+///
+/// ## Factory Methods (Simplified)
+/// ```swift
+/// // Simple static list
+/// DynamicListBuilder.simple(
+///     items: users,
+///     rowContent: { user in Text(user.name) },
+///     detailContent: { user in Text("Detalle de \(user.name)") }
+/// )
+///
+/// // Reactive list
+/// DynamicListBuilder.reactive(
+///     publisher: apiService.fetchProducts(),
+///     rowContent: { product in ProductRowView(product: product) },
+///     detailContent: { product in ProductDetailView(product: product) }
+/// )
+/// ```
+///
+/// - Note: The `Item` type must conform to `Identifiable` and `Hashable` protocols.
+/// - Important: Use `build()` for standalone lists or `buildWithoutNavigation()` when embedding
+///   within existing navigation contexts to avoid NavigationStack conflicts.
 public final class DynamicListBuilder<Item: Identifiable & Hashable> {
+    // MARK: - Private Properties
+
+    /// Static items to display in the list
     private var items: [Item] = []
+
+    /// Combine publisher for reactive data loading
     private var publisher: AnyPublisher<[Item], Error>?
+
+    /// Custom row content builder
     private var rowContent: ((Item) -> AnyView)?
+
+    /// Custom detail content builder
     private var detailContent: ((Item) -> AnyView)?
+
+    /// Custom error content builder
     private var errorContent: ((Error) -> AnyView)?
+
+    /// Navigation title for the list
     private var title: String?
+
+    /// Whether to hide the navigation bar
     private var navigationBarHidden: Bool = false
 
+    // MARK: - Initialization
+
+    /// Creates a new DynamicListBuilder instance.
+    ///
+    /// Use this initializer to start building a dynamic list configuration.
+    /// All configuration is done through the fluent API methods.
     public init() {}
 
     // MARK: - Data Source Configuration
 
-    /// Sets static items for the list
+    /// Sets static items for the list.
+    ///
+    /// Use this method when you have a fixed array of items that don't need to be loaded
+    /// from an external source. The items will be displayed immediately without any loading state.
+    ///
+    /// - Parameter items: The array of items to display in the list.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// DynamicListBuilder<User>()
+    ///     .items(User.sampleUsers)
+    ///     .build()
+    /// ```
     @discardableResult
     public func items(_ items: [Item]) -> Self {
         self.items = items
         return self
     }
 
-    /// Sets a Combine publisher as the data source
+    /// Sets a Combine publisher as the reactive data source.
+    ///
+    /// Use this method when you need to load data from external sources like APIs,
+    /// databases, or any service that returns a Combine publisher. The list will
+    /// automatically handle loading states, errors, and data updates.
+    ///
+    /// - Parameter publisher: A Combine publisher that emits arrays of items.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// DynamicListBuilder<Product>()
+    ///     .publisher(apiService.fetchProducts())
+    ///     .build()
+    /// ```
+    ///
+    /// ## Publisher Requirements
+    /// - Must emit `[Item]` arrays
+    /// - Must handle errors appropriately
+    /// - Should complete after emitting data
     @discardableResult
     public func publisher(_ publisher: AnyPublisher<[Item], Error>) -> Self {
         self.publisher = publisher
         return self
     }
 
-    /// Sets a simple publisher that emits a single array of items
+    /// Sets a simple publisher that emits a single array of items.
+    ///
+    /// This is a convenience method that wraps static items in a publisher.
+    /// Useful when you want to use the reactive infrastructure but have static data.
+    ///
+    /// - Parameter items: The array of items to emit via the publisher.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// DynamicListBuilder<User>()
+    ///     .simplePublisher(User.sampleUsers)
+    ///     .build()
+    /// ```
     @discardableResult
     public func simplePublisher(_ items: [Item]) -> Self {
         publisher = Just(items)
@@ -44,7 +161,22 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
         return self
     }
 
-    /// Sets a publisher that simulates loading with delay
+    /// Sets a publisher that simulates loading with a configurable delay.
+    ///
+    /// Useful for testing, demos, or when you want to simulate network delays
+    /// to show loading states in your UI.
+    ///
+    /// - Parameters:
+    ///   - items: The array of items to emit after the delay.
+    ///   - delay: The delay in seconds before emitting the items. Defaults to 1.0 second.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// DynamicListBuilder<User>()
+    ///     .simulatedPublisher(User.sampleUsers, delay: 2.0)
+    ///     .build()
+    /// ```
     @discardableResult
     public func simulatedPublisher(_ items: [Item], delay: TimeInterval = 1.0) -> Self {
         publisher = Just(items)
@@ -56,7 +188,39 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
 
     // MARK: - UI Configuration
 
-    /// Sets the row content builder
+    /// Sets the custom row content builder.
+    ///
+    /// Use this method to customize how each item is displayed in the list.
+    /// If not provided, a default row view will be used that shows the item's description.
+    ///
+    /// - Parameter content: A view builder closure that creates the row view for each item.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// DynamicListBuilder<User>()
+    ///     .items(users)
+    ///     .rowContent { user in
+    ///         HStack {
+    ///             AsyncImage(url: user.avatarURL) { image in
+    ///                 image.resizable()
+    ///             } placeholder: {
+    ///                 Circle().fill(.gray)
+    ///             }
+    ///             .frame(width: 40, height: 40)
+    ///             .clipShape(Circle())
+    ///
+    ///             VStack(alignment: .leading) {
+    ///                 Text(user.name)
+    ///                     .font(.headline)
+    ///                 Text(user.email)
+    ///                     .font(.caption)
+    ///                     .foregroundColor(.secondary)
+    ///             }
+    ///         }
+    ///     }
+    ///     .build()
+    /// ```
     @discardableResult
     public func rowContent(@ViewBuilder _ content: @escaping (Item) -> some View) -> Self {
         rowContent = { item in
@@ -65,7 +229,43 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
         return self
     }
 
-    /// Sets the detail content builder
+    /// Sets the custom detail content builder.
+    ///
+    /// Use this method to customize the detail view that appears when a user taps on a list item.
+    /// If not provided, a default detail view will be used that shows the item's description.
+    ///
+    /// - Parameter content: A view builder closure that creates the detail view for each item.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// DynamicListBuilder<User>()
+    ///     .items(users)
+    ///     .detailContent { user in
+    ///         VStack(spacing: 16) {
+    ///             AsyncImage(url: user.avatarURL) { image in
+    ///                 image.resizable()
+    ///             } placeholder: {
+    ///                 Circle().fill(.gray)
+    ///             }
+    ///             .frame(width: 100, height: 100)
+    ///             .clipShape(Circle())
+    ///
+    ///             Text(user.name)
+    ///                 .font(.title)
+    ///                 .fontWeight(.bold)
+    ///
+    ///             Text(user.email)
+    ///                 .font(.body)
+    ///
+    ///             Text(user.bio)
+    ///                 .font(.body)
+    ///                 .foregroundColor(.secondary)
+    ///         }
+    ///         .padding()
+    ///     }
+    ///     .build()
+    /// ```
     @discardableResult
     public func detailContent(@ViewBuilder _ content: @escaping (Item) -> some View) -> Self {
         detailContent = { item in
@@ -74,7 +274,41 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
         return self
     }
 
-    /// Sets a custom error view
+    /// Sets a custom error view for handling loading failures.
+    ///
+    /// Use this method to provide a custom error view when data loading fails.
+    /// If not provided, a default error view will be used that shows a generic error message.
+    ///
+    /// - Parameter content: A view builder closure that creates the error view.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// DynamicListBuilder<User>()
+    ///     .publisher(failingPublisher)
+    ///     .errorContent { error in
+    ///         VStack(spacing: 16) {
+    ///             Image(systemName: "exclamationmark.triangle")
+    ///                 .font(.system(size: 50))
+    ///                 .foregroundColor(.orange)
+    ///
+    ///             Text("Error al cargar usuarios")
+    ///                 .font(.headline)
+    ///
+    ///             Text(error.localizedDescription)
+    ///                 .font(.body)
+    ///                 .foregroundColor(.secondary)
+    ///                 .multilineTextAlignment(.center)
+    ///
+    ///             Button("Reintentar") {
+    ///                 // Retry logic
+    ///             }
+    ///             .buttonStyle(.borderedProminent)
+    ///         }
+    ///         .padding()
+    ///     }
+    ///     .build()
+    /// ```
     @discardableResult
     public func errorContent(@ViewBuilder _ content: @escaping (Error) -> some View) -> Self {
         errorContent = { error in
@@ -83,14 +317,38 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
         return self
     }
 
-    /// Sets the navigation title
+    /// Sets the navigation title for the list.
+    ///
+    /// - Parameter title: The title to display in the navigation bar.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// DynamicListBuilder<User>()
+    ///     .items(users)
+    ///     .title("Usuarios")
+    ///     .build()
+    /// ```
     @discardableResult
     public func title(_ title: String) -> Self {
         self.title = title
         return self
     }
 
-    /// Hides the navigation bar
+    /// Hides the navigation bar.
+    ///
+    /// Use this method when you want to hide the navigation bar entirely.
+    /// Useful for full-screen experiences or when embedding in custom navigation.
+    ///
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// DynamicListBuilder<User>()
+    ///     .items(users)
+    ///     .hideNavigationBar()
+    ///     .build()
+    /// ```
     @discardableResult
     public func hideNavigationBar() -> Self {
         navigationBarHidden = true
@@ -99,7 +357,27 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
 
     // MARK: - Build Methods
 
-    /// Builds a DynamicList with the configured settings
+    /// Builds a complete DynamicList with NavigationStack.
+    ///
+    /// This method creates a fully functional dynamic list wrapped in its own NavigationStack.
+    /// Use this when you want a standalone list that manages its own navigation.
+    ///
+    /// - Returns: A SwiftUI view containing the configured dynamic list.
+    ///
+    /// ## Example
+    /// ```swift
+    /// struct ContentView: View {
+    ///     var body: some View {
+    ///         DynamicListBuilder<User>()
+    ///             .items(users)
+    ///             .title("Usuarios")
+    ///             .build()
+    ///     }
+    /// }
+    /// ```
+    ///
+    /// - Important: Don't use this method when embedding the list within an existing NavigationStack
+    ///   to avoid navigation conflicts. Use `buildWithoutNavigation()` instead.
     @MainActor
     public func build() -> some View {
         let viewModel: DynamicListViewModel<Item> = if let publisher {
@@ -122,7 +400,46 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
         )
     }
 
-    /// Builds a DynamicList without NavigationStack (for use within existing navigation)
+    /// Builds a DynamicList without NavigationStack for embedding in existing navigation.
+    ///
+    /// Use this method when you want to embed the list within an existing NavigationStack
+    /// or when you need to manage navigation at a higher level. This prevents navigation
+    /// conflicts and allows for more flexible navigation patterns.
+    ///
+    /// - Returns: A SwiftUI view containing the configured dynamic list without navigation wrapper.
+    ///
+    /// ## Example
+    /// ```swift
+    /// struct ExamplesView: View {
+    ///     @State private var navigationPath = NavigationPath()
+    ///
+    ///     var body: some View {
+    ///         NavigationStack(path: $navigationPath) {
+    ///             List {
+    ///                 NavigationLink("Users", value: "users")
+    ///                 NavigationLink("Products", value: "products")
+    ///             }
+    ///             .navigationDestination(for: String.self) { destination in
+    ///                 switch destination {
+    ///                 case "users":
+    ///                     DynamicListBuilder<User>()
+    ///                         .items(users)
+    ///                         .buildWithoutNavigation()
+    ///                 case "products":
+    ///                     DynamicListBuilder<Product>()
+    ///                         .items(products)
+    ///                         .buildWithoutNavigation()
+    ///                 default:
+    ///                     EmptyView()
+    ///                 }
+    ///             }
+    ///         }
+    ///     }
+    /// }
+    /// ```
+    ///
+    /// - Important: When using this method, ensure that the parent view provides the necessary
+    ///   navigation context and handles `navigationDestination` appropriately.
     @MainActor
     public func buildWithoutNavigation() -> some View {
         let viewModel: DynamicListViewModel<Item> = if let publisher {
@@ -148,6 +465,10 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
 
 // MARK: - DynamicList Wrapper
 
+/// Internal wrapper that provides NavigationStack for standalone lists.
+///
+/// This component is used internally by the `build()` method to wrap the list content
+/// in a NavigationStack. It's not meant to be used directly by consumers.
 private struct DynamicListWrapper<Item: Identifiable & Hashable>: View {
     @State private var viewModel: DynamicListViewModel<Item>
     private let rowContent: (Item) -> AnyView
@@ -188,6 +509,11 @@ private struct DynamicListWrapper<Item: Identifiable & Hashable>: View {
 
 // MARK: - DynamicList Content
 
+/// Internal component that renders the actual list content.
+///
+/// This component handles the core list rendering logic including loading states,
+/// error handling, and navigation. It's used by both `DynamicListWrapper` and
+/// the `buildWithoutNavigation()` method.
 private struct DynamicListContent<Item: Identifiable & Hashable>: View {
     @State private var viewModel: DynamicListViewModel<Item>
     private let rowContent: (Item) -> AnyView
@@ -253,6 +579,10 @@ private struct DynamicListContent<Item: Identifiable & Hashable>: View {
 
 // MARK: - Default Views
 
+/// Default row view used when no custom row content is provided.
+///
+/// This view displays a simple representation of the item with its description
+/// and ID. It's used as a fallback when `rowContent` is not specified.
 private struct DefaultRowView<Item: Identifiable & Hashable>: View {
     let item: Item
 
@@ -268,6 +598,10 @@ private struct DefaultRowView<Item: Identifiable & Hashable>: View {
     }
 }
 
+/// Default detail view used when no custom detail content is provided.
+///
+/// This view displays a simple detail representation of the item with its
+/// description and ID. It's used as a fallback when `detailContent` is not specified.
 private struct DefaultDetailView<Item: Identifiable & Hashable>: View {
     let item: Item
 
@@ -291,8 +625,39 @@ private struct DefaultDetailView<Item: Identifiable & Hashable>: View {
 
 // MARK: - Convenience Factory Methods
 
+/// Convenience factory methods for common use cases.
+///
+/// These static methods provide simplified ways to create common list configurations
+/// without needing to use the full builder API. They're perfect for quick prototypes
+/// or simple use cases.
 public extension DynamicListBuilder {
-    /// Creates a simple list with static items
+    /// Creates a simple list with static items using a minimal API.
+    ///
+    /// This factory method is perfect for quick prototypes or when you have static data
+    /// and want to get up and running quickly with minimal configuration.
+    ///
+    /// - Parameters:
+    ///   - items: The array of items to display in the list.
+    ///   - rowContent: A view builder that creates the row view for each item.
+    ///   - detailContent: A view builder that creates the detail view for each item.
+    /// - Returns: A configured dynamic list view without navigation wrapper.
+    ///
+    /// ## Example
+    /// ```swift
+    /// struct SimpleListView: View {
+    ///     var body: some View {
+    ///         DynamicListBuilder.simple(
+    ///             items: User.sampleUsers,
+    ///             rowContent: { user in
+    ///                 Text(user.name)
+    ///             },
+    ///             detailContent: { user in
+    ///                 Text("Detalle de \(user.name)")
+    ///             }
+    ///         )
+    ///     }
+    /// }
+    /// ```
     @MainActor
     static func simple(
         items: [Item],
@@ -306,7 +671,33 @@ public extension DynamicListBuilder {
             .buildWithoutNavigation()
     }
 
-    /// Creates a list with a publisher data source
+    /// Creates a reactive list with a publisher data source using a minimal API.
+    ///
+    /// This factory method is perfect for lists that need to load data from external
+    /// sources like APIs or databases. It automatically handles loading states and errors.
+    ///
+    /// - Parameters:
+    ///   - publisher: A Combine publisher that emits arrays of items.
+    ///   - rowContent: A view builder that creates the row view for each item.
+    ///   - detailContent: A view builder that creates the detail view for each item.
+    /// - Returns: A configured dynamic list view without navigation wrapper.
+    ///
+    /// ## Example
+    /// ```swift
+    /// struct ReactiveListView: View {
+    ///     var body: some View {
+    ///         DynamicListBuilder.reactive(
+    ///             publisher: apiService.fetchProducts(),
+    ///             rowContent: { product in
+    ///                 ProductRowView(product: product)
+    ///             },
+    ///             detailContent: { product in
+    ///                 ProductDetailView(product: product)
+    ///             }
+    ///         )
+    ///     }
+    /// }
+    /// ```
     @MainActor
     static func reactive(
         publisher: AnyPublisher<[Item], Error>,
@@ -320,7 +711,35 @@ public extension DynamicListBuilder {
             .buildWithoutNavigation()
     }
 
-    /// Creates a list with simulated loading
+    /// Creates a list with simulated loading for testing and demos.
+    ///
+    /// This factory method is perfect for testing loading states, creating demos,
+    /// or when you want to simulate network delays to show loading UI.
+    ///
+    /// - Parameters:
+    ///   - items: The array of items to display after the loading delay.
+    ///   - delay: The delay in seconds before showing the items. Defaults to 1.0 second.
+    ///   - rowContent: A view builder that creates the row view for each item.
+    ///   - detailContent: A view builder that creates the detail view for each item.
+    /// - Returns: A configured dynamic list view without navigation wrapper.
+    ///
+    /// ## Example
+    /// ```swift
+    /// struct DemoListView: View {
+    ///     var body: some View {
+    ///         DynamicListBuilder.simulated(
+    ///             items: User.sampleUsers,
+    ///             delay: 2.0,
+    ///             rowContent: { user in
+    ///                 Text(user.name)
+    ///             },
+    ///             detailContent: { user in
+    ///                 Text("Detalle de \(user.name)")
+    ///             }
+    ///         )
+    ///     }
+    /// }
+    /// ```
     @MainActor
     static func simulated(
         items: [Item],

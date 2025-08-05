@@ -411,7 +411,7 @@ class DynamicListUITests: XCTestCase {
 ## 📚 Recursos Adicionales
 
 - [Integración con Combine](./CombineIntegration.md)
-- [DynamicList Builder](./DynamicListBuilder.md)
+- [DynamicList Builder](./DynamicListBuilder.md) - **Documentación completa con ejemplos**
 - [Vistas de Error Personalizables](./CustomErrorViews.md)
 - [Sistema de Localización](./Localization.md)
 - [Estructura de Archivos](./FileStructure.md)
