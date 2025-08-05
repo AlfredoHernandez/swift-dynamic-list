@@ -9,18 +9,11 @@ import Observation
 /// An observable view model to hold and manage a collection of items for a `DynamicList`.
 ///
 /// This view model uses the Observation framework to allow SwiftUI views to automatically
-/// track changes to the `items` array. It also supports reactive data loading using Combine publishers.
-@available(iOS 17.0, macOS 14.0, watchOS 10.0, tvOS 17.0, *)
+/// track changes to the view state. It also supports reactive data loading using Combine publishers.
 @Observable
 public final class DynamicListViewModel<Item: Identifiable & Hashable> {
-    /// The collection of items to be displayed.
-    public var items: [Item]
-
-    /// Indicates whether data is currently being loaded.
-    public var isLoading: Bool = false
-
-    /// Contains any error that occurred during data loading.
-    public var error: Error?
+    /// The current view state containing items and loading information.
+    public var viewState: ListViewState<Item>
 
     /// Set to store Combine subscriptions.
     private var cancellables = Set<AnyCancellable>()
@@ -28,7 +21,7 @@ public final class DynamicListViewModel<Item: Identifiable & Hashable> {
     /// Initializes the view model with an initial set of items.
     /// - Parameter items: The initial array of items. Defaults to an empty array.
     public init(items: [Item] = []) {
-        self.items = items
+        viewState = .idle(items: items)
     }
 
     /// Initializes the view model with a publisher that emits arrays of items.
@@ -40,24 +33,22 @@ public final class DynamicListViewModel<Item: Identifiable & Hashable> {
     ///   - publisher: A Combine publisher that emits arrays of items.
     ///   - initialItems: Initial items to display while loading. Defaults to an empty array.
     public init(publisher: AnyPublisher<[Item], Error>, initialItems: [Item] = []) {
-        items = initialItems
-        isLoading = true
+        viewState = .loading(items: initialItems)
 
         publisher
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { [weak self] completion in
-                    self?.isLoading = false
                     switch completion {
                     case .finished:
-                        self?.error = nil
+                        // State is already updated in receiveValue
+                        break
                     case let .failure(error):
-                        self?.error = error
+                        self?.viewState = .error(error, items: self?.viewState.items ?? [])
                     }
                 },
                 receiveValue: { [weak self] items in
-                    self?.items = items
-                    self?.error = nil
+                    self?.viewState = .loaded(items: items)
                 },
             )
             .store(in: &cancellables)
@@ -72,24 +63,23 @@ public final class DynamicListViewModel<Item: Identifiable & Hashable> {
         // Cancel previous subscriptions
         cancellables.removeAll()
 
-        isLoading = true
-        error = nil
+        // Preserve current items while loading new ones
+        viewState = .loading(items: viewState.items)
 
         publisher
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { [weak self] completion in
-                    self?.isLoading = false
                     switch completion {
                     case .finished:
-                        self?.error = nil
+                        // State is already updated in receiveValue
+                        break
                     case let .failure(error):
-                        self?.error = error
+                        self?.viewState = .error(error, items: self?.viewState.items ?? [])
                     }
                 },
                 receiveValue: { [weak self] items in
-                    self?.items = items
-                    self?.error = nil
+                    self?.viewState = .loaded(items: items)
                 },
             )
             .store(in: &cancellables)
@@ -99,5 +89,29 @@ public final class DynamicListViewModel<Item: Identifiable & Hashable> {
     public func refresh() {
         // This would be implemented if we stored the original publisher
         // For now, this method exists for future extensibility
+        // We could set the state to loading to show refresh indicator
+        if !viewState.items.isEmpty {
+            viewState = .loading(items: viewState.items)
+        }
+    }
+}
+
+// MARK: - Convenience Properties (for backward compatibility)
+
+@available(iOS 17.0, macOS 14.0, watchOS 10.0, tvOS 17.0, *)
+public extension DynamicListViewModel {
+    /// The collection of items to be displayed.
+    var items: [Item] {
+        viewState.items
+    }
+
+    /// Indicates whether data is currently being loaded.
+    var isLoading: Bool {
+        viewState.isLoading
+    }
+
+    /// Contains any error that occurred during data loading.
+    var error: Error? {
+        viewState.error
     }
 }

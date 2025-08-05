@@ -9,7 +9,6 @@ import SwiftUI
 ///
 /// This view is generic over the type of item, the content of the row, and the content of the detail view.
 /// The `Item` type must conform to the `Identifiable` and `Hashable` protocols.
-@available(iOS 17.0, macOS 14.0, watchOS 10.0, tvOS 17.0, *)
 public struct DynamicList<Item, RowContent, DetailContent>: View where Item: Identifiable & Hashable, RowContent: View, DetailContent: View {
     @State private var viewModel: DynamicListViewModel<Item>
     private let rowContent: (Item) -> RowContent
@@ -34,17 +33,17 @@ public struct DynamicList<Item, RowContent, DetailContent>: View where Item: Ide
     public var body: some View {
         NavigationStack {
             Group {
-                if viewModel.isLoading, viewModel.items.isEmpty {
+                if viewModel.viewState.shouldShowLoading {
                     ProgressView("Cargando...")
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else if let error = viewModel.error, viewModel.items.isEmpty {
+                } else if viewModel.viewState.shouldShowError {
                     VStack(spacing: 16) {
                         Image(systemName: "exclamationmark.triangle")
                             .font(.largeTitle)
                             .foregroundColor(.orange)
                         Text("Error al cargar los datos")
                             .font(.headline)
-                        Text(error.localizedDescription)
+                        Text(viewModel.viewState.error?.localizedDescription ?? "Error desconocido")
                             .font(.caption)
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
@@ -52,13 +51,10 @@ public struct DynamicList<Item, RowContent, DetailContent>: View where Item: Ide
                     .padding()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
-                    List(viewModel.items) { item in
-                        NavigationLink(value: item) {
-                            rowContent(item)
-                        }
+                    List(viewModel.viewState.items) { item in
+                        NavigationLink(value: item) { rowContent(item) }
                     }
                     .refreshable {
-                        // This could be extended to support pull-to-refresh
                         viewModel.refresh()
                     }
                 }
