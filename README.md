@@ -517,8 +517,8 @@ Los textos se localizan automáticamente según el idioma del dispositivo.
 
 ## 📚 Documentación
 
-- **[Guía de Desarrollador](DeveloperGuide.md)** - Guía completa para desarrolladores
-- **[Estructura de Archivos](FileStructure.md)** - Documentación de la arquitectura del proyecto
+- **[🚀 Guía de Desarrollador](Sources/DynamicList/Documentation/DeveloperGuide.md)** - Guía completa para desarrolladores
+- **[📁 Estructura de Archivos](Sources/DynamicList/Documentation/FileStructure.md)** - Documentación de la arquitectura del proyecto
 
 ## 🤝 Contribución
 
