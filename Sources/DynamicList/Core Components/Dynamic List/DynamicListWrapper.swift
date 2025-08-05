@@ -16,6 +16,9 @@ struct DynamicListWrapper<Item: Identifiable & Hashable>: View {
     private let skeletonContent: (() -> AnyView)?
     private let title: String?
     private let navigationBarHidden: Bool
+    private let searchPrompt: String?
+    private let searchPredicate: ((Item, String) -> Bool)?
+    private let searchStrategy: SearchStrategy?
 
     init(
         viewModel: DynamicListViewModel<Item>,
@@ -25,6 +28,9 @@ struct DynamicListWrapper<Item: Identifiable & Hashable>: View {
         skeletonContent: (() -> AnyView)?,
         title: String?,
         navigationBarHidden: Bool,
+        searchPrompt: String?,
+        searchPredicate: ((Item, String) -> Bool)?,
+        searchStrategy: SearchStrategy?,
     ) {
         _viewModel = State(initialValue: viewModel)
         self.rowContent = rowContent
@@ -33,6 +39,9 @@ struct DynamicListWrapper<Item: Identifiable & Hashable>: View {
         self.skeletonContent = skeletonContent
         self.title = title
         self.navigationBarHidden = navigationBarHidden
+        self.searchPrompt = searchPrompt
+        self.searchPredicate = searchPredicate
+        self.searchStrategy = searchStrategy
     }
 
     var body: some View {
@@ -45,6 +54,9 @@ struct DynamicListWrapper<Item: Identifiable & Hashable>: View {
                 skeletonContent: skeletonContent,
                 title: title,
                 navigationBarHidden: navigationBarHidden,
+                searchPrompt: searchPrompt,
+                searchPredicate: searchPredicate,
+                searchStrategy: searchStrategy,
             )
         }
     }

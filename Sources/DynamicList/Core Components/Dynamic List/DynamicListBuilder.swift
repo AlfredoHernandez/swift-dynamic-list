@@ -86,6 +86,15 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     /// Whether to hide the navigation bar
     private var navigationBarHidden: Bool = false
 
+    /// Search prompt text for the search field
+    private var searchPrompt: String?
+
+    /// Custom search predicate for filtering items
+    private var searchPredicate: ((Item, String) -> Bool)?
+
+    /// Search strategy for Searchable items
+    private var searchStrategy: SearchStrategy?
+
     // MARK: - Initialization
 
     /// Creates a new DynamicListBuilder instance.
@@ -368,6 +377,96 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
         return self
     }
 
+    // MARK: - Search Configuration
+
+    /// Enables search functionality with a custom prompt.
+    ///
+    /// Use this method to add search capability to the list. The search field will appear
+    /// in the navigation bar and filter items based on the Searchable protocol or custom predicate.
+    ///
+    /// - Parameter prompt: The placeholder text for the search field.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// DynamicListBuilder<User>()
+    ///     .items(users)
+    ///     .searchable(prompt: "Buscar usuarios...")
+    ///     .build()
+    /// ```
+    ///
+    /// ## Requirements
+    /// - Items should conform to `Searchable` protocol for automatic filtering
+    /// - Or use `searchable(prompt:predicate:)` for custom search logic
+    @discardableResult
+    public func searchable(prompt: String) -> Self {
+        searchPrompt = prompt
+        return self
+    }
+
+    /// Enables search functionality with custom search logic.
+    ///
+    /// Use this method when you need custom search behavior that goes beyond the Searchable protocol.
+    /// The predicate receives the item and search text, and should return true if the item matches.
+    ///
+    /// - Parameters:
+    ///   - prompt: The placeholder text for the search field.
+    ///   - predicate: A closure that determines if an item matches the search text.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// DynamicListBuilder<User>()
+    ///     .items(users)
+    ///     .searchable(
+    ///         prompt: "Buscar por nombre o email...",
+    ///         predicate: { user, searchText in
+    ///             user.name.lowercased().contains(searchText.lowercased()) ||
+    ///             user.email.lowercased().contains(searchText.lowercased())
+    ///         }
+    ///     )
+    ///     .build()
+    /// ```
+    @discardableResult
+    public func searchable(
+        prompt: String,
+        predicate: @escaping (Item, String) -> Bool,
+    ) -> Self {
+        searchPrompt = prompt
+        searchPredicate = predicate
+        return self
+    }
+
+    /// Enables search functionality with a custom search strategy.
+    ///
+    /// Use this method when you want to use a specific search strategy with Searchable items.
+    /// The strategy determines how the search query is matched against the item's search keys.
+    ///
+    /// - Parameters:
+    ///   - prompt: The placeholder text for the search field.
+    ///   - strategy: The search strategy to use for matching.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// DynamicListBuilder<User>()
+    ///     .items(users)
+    ///     .searchable(
+    ///         prompt: "Buscar usuarios...",
+    ///         strategy: TokenizedMatchStrategy()
+    ///     )
+    ///     .build()
+    /// ```
+    @discardableResult
+    public func searchable(
+        prompt: String,
+        strategy: SearchStrategy,
+    ) -> Self {
+        searchPrompt = prompt
+        searchStrategy = strategy
+        return self
+    }
+
     /// Sets the navigation title for the list.
     ///
     /// - Parameter title: The title to display in the navigation bar.
@@ -449,6 +548,9 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
             skeletonContent: skeletonContent,
             title: title,
             navigationBarHidden: navigationBarHidden,
+            searchPrompt: searchPrompt,
+            searchPredicate: searchPredicate,
+            searchStrategy: searchStrategy,
         )
     }
 
@@ -512,6 +614,9 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
             skeletonContent: skeletonContent,
             title: title,
             navigationBarHidden: navigationBarHidden,
+            searchPrompt: searchPrompt,
+            searchPredicate: searchPredicate,
+            searchStrategy: searchStrategy,
         )
     }
 }

@@ -7,7 +7,7 @@ import SwiftUI
 
 // MARK: - Example Data Models
 
-struct User: Identifiable, Hashable {
+struct User: Identifiable, Hashable, Searchable {
     let id = UUID()
     let name: String
     let email: String
@@ -19,9 +19,13 @@ struct User: Identifiable, Hashable {
         User(name: "María Rodríguez", email: "maria@example.com", avatar: "👩‍🎨"),
         User(name: "Juan Pérez", email: "juan@example.com", avatar: "👨‍🔬"),
     ]
+
+    var searchKeys: [String] {
+        [name, email]
+    }
 }
 
-struct Product: Identifiable, Hashable {
+struct Product: Identifiable, Hashable, Searchable {
     let id = UUID()
     let name: String
     let price: Double
@@ -33,6 +37,10 @@ struct Product: Identifiable, Hashable {
         Product(name: "AirPods Pro", price: 249.99, category: "Audio"),
         Product(name: "iPad Air", price: 599.99, category: "Tablets"),
     ]
+
+    var searchKeys: [String] {
+        [name, category, String(format: "%.2f", price)]
+    }
 }
 
 // MARK: - Navigation Types
@@ -46,6 +54,9 @@ enum BuilderExample: Hashable {
     case sectionedList
     case sectionedReactive
     case sectionedCustom
+    case searchableList
+    case searchableWithPredicate
+    case searchableWithStrategy
 }
 
 // MARK: - Builder Examples
@@ -68,6 +79,12 @@ struct BuilderExamplesView: View {
                     NavigationLink("Sectioned Reactive", value: BuilderExample.sectionedReactive)
                     NavigationLink("Sectioned Custom", value: BuilderExample.sectionedCustom)
                 }
+
+                Section("Search Examples") {
+                    NavigationLink("Searchable List", value: BuilderExample.searchableList)
+                    NavigationLink("Searchable with Predicate", value: BuilderExample.searchableWithPredicate)
+                    NavigationLink("Searchable with Strategy", value: BuilderExample.searchableWithStrategy)
+                }
             }
             .navigationTitle("DynamicList Builder")
             .navigationDestination(for: BuilderExample.self) { example in
@@ -88,6 +105,12 @@ struct BuilderExamplesView: View {
                     SectionedReactiveExample()
                 case .sectionedCustom:
                     SectionedCustomExample()
+                case .searchableList:
+                    SearchableListExample()
+                case .searchableWithPredicate:
+                    SearchableWithPredicateExample()
+                case .searchableWithStrategy:
+                    SearchableWithStrategyExample()
                 }
             }
         }
@@ -662,6 +685,181 @@ struct SectionedCustomExample: View {
                 }
                 .padding()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+            .buildWithoutNavigation()
+    }
+}
+
+// MARK: - Search Examples
+
+// MARK: - Example 9: Searchable List
+
+struct SearchableListExample: View {
+    var body: some View {
+        DynamicListBuilder<User>()
+            .items(User.sampleUsers)
+            .title("Usuarios Buscables")
+            .searchable(prompt: "Buscar por nombre o email...")
+            .rowContent { user in
+                HStack {
+                    Text(user.avatar)
+                        .font(.title2)
+                    VStack(alignment: .leading) {
+                        Text(user.name)
+                            .font(.headline)
+                        Text(user.email)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                }
+                .padding(.vertical, 4)
+            }
+            .detailContent { user in
+                VStack(spacing: 20) {
+                    Text(user.avatar)
+                        .font(.system(size: 80))
+
+                    Text(user.name)
+                        .font(.title)
+                        .fontWeight(.bold)
+
+                    Text(user.email)
+                        .font(.body)
+                        .foregroundColor(.secondary)
+
+                    Spacer()
+                }
+                .padding()
+                .navigationTitle("Perfil de Usuario")
+            }
+            .buildWithoutNavigation()
+    }
+}
+
+// MARK: - Example 10: Searchable with Custom Predicate
+
+struct SearchableWithPredicateExample: View {
+    var body: some View {
+        DynamicListBuilder<Product>()
+            .items(Product.sampleProducts)
+            .title("Productos Buscables")
+            .searchable(
+                prompt: "Buscar por nombre, categoría o precio...",
+                predicate: { product, searchText in
+                    let searchLower = searchText.lowercased()
+                    return product.name.lowercased().contains(searchLower) ||
+                        product.category.lowercased().contains(searchLower) ||
+                        String(format: "%.2f", product.price).contains(searchText)
+                },
+            )
+            .rowContent { product in
+                HStack {
+                    VStack(alignment: .leading) {
+                        Text(product.name)
+                            .font(.headline)
+                        Text(product.category)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                    Text("$\(product.price, specifier: "%.2f")")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.blue)
+                }
+                .padding(.vertical, 4)
+            }
+            .detailContent { product in
+                VStack(spacing: 20) {
+                    Text("📦")
+                        .font(.system(size: 80))
+
+                    Text(product.name)
+                        .font(.title)
+                        .fontWeight(.bold)
+
+                    Text(product.category)
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+
+                    Text("$\(product.price, specifier: "%.2f")")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.blue)
+
+                    Spacer()
+                }
+                .padding()
+                .navigationTitle("Detalle de Producto")
+            }
+            .buildWithoutNavigation()
+    }
+}
+
+// MARK: - Example 11: Searchable with Custom Strategy
+
+struct SearchableWithStrategyExample: View {
+    var body: some View {
+        DynamicListBuilder<User>()
+            .items(User.sampleUsers)
+            .title("Usuarios con Estrategia de Búsqueda")
+            .searchable(
+                prompt: "Buscar usuarios (coincidencia exacta)...",
+                strategy: ExactMatchStrategy(),
+            )
+            .rowContent { user in
+                HStack {
+                    Text(user.avatar)
+                        .font(.title2)
+                    VStack(alignment: .leading) {
+                        Text(user.name)
+                            .font(.headline)
+                        Text(user.email)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                    Text("Estrategia: Exacta")
+                        .font(.caption2)
+                        .foregroundColor(.blue)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 2)
+                        .background(Color.blue.opacity(0.1))
+                        .cornerRadius(4)
+                }
+                .padding(.vertical, 4)
+            }
+            .detailContent { user in
+                VStack(spacing: 20) {
+                    Text(user.avatar)
+                        .font(.system(size: 80))
+
+                    Text(user.name)
+                        .font(.title)
+                        .fontWeight(.bold)
+
+                    Text(user.email)
+                        .font(.body)
+                        .foregroundColor(.secondary)
+
+                    VStack(spacing: 8) {
+                        Text("Claves de búsqueda:")
+                            .font(.headline)
+                        ForEach(user.searchKeys, id: \.self) { key in
+                            Text("• \(key)")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding()
+                    .background(.regularMaterial)
+                    .cornerRadius(8)
+
+                    Spacer()
+                }
+                .padding()
+                .navigationTitle("Perfil de Usuario")
             }
             .buildWithoutNavigation()
     }
