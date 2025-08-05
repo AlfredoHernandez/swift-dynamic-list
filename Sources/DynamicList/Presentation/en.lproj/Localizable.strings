@@ -2,19 +2,12 @@
 
 /* Loading States */
 "loading_content" = "Loading...";
-"loading_users" = "Loading Users...";
-"loading_products" = "Loading Products...";
 
 /* Error Messages */
 "network_error" = "Network connection failed. Please check your internet connection.";
-"server_error" = "Server error. Please try again later.";
-"unauthorized_access" = "You don't have permission to access this resource.";
-"data_corrupted" = "The received data is corrupted and cannot be processed.";
-"connection_timeout" = "Connection timed out. Please check your internet connection.";
 
 /* Error Actions */
 "retry" = "Retry";
-"cancel" = "Cancel";
 
 /* Navigation */
 "profile" = "Profile";
@@ -24,13 +17,6 @@
 
 /* Content Labels */
 "item_id" = "ID";
-"price" = "Price";
-"category" = "Category";
-"available" = "Available";
-"buy_now" = "Buy Now";
-
-/* Error View Titles */
-"error_loading" = "Error Loading";
 
 /* Default Views */
 "item_detail" = "Item Detail";

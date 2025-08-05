@@ -15,20 +15,6 @@ public final class DynamicListPresenter {
         comment: "Loading content text shown while fetching data",
     )
 
-    /// Loading users text
-    public static let loadingUsers = NSLocalizedString(
-        "loading_users",
-        bundle: Bundle.module,
-        comment: "Loading users text shown while fetching users",
-    )
-
-    /// Loading products text
-    public static let loadingProducts = NSLocalizedString(
-        "loading_products",
-        bundle: Bundle.module,
-        comment: "Loading products text shown while fetching products",
-    )
-
     // MARK: - Error Messages
 
     /// Network error message
@@ -38,34 +24,6 @@ public final class DynamicListPresenter {
         comment: "Network error message when connection fails",
     )
 
-    /// Server error message
-    public static let serverError = NSLocalizedString(
-        "server_error",
-        bundle: Bundle.module,
-        comment: "Server error message when backend fails",
-    )
-
-    /// Unauthorized access message
-    public static let unauthorizedAccess = NSLocalizedString(
-        "unauthorized_access",
-        bundle: Bundle.module,
-        comment: "Unauthorized access error message",
-    )
-
-    /// Data corrupted message
-    public static let dataCorrupted = NSLocalizedString(
-        "data_corrupted",
-        bundle: Bundle.module,
-        comment: "Data corrupted error message",
-    )
-
-    /// Connection timeout message
-    public static let connectionTimeout = NSLocalizedString(
-        "connection_timeout",
-        bundle: Bundle.module,
-        comment: "Connection timeout error message",
-    )
-
     // MARK: - Error Actions
 
     /// Retry button text
@@ -73,13 +31,6 @@ public final class DynamicListPresenter {
         "retry",
         bundle: Bundle.module,
         comment: "Retry button text",
-    )
-
-    /// Cancel button text
-    public static let cancel = NSLocalizedString(
-        "cancel",
-        bundle: Bundle.module,
-        comment: "Cancel button text",
     )
 
     // MARK: - Navigation
@@ -119,43 +70,6 @@ public final class DynamicListPresenter {
         "item_id",
         bundle: Bundle.module,
         comment: "Item ID label",
-    )
-
-    /// Price label
-    public static let price = NSLocalizedString(
-        "price",
-        bundle: Bundle.module,
-        comment: "Price label",
-    )
-
-    /// Category label
-    public static let category = NSLocalizedString(
-        "category",
-        bundle: Bundle.module,
-        comment: "Category label",
-    )
-
-    /// Available status
-    public static let available = NSLocalizedString(
-        "available",
-        bundle: Bundle.module,
-        comment: "Available status text",
-    )
-
-    /// Buy now button text
-    public static let buyNow = NSLocalizedString(
-        "buy_now",
-        bundle: Bundle.module,
-        comment: "Buy now button text",
-    )
-
-    // MARK: - Error View Titles
-
-    /// Error loading title
-    public static let errorLoading = NSLocalizedString(
-        "error_loading",
-        bundle: Bundle.module,
-        comment: "Error loading title",
     )
 
     // MARK: - Default Views

@@ -132,19 +132,12 @@ if isLoading {
 
 ### Loading States
 - `loadingContent` - Carga general
-- `loadingUsers` - Carga de usuarios
-- `loadingProducts` - Carga de productos
 
 ### Error Messages
 - `networkError` - Error de red
-- `serverError` - Error del servidor
-- `unauthorizedAccess` - Acceso no autorizado
-- `dataCorrupted` - Datos corruptos
-- `connectionTimeout` - Timeout de conexión
 
 ### Error Actions
 - `retry` - Reintentar
-- `cancel` - Cancelar
 
 ### Navigation
 - `profile` - Perfil
@@ -154,13 +147,8 @@ if isLoading {
 
 ### Content Labels
 - `itemID` - ID del item
-- `price` - Precio
-- `category` - Categoría
-- `available` - Disponible
-- `buyNow` - Comprar ahora
 
-### Error View Titles
-- `errorLoading` - Error al cargar
+
 
 ### Default Views
 - `itemDetail` - Detalle del item
