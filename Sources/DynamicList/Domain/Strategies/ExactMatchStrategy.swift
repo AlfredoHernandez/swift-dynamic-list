@@ -11,6 +11,8 @@ public struct ExactMatchStrategy: SearchStrategy {
 
     public func matches(query: String, in item: Searchable) -> Bool {
         let queryLower = query.lowercased()
+        guard !queryLower.isEmpty else { return true }
+
         return item.searchKeys.contains { key in
             key.lowercased() == queryLower
         }

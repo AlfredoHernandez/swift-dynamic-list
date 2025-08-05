@@ -13,10 +13,10 @@ public struct TokenizedMatchStrategy: SearchStrategy {
         let queryTokens = query.lowercased().split(separator: " ").map(String.init)
         guard !queryTokens.isEmpty else { return true }
 
-        return item.searchKeys.contains { key in
-            let keyTokens = key.lowercased().split(separator: " ").map(String.init)
-            return queryTokens.allSatisfy { queryToken in
-                keyTokens.contains { $0.contains(queryToken) }
+        // Check if all query tokens are present in any of the search keys
+        return queryTokens.allSatisfy { queryToken in
+            item.searchKeys.contains { key in
+                key.lowercased().contains(queryToken)
             }
         }
     }
