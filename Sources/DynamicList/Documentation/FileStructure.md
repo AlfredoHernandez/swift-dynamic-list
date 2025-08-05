@@ -8,7 +8,7 @@ El código ha sido reorganizado para mejorar la mantenibilidad y separar respons
 
 ```
 Sources/DynamicList/
-├── CoreComponents/
+├── Core Components/
 │   ├── DynamicList.swift                    # Vista principal del componente
 │   ├── DynamicListViewModel.swift           # ViewModel con manejo de estado
 │   ├── ViewState.swift                      # Estados y tipos relacionados
@@ -30,7 +30,7 @@ Sources/DynamicList/
 
 ## Detalles de cada archivo
 
-### CoreComponents
+### Core Components
 
 #### `DynamicList.swift` (90 líneas)
 - **Propósito**: Vista principal del componente
