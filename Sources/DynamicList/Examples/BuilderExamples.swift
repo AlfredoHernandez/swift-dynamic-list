@@ -77,9 +77,9 @@ struct BuilderExamplesView: View {
 struct SimpleListExample: View {
     var body: some View {
         DynamicListBuilder<User>()
-            .withItems(User.sampleUsers)
-            .withTitle("Usuarios")
-            .withRowContent { user in
+            .items(User.sampleUsers)
+            .title("Usuarios")
+            .rowContent { user in
                 HStack {
                     Text(user.avatar)
                         .font(.title2)
@@ -94,7 +94,7 @@ struct SimpleListExample: View {
                 }
                 .padding(.vertical, 4)
             }
-            .withDetailContent { user in
+            .detailContent { user in
                 VStack(spacing: 20) {
                     Text(user.avatar)
                         .font(.system(size: 80))
@@ -130,9 +130,9 @@ struct ReactiveListExample: View {
 
     var body: some View {
         DynamicListBuilder<Product>()
-            .withPublisher(productsPublisher)
-            .withTitle("Productos")
-            .withRowContent { product in
+            .publisher(productsPublisher)
+            .title("Productos")
+            .rowContent { product in
                 HStack {
                     VStack(alignment: .leading) {
                         Text(product.name)
@@ -149,7 +149,7 @@ struct ReactiveListExample: View {
                 }
                 .padding(.vertical, 4)
             }
-            .withDetailContent { product in
+            .detailContent { product in
                 VStack(spacing: 20) {
                     Text("📦")
                         .font(.system(size: 80))
@@ -182,9 +182,9 @@ struct ReactiveListExample: View {
 struct SimulatedLoadingExample: View {
     var body: some View {
         DynamicListBuilder<User>()
-            .withSimulatedPublisher(User.sampleUsers, delay: 2.0)
-            .withTitle("Cargando Usuarios")
-            .withRowContent { user in
+            .simulatedPublisher(User.sampleUsers, delay: 2.0)
+            .title("Cargando Usuarios")
+            .rowContent { user in
                 HStack {
                     Text(user.avatar)
                     Text(user.name)
@@ -192,7 +192,7 @@ struct SimulatedLoadingExample: View {
                     Spacer()
                 }
             }
-            .withDetailContent { user in
+            .detailContent { user in
                 Text("Detalle de \(user.name)")
                     .navigationTitle("Usuario")
             }
@@ -214,15 +214,15 @@ struct CustomErrorExample: View {
 
     var body: some View {
         DynamicListBuilder<User>()
-            .withPublisher(failingPublisher)
-            .withTitle("Usuarios")
-            .withRowContent { user in
+            .publisher(failingPublisher)
+            .title("Usuarios")
+            .rowContent { user in
                 Text(user.name)
             }
-            .withDetailContent { user in
+            .detailContent { user in
                 Text("Detalle de \(user.name)")
             }
-            .withErrorContent { error in
+            .errorContent { error in
                 VStack(spacing: 16) {
                     Text("😞")
                         .font(.system(size: 60))
@@ -278,9 +278,9 @@ struct CompleteExample: View {
 
     var body: some View {
         DynamicListBuilder<Product>()
-            .withPublisher(mixedPublisher)
-            .withTitle("Productos Completo")
-            .withRowContent { product in
+            .publisher(mixedPublisher)
+            .title("Productos Completo")
+            .rowContent { product in
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(product.name)
@@ -302,7 +302,7 @@ struct CompleteExample: View {
                 }
                 .padding(.vertical, 8)
             }
-            .withDetailContent { product in
+            .detailContent { product in
                 ScrollView {
                     VStack(spacing: 24) {
                         Text("📦")
@@ -356,7 +356,7 @@ struct CompleteExample: View {
                 }
                 .navigationTitle("Detalle del Producto")
             }
-            .withErrorContent { error in
+            .errorContent { error in
                 VStack(spacing: 20) {
                     Text("⚠️")
                         .font(.system(size: 80))

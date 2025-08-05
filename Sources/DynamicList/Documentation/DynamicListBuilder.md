@@ -28,9 +28,9 @@ let users = [
 
 var body: some View {
     DynamicListBuilder<User>()
-        .withItems(users)
-        .withTitle("Usuarios")
-        .withRowContent { user in
+        .items(users)
+        .title("Usuarios")
+        .rowContent { user in
             HStack {
                 Text(user.name)
                 Spacer()
@@ -38,7 +38,7 @@ var body: some View {
                     .foregroundColor(.secondary)
             }
         }
-        .withDetailContent { user in
+        .detailContent { user in
             VStack {
                 Text(user.name)
                     .font(.title)
@@ -64,12 +64,12 @@ private var usersPublisher: AnyPublisher<[User], Error> {
 
 var body: some View {
     DynamicListBuilder<User>()
-        .withPublisher(usersPublisher)
-        .withTitle("Usuarios")
-        .withRowContent { user in
+        .publisher(usersPublisher)
+        .title("Usuarios")
+        .rowContent { user in
             Text(user.name)
         }
-        .withDetailContent { user in
+        .detailContent { user in
             Text("Detalle de \(user.name)")
         }
         .build()
@@ -81,12 +81,12 @@ var body: some View {
 ```swift
 var body: some View {
     DynamicListBuilder<User>()
-        .withSimulatedPublisher(users, delay: 2.0)
-        .withTitle("Cargando Usuarios")
-        .withRowContent { user in
+        .simulatedPublisher(users, delay: 2.0)
+        .title("Cargando Usuarios")
+        .rowContent { user in
             Text(user.name)
         }
-        .withDetailContent { user in
+        .detailContent { user in
             Text("Detalle de \(user.name)")
         }
         .build()
@@ -151,8 +151,8 @@ var body: some View {
 ```swift
 var body: some View {
     DynamicListBuilder<User>()
-        .withPublisher(failingPublisher)
-        .withErrorContent { error in
+        .publisher(failingPublisher)
+        .errorContent { error in
             VStack {
                 Text("😞")
                     .font(.system(size: 60))
@@ -177,7 +177,7 @@ var body: some View {
 ```swift
 var body: some View {
     DynamicListBuilder<User>()
-        .withItems(users)
+        .items(users)
         .hideNavigationBar()
         .build()
 }
@@ -208,11 +208,11 @@ DynamicList(
 ```swift
 // Una sola línea con builder
 DynamicListBuilder<User>()
-    .withPublisher(usersPublisher)
-    .withRowContent { user in
+    .publisher(usersPublisher)
+    .rowContent { user in
         Text(user.name)
     }
-    .withDetailContent { user in
+    .detailContent { user in
         Text("Detalle de \(user.name)")
     }
     .build()
@@ -252,16 +252,16 @@ VStack(spacing: 16) {
 ## 🔧 Métodos Disponibles
 
 ### Configuración de Datos
-- `withItems(_:)` - Datos estáticos
-- `withPublisher(_:)` - Publisher de Combine
-- `withSimplePublisher(_:)` - Publisher simple
-- `withSimulatedPublisher(_:delay:)` - Publisher con simulación de carga
+- `items(_:)` - Datos estáticos
+- `publisher(_:)` - Publisher de Combine
+- `simplePublisher(_:)` - Publisher simple
+- `simulatedPublisher(_:delay:)` - Publisher con simulación de carga
 
 ### Configuración de UI
-- `withRowContent(_:)` - Contenido de fila
-- `withDetailContent(_:)` - Contenido de detalle
-- `withErrorContent(_:)` - Vista de error personalizada
-- `withTitle(_:)` - Título de navegación
+- `rowContent(_:)` - Contenido de fila
+- `detailContent(_:)` - Contenido de detalle
+- `errorContent(_:)` - Vista de error personalizada
+- `title(_:)` - Título de navegación
 - `hideNavigationBar()` - Ocultar barra de navegación
 
 ### Factory Methods
@@ -282,12 +282,12 @@ VStack(spacing: 16) {
 ### Lista de Productos con API
 ```swift
 DynamicListBuilder<Product>()
-    .withPublisher(apiService.fetchProducts())
-    .withTitle("Productos")
-    .withRowContent { product in
+    .publisher(apiService.fetchProducts())
+    .title("Productos")
+    .rowContent { product in
         ProductRowView(product: product)
     }
-    .withDetailContent { product in
+    .detailContent { product in
         ProductDetailView(product: product)
     }
     .build()
@@ -296,12 +296,12 @@ DynamicListBuilder<Product>()
 ### Lista de Usuarios con Firebase
 ```swift
 DynamicListBuilder<User>()
-    .withPublisher(firebaseService.usersPublisher())
-    .withTitle("Usuarios")
-    .withRowContent { user in
+    .publisher(firebaseService.usersPublisher())
+    .title("Usuarios")
+    .rowContent { user in
         UserRowView(user: user)
     }
-    .withDetailContent { user in
+    .detailContent { user in
         UserProfileView(user: user)
     }
     .build()

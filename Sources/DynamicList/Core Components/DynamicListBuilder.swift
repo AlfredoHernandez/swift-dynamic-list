@@ -24,21 +24,21 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
 
     /// Sets static items for the list
     @discardableResult
-    public func withItems(_ items: [Item]) -> Self {
+    public func items(_ items: [Item]) -> Self {
         self.items = items
         return self
     }
 
     /// Sets a Combine publisher as the data source
     @discardableResult
-    public func withPublisher(_ publisher: AnyPublisher<[Item], Error>) -> Self {
+    public func publisher(_ publisher: AnyPublisher<[Item], Error>) -> Self {
         self.publisher = publisher
         return self
     }
 
     /// Sets a simple publisher that emits a single array of items
     @discardableResult
-    public func withSimplePublisher(_ items: [Item]) -> Self {
+    public func simplePublisher(_ items: [Item]) -> Self {
         publisher = Just(items)
             .setFailureType(to: Error.self)
             .eraseToAnyPublisher()
@@ -47,7 +47,7 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
 
     /// Sets a publisher that simulates loading with delay
     @discardableResult
-    public func withSimulatedPublisher(_ items: [Item], delay: TimeInterval = 1.0) -> Self {
+    public func simulatedPublisher(_ items: [Item], delay: TimeInterval = 1.0) -> Self {
         publisher = Just(items)
             .delay(for: .seconds(delay), scheduler: DispatchQueue.main)
             .setFailureType(to: Error.self)
@@ -59,7 +59,7 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
 
     /// Sets the row content builder
     @discardableResult
-    public func withRowContent(@ViewBuilder _ content: @escaping (Item) -> some View) -> Self {
+    public func rowContent(@ViewBuilder _ content: @escaping (Item) -> some View) -> Self {
         rowContent = { item in
             AnyView(content(item))
         }
@@ -68,7 +68,7 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
 
     /// Sets the detail content builder
     @discardableResult
-    public func withDetailContent(@ViewBuilder _ content: @escaping (Item) -> some View) -> Self {
+    public func detailContent(@ViewBuilder _ content: @escaping (Item) -> some View) -> Self {
         detailContent = { item in
             AnyView(content(item))
         }
@@ -77,7 +77,7 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
 
     /// Sets a custom error view
     @discardableResult
-    public func withErrorContent(@ViewBuilder _ content: @escaping (Error) -> some View) -> Self {
+    public func errorContent(@ViewBuilder _ content: @escaping (Error) -> some View) -> Self {
         errorContent = { error in
             AnyView(content(error))
         }
@@ -86,7 +86,7 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
 
     /// Sets the navigation title
     @discardableResult
-    public func withTitle(_ title: String) -> Self {
+    public func title(_ title: String) -> Self {
         self.title = title
         return self
     }
@@ -244,9 +244,9 @@ public extension DynamicListBuilder {
         @ViewBuilder detailContent: @escaping (Item) -> some View,
     ) -> some View {
         DynamicListBuilder<Item>()
-            .withItems(items)
-            .withRowContent(rowContent)
-            .withDetailContent(detailContent)
+            .items(items)
+            .rowContent(rowContent)
+            .detailContent(detailContent)
             .build()
     }
 
@@ -258,9 +258,9 @@ public extension DynamicListBuilder {
         @ViewBuilder detailContent: @escaping (Item) -> some View,
     ) -> some View {
         DynamicListBuilder<Item>()
-            .withPublisher(publisher)
-            .withRowContent(rowContent)
-            .withDetailContent(detailContent)
+            .publisher(publisher)
+            .rowContent(rowContent)
+            .detailContent(detailContent)
             .build()
     }
 
@@ -273,9 +273,9 @@ public extension DynamicListBuilder {
         @ViewBuilder detailContent: @escaping (Item) -> some View,
     ) -> some View {
         DynamicListBuilder<Item>()
-            .withSimulatedPublisher(items, delay: delay)
-            .withRowContent(rowContent)
-            .withDetailContent(detailContent)
+            .simulatedPublisher(items, delay: delay)
+            .rowContent(rowContent)
+            .detailContent(detailContent)
             .build()
     }
 }

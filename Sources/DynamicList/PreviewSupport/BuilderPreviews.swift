@@ -41,9 +41,9 @@ struct PreviewProduct: Identifiable, Hashable {
 
 #Preview("Simple Builder") {
     DynamicListBuilder<PreviewUser>()
-        .withItems(PreviewUser.sampleUsers)
-        .withTitle("Usuarios")
-        .withRowContent { user in
+        .items(PreviewUser.sampleUsers)
+        .title("Usuarios")
+        .rowContent { user in
             HStack {
                 Text(user.avatar)
                     .font(.title2)
@@ -58,7 +58,7 @@ struct PreviewProduct: Identifiable, Hashable {
             }
             .padding(.vertical, 4)
         }
-        .withDetailContent { user in
+        .detailContent { user in
             VStack(spacing: 20) {
                 Text(user.avatar)
                     .font(.system(size: 80))
@@ -86,9 +86,9 @@ struct PreviewProduct: Identifiable, Hashable {
         .eraseToAnyPublisher()
 
     return DynamicListBuilder<PreviewProduct>()
-        .withPublisher(productsPublisher)
-        .withTitle("Productos")
-        .withRowContent { product in
+        .publisher(productsPublisher)
+        .title("Productos")
+        .rowContent { product in
             HStack {
                 VStack(alignment: .leading) {
                     Text(product.name)
@@ -105,7 +105,7 @@ struct PreviewProduct: Identifiable, Hashable {
             }
             .padding(.vertical, 4)
         }
-        .withDetailContent { product in
+        .detailContent { product in
             VStack(spacing: 20) {
                 Text("📦")
                     .font(.system(size: 80))
@@ -133,9 +133,9 @@ struct PreviewProduct: Identifiable, Hashable {
 
 #Preview("Simulated Loading") {
     DynamicListBuilder<PreviewUser>()
-        .withSimulatedPublisher(PreviewUser.sampleUsers, delay: 2.0)
-        .withTitle("Cargando Usuarios")
-        .withRowContent { user in
+        .simulatedPublisher(PreviewUser.sampleUsers, delay: 2.0)
+        .title("Cargando Usuarios")
+        .rowContent { user in
             HStack {
                 Text(user.avatar)
                 Text(user.name)
@@ -143,7 +143,7 @@ struct PreviewProduct: Identifiable, Hashable {
                 Spacer()
             }
         }
-        .withDetailContent { user in
+        .detailContent { user in
             Text("Detalle de \(user.name)")
                 .navigationTitle("Usuario")
         }
@@ -158,15 +158,15 @@ struct PreviewProduct: Identifiable, Hashable {
     .eraseToAnyPublisher()
 
     return DynamicListBuilder<PreviewUser>()
-        .withPublisher(failingPublisher)
-        .withTitle("Usuarios")
-        .withRowContent { user in
+        .publisher(failingPublisher)
+        .title("Usuarios")
+        .rowContent { user in
             Text(user.name)
         }
-        .withDetailContent { user in
+        .detailContent { user in
             Text("Detalle de \(user.name)")
         }
-        .withErrorContent { error in
+        .errorContent { error in
             VStack(spacing: 16) {
                 Text("😞")
                     .font(.system(size: 60))
@@ -193,8 +193,8 @@ struct PreviewProduct: Identifiable, Hashable {
 
 #Preview("Default Views") {
     DynamicListBuilder<PreviewUser>()
-        .withItems(PreviewUser.sampleUsers)
-        .withTitle("Vistas por Defecto")
+        .items(PreviewUser.sampleUsers)
+        .title("Vistas por Defecto")
         .build()
 }
 
