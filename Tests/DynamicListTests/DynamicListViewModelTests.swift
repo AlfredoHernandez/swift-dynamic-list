@@ -71,54 +71,74 @@ struct DynamicListViewModelTests {
     @Test("Handles error from data provider")
     func handlesErrorFromDataProvider() {
         let testError = NSError(domain: "Test", code: 1, userInfo: nil)
+        let pts = PassthroughSubject<[TestItem], Error>()
 
-        let viewModel = DynamicListViewModel {
-            Fail<[TestItem], Error>(error: testError).eraseToAnyPublisher()
-        }
+        let viewModel = DynamicListViewModel(dataProvider: pts.eraseToAnyPublisher, scheduler: .immediate)
+        #expect(viewModel.viewState.loadingState == .loading)
 
-        // Test that the view model was initialized with a data provider
-        // The error handling happens asynchronously
-        #expect(viewModel.viewState.loadingState == .loading || viewModel.viewState.loadingState == .error(testError))
+        pts.send(completion: .failure(testError))
+        #expect(viewModel.viewState.loadingState == .error(testError))
     }
 
     @Test("Refresh calls data provider")
     func refreshCallsDataProvider() {
         var callCount = 0
         let expectedItems = [TestItem(name: "Refreshed Item")]
+        let pts = PassthroughSubject<[TestItem], Error>()
 
-        let viewModel = DynamicListViewModel {
-            callCount += 1
-            return Just(expectedItems).setFailureType(to: Error.self).eraseToAnyPublisher()
-        }
+        let viewModel = DynamicListViewModel(
+            dataProvider: {
+                callCount += 1
+                return pts.eraseToAnyPublisher()
+            },
+            scheduler: .immediate,
+        )
 
         // Verify initial load was called
         #expect(callCount == 1)
+        #expect(viewModel.viewState.loadingState == .loading)
+
+        // Send initial data
+        pts.send(expectedItems)
+        #expect(viewModel.viewState.loadingState == .loaded)
 
         // Call refresh
         viewModel.refresh()
         #expect(callCount == 2)
+        #expect(viewModel.viewState.loadingState == .loading)
+
+        // Send refreshed data
+        pts.send(expectedItems)
+        #expect(viewModel.viewState.loadingState == .loaded)
     }
 
     @Test("LoadItems changes data provider")
     func loadItemsChangesDataProvider() {
         let initialItems = [TestItem(name: "Initial")]
         let newItems = [TestItem(name: "New")]
+        let pts1 = PassthroughSubject<[TestItem], Error>()
+        let pts2 = PassthroughSubject<[TestItem], Error>()
 
-        let viewModel = DynamicListViewModel {
-            Just(initialItems)
-                .setFailureType(to: Error.self)
-                .eraseToAnyPublisher()
-        }
+        let viewModel = DynamicListViewModel(
+            dataProvider: pts1.eraseToAnyPublisher,
+            scheduler: .immediate,
+        )
+
+        #expect(viewModel.viewState.loadingState == .loading)
+
+        // Send initial data
+        pts1.send(initialItems)
+        #expect(viewModel.viewState.loadingState == .loaded)
+        #expect(viewModel.items == initialItems)
 
         // Change data provider
-        viewModel.loadItems {
-            Just(newItems)
-                .setFailureType(to: Error.self)
-                .eraseToAnyPublisher()
-        }
+        viewModel.loadItems(from: pts2.eraseToAnyPublisher)
+        #expect(viewModel.viewState.loadingState == .loading)
 
-        // Test that the view model accepted the new data provider
-        #expect(viewModel.viewState.loadingState == .loading || viewModel.viewState.loadingState == .loaded)
+        // Send new data
+        pts2.send(newItems)
+        #expect(viewModel.viewState.loadingState == .loaded)
+        #expect(viewModel.items == newItems)
     }
 
     @Test("Refresh after loadItems uses new provider")
@@ -126,31 +146,50 @@ struct DynamicListViewModelTests {
         var callCount = 0
         let initialItems = [TestItem(name: "Initial")]
         let newItems = [TestItem(name: "New")]
+        let pts1 = PassthroughSubject<[TestItem], Error>()
+        let pts2 = PassthroughSubject<[TestItem], Error>()
 
-        let viewModel = DynamicListViewModel {
-            callCount += 1
-            return Just(initialItems)
-                .setFailureType(to: Error.self)
-                .eraseToAnyPublisher()
-        }
+        let viewModel = DynamicListViewModel(
+            dataProvider: {
+                callCount += 1
+                return pts1.eraseToAnyPublisher()
+            },
+            scheduler: .immediate,
+        )
 
         // Verify initial load
         #expect(callCount == 1)
+        #expect(viewModel.viewState.loadingState == .loading)
+
+        // Send initial data
+        pts1.send(initialItems)
+        #expect(viewModel.viewState.loadingState == .loaded)
+        #expect(viewModel.items == initialItems)
 
         // Change data provider
         viewModel.loadItems {
             callCount += 1
-            return Just(newItems)
-                .setFailureType(to: Error.self)
-                .eraseToAnyPublisher()
+            return pts2.eraseToAnyPublisher()
         }
 
         // Verify new provider was used
         #expect(callCount == 2)
+        #expect(viewModel.viewState.loadingState == .loading)
+
+        // Send new data
+        pts2.send(newItems)
+        #expect(viewModel.viewState.loadingState == .loaded)
+        #expect(viewModel.items == newItems)
 
         // Refresh should use the new provider
         viewModel.refresh()
         #expect(callCount == 3)
+        #expect(viewModel.viewState.loadingState == .loading)
+
+        // Send refreshed data through new provider
+        pts2.send(newItems)
+        #expect(viewModel.viewState.loadingState == .loaded)
+        #expect(viewModel.items == newItems)
     }
 
     @Test("Data provider can capture context")
@@ -158,27 +197,32 @@ struct DynamicListViewModelTests {
         var filter = "all"
         let allItems = [TestItem(name: "All 1"), TestItem(name: "All 2")]
         let completedItems = [TestItem(name: "Completed 1")]
+        let pts = PassthroughSubject<[TestItem], Error>()
 
-        let viewModel = DynamicListViewModel {
-            if filter == "all" {
-                Just(allItems)
-                    .setFailureType(to: Error.self)
-                    .eraseToAnyPublisher()
-            } else {
-                Just(completedItems)
-                    .setFailureType(to: Error.self)
-                    .eraseToAnyPublisher()
-            }
-        }
+        let viewModel = DynamicListViewModel(
+            dataProvider: {
+                if filter == "all" {
+                    pts.eraseToAnyPublisher()
+                } else {
+                    pts.eraseToAnyPublisher()
+                }
+            },
+            scheduler: .immediate,
+        )
 
-        // Test that the view model was initialized with a data provider
-        #expect(viewModel.viewState.loadingState == .loading || viewModel.viewState.loadingState == .loaded)
+        // Send initial data with "all" filter
+        pts.send(allItems)
+        #expect(viewModel.viewState.loadingState == .loaded)
+        #expect(viewModel.items == allItems)
 
         // Change filter and refresh
         filter = "completed"
         viewModel.refresh()
+        #expect(viewModel.viewState.loadingState == .loading)
 
-        // Test that refresh was called (the data provider will use the new filter)
-        #expect(viewModel.viewState.loadingState == .loading || viewModel.viewState.loadingState == .loaded)
+        // Send new data for completed filter
+        pts.send(completedItems)
+        #expect(viewModel.viewState.loadingState == .loaded)
+        #expect(viewModel.items == completedItems)
     }
 }
