@@ -43,6 +43,9 @@ enum BuilderExample: Hashable {
     case simulatedLoading
     case customError
     case completeExample
+    case sectionedList
+    case sectionedReactive
+    case sectionedCustom
 }
 
 // MARK: - Builder Examples
@@ -59,6 +62,12 @@ struct BuilderExamplesView: View {
                     NavigationLink("Custom Error View", value: BuilderExample.customError)
                     NavigationLink("Complete Example", value: BuilderExample.completeExample)
                 }
+
+                Section("Sectioned List Examples") {
+                    NavigationLink("Sectioned List", value: BuilderExample.sectionedList)
+                    NavigationLink("Sectioned Reactive", value: BuilderExample.sectionedReactive)
+                    NavigationLink("Sectioned Custom", value: BuilderExample.sectionedCustom)
+                }
             }
             .navigationTitle("DynamicList Builder")
             .navigationDestination(for: BuilderExample.self) { example in
@@ -73,6 +82,12 @@ struct BuilderExamplesView: View {
                     CustomErrorExample()
                 case .completeExample:
                     CompleteExample()
+                case .sectionedList:
+                    SectionedListExample()
+                case .sectionedReactive:
+                    SectionedReactiveExample()
+                case .sectionedCustom:
+                    SectionedCustomExample()
                 }
             }
         }
@@ -380,6 +395,266 @@ struct CompleteExample: View {
                         .buttonStyle(.borderedProminent)
 
                         Button("Cancel") {
+                            // Cancel action
+                        }
+                        .buttonStyle(.bordered)
+                    }
+                }
+                .padding()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+            .buildWithoutNavigation()
+    }
+}
+
+// MARK: - Sectioned List Examples
+
+// MARK: - Example 6: Simple Sectioned List
+
+struct SectionedListExample: View {
+    private let sectionedUsers: [[User]] = [
+        [User(name: "Ana García", email: "ana@example.com", avatar: "👩‍💼")],
+        [User(name: "Carlos López", email: "carlos@example.com", avatar: "👨‍💻")],
+        [User(name: "María Rodríguez", email: "maria@example.com", avatar: "👩‍🎨"),
+         User(name: "Juan Pérez", email: "juan@example.com", avatar: "👨‍🔬")],
+    ]
+
+    private let sectionTitles = ["Admin", "Developer", "Design Team"]
+
+    var body: some View {
+        SectionedDynamicListBuilder<User>()
+            .arrays(sectionedUsers, titles: sectionTitles)
+            .title("Usuarios por Rol")
+            .rowContent { user in
+                HStack {
+                    Text(user.avatar)
+                        .font(.title2)
+                    VStack(alignment: .leading) {
+                        Text(user.name)
+                            .font(.headline)
+                        Text(user.email)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                }
+                .padding(.vertical, 4)
+            }
+            .detailContent { user in
+                VStack(spacing: 20) {
+                    Text(user.avatar)
+                        .font(.system(size: 80))
+
+                    Text(user.name)
+                        .font(.title)
+                        .fontWeight(.bold)
+
+                    Text(user.email)
+                        .font(.body)
+                        .foregroundColor(.secondary)
+
+                    Spacer()
+                }
+                .padding()
+                .navigationTitle("Perfil de Usuario")
+            }
+            .buildWithoutNavigation()
+    }
+}
+
+// MARK: - Example 7: Reactive Sectioned List
+
+struct SectionedReactiveExample: View {
+    private var sectionedProductsPublisher: AnyPublisher<[[Product]], Error> {
+        let sectionedProducts: [[Product]] = [
+            [Product(name: "iPhone 15", price: 999.99, category: "Electronics")],
+            [Product(name: "MacBook Pro", price: 1999.99, category: "Computers")],
+            [Product(name: "AirPods Pro", price: 249.99, category: "Audio"),
+             Product(name: "iPad Air", price: 599.99, category: "Tablets")],
+        ]
+
+        return Just(sectionedProducts)
+            .delay(for: .seconds(1.5), scheduler: DispatchQueue.main)
+            .setFailureType(to: Error.self)
+            .eraseToAnyPublisher()
+    }
+
+    var body: some View {
+        SectionedDynamicListBuilder<Product>()
+            .publisher(sectionedProductsPublisher)
+            .title("Productos por Categoría")
+            .rowContent { product in
+                HStack {
+                    VStack(alignment: .leading) {
+                        Text(product.name)
+                            .font(.headline)
+                        Text(product.category)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                    Text("$\(product.price, specifier: "%.2f")")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.blue)
+                }
+                .padding(.vertical, 4)
+            }
+            .detailContent { product in
+                VStack(spacing: 20) {
+                    Text("📦")
+                        .font(.system(size: 80))
+
+                    Text(product.name)
+                        .font(.title)
+                        .fontWeight(.bold)
+
+                    Text(product.category)
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+
+                    Text("$\(product.price, specifier: "%.2f")")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.blue)
+
+                    Spacer()
+                }
+                .padding()
+                .navigationTitle("Detalle de Producto")
+            }
+            .buildWithoutNavigation()
+    }
+}
+
+// MARK: - Example 8: Custom Sectioned List
+
+struct SectionedCustomExample: View {
+    private var mixedSectionedPublisher: AnyPublisher<[[User]], Error> {
+        // Simulate different loading scenarios
+        let random = Int.random(in: 1 ... 3)
+
+        switch random {
+        case 1:
+            let sectionedUsers: [[User]] = [
+                [User(name: "Ana García", email: "ana@example.com", avatar: "👩‍💼")],
+                [User(name: "Carlos López", email: "carlos@example.com", avatar: "👨‍💻")],
+                [User(name: "María Rodríguez", email: "maria@example.com", avatar: "👩‍🎨"),
+                 User(name: "Juan Pérez", email: "juan@example.com", avatar: "👨‍🔬")],
+            ]
+            return Just(sectionedUsers)
+                .delay(for: .seconds(1.0), scheduler: DispatchQueue.main)
+                .setFailureType(to: Error.self)
+                .eraseToAnyPublisher()
+        case 2:
+            return Fail(error: NSError(domain: "Network", code: 500, userInfo: [
+                NSLocalizedDescriptionKey: "Error al cargar usuarios por departamento",
+            ]))
+            .delay(for: .seconds(1.0), scheduler: DispatchQueue.main)
+            .eraseToAnyPublisher()
+        default:
+            return Just([[]])
+                .delay(for: .seconds(1.0), scheduler: DispatchQueue.main)
+                .setFailureType(to: Error.self)
+                .eraseToAnyPublisher()
+        }
+    }
+
+    var body: some View {
+        SectionedDynamicListBuilder<User>()
+            .publisher(mixedSectionedPublisher)
+            .title("Usuarios por Departamento")
+            .rowContent { user in
+                HStack {
+                    Text(user.avatar)
+                        .font(.title2)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(user.name)
+                            .font(.headline)
+                        Text(user.email)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.vertical, 8)
+            }
+            .detailContent { user in
+                ScrollView {
+                    VStack(spacing: 24) {
+                        Text(user.avatar)
+                            .font(.system(size: 100))
+
+                        VStack(spacing: 8) {
+                            Text(user.name)
+                                .font(.largeTitle)
+                                .fontWeight(.bold)
+                                .multilineTextAlignment(.center)
+
+                            Text(user.email)
+                                .font(.title3)
+                                .foregroundColor(.secondary)
+                        }
+
+                        VStack(spacing: 16) {
+                            HStack {
+                                Text("Email:")
+                                    .font(.headline)
+                                Spacer()
+                                Text(user.email)
+                                    .font(.body)
+                            }
+
+                            Divider()
+
+                            HStack {
+                                Text("Avatar:")
+                                    .font(.headline)
+                                Spacer()
+                                Text(user.avatar)
+                                    .font(.title2)
+                            }
+                        }
+                        .padding()
+                        .background(.regularMaterial)
+                        .cornerRadius(12)
+
+                        Button("Contactar") {
+                            // Contact action
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.large)
+
+                        Spacer()
+                    }
+                    .padding()
+                }
+                .navigationTitle("Perfil Completo")
+            }
+            .errorContent { error in
+                VStack(spacing: 20) {
+                    Text("🏢")
+                        .font(.system(size: 80))
+
+                    Text("Error al Cargar Departamentos")
+                        .font(.title)
+                        .fontWeight(.bold)
+
+                    Text(error.localizedDescription)
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+
+                    HStack(spacing: 16) {
+                        Button("Reintentar") {
+                            // Retry action
+                        }
+                        .buttonStyle(.borderedProminent)
+
+                        Button("Cancelar") {
                             // Cancel action
                         }
                         .buttonStyle(.bordered)
