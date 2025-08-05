@@ -1,220 +1,375 @@
-# 📚 Documentación de DynamicList
+# 📱 DynamicList
 
-Bienvenido a la documentación completa del paquete **DynamicList**, una solución moderna y reactiva para crear listas dinámicas en SwiftUI con soporte completo para Combine.
+Una biblioteca SwiftUI moderna y modular para crear listas dinámicas con soporte completo para datos reactivos, estados de carga, y múltiples tipos de listas.
 
-## 🎯 Visión General
+## ✨ Características Principales
 
-**DynamicList** es un paquete SwiftUI que simplifica la creación de listas dinámicas con:
-- ✅ **Integración nativa con Combine** para datos reactivos
-- ✅ **Patrón MVVM** con ViewModels observables
-- ✅ **API fluida** con patrón Builder (forma recomendada de uso)
-- ✅ **Soporte completo de localización** en múltiples idiomas
-- ✅ **Vistas de error personalizables**
-- ✅ **Navegación moderna** con NavigationStack
-- ✅ **API limpia** - Solo expone lo necesario
+### 🎯 **Listas Simples y con Secciones**
+- **DynamicList**: Listas tradicionales con items planos
+- **SectionedDynamicList**: Listas organizadas en secciones con headers/footers
 
-## 📖 Índice de Documentación
+### 🔄 **Reactividad Completa**
+- Integración nativa con Combine Publishers
+- Soporte para datos estáticos y reactivos
+- Manejo automático de estados de carga
 
-### 🚀 Guías de Inicio
+### 🎨 **UI Personalizable**
+- Contenido de filas y detalles completamente configurable
+- Vistas de error personalizables
+- Skeleton loading configurables
 
-#### [1. Integración con Combine](./CombineIntegration.md)
-- **Descripción**: Guía completa sobre cómo integrar Combine con DynamicList
-- **Contenido**:
-  - Configuración de Publishers
-  - Manejo de estados de carga
-  - Gestión de errores
-  - Ejemplos prácticos con Firebase y APIs
-- **Audiencia**: Desarrolladores que quieren usar datos reactivos
+### 🏗️ **Arquitectura Modular**
+- Componentes separados por funcionalidad
+- Código reutilizable y mantenible
+- Fácil extensión y personalización
 
-#### [2. DynamicList Builder](./DynamicListBuilder.md)
-- **Descripción**: Guía completa del patrón Builder para crear listas dinámicas
-- **Contenido**:
-  - API fluida y métodos encadenables
-  - Factory methods para casos comunes
-  - Configuración de navegación
-  - Soluciones para NavigationStack anidados
-- **Audiencia**: Desarrolladores que quieren crear listas de forma rápida y elegante
+## 🚀 Instalación
 
-### 🎨 Personalización
+### Swift Package Manager
 
-#### [3. Vistas de Error Personalizables](./CustomErrorViews.md)
-- **Descripción**: Cómo crear y personalizar vistas de error
-- **Contenido**:
-  - Vista de error por defecto
-  - Creación de vistas personalizadas
-  - Integración con el Builder
-  - Ejemplos de implementación
-- **Audiencia**: Desarrolladores que necesitan manejar estados de error
-
-#### [4. Sistema de Localización](./Localization.md)
-- **Descripción**: Guía completa del sistema de localización
-- **Contenido**:
-  - Configuración de idiomas (EN, ES-MX, FR, PT)
-  - Uso de DynamicListPresenter
-  - Creación de strings localizados
-  - Mejores prácticas
-- **Audiencia**: Desarrolladores que necesitan soporte multiidioma
-
-### 🏗️ Arquitectura
-
-#### [5. Estructura de Archivos](./FileStructure.md)
-- **Descripción**: Organización y estructura del paquete
-- **Contenido**:
-  - Estructura de directorios
-  - Organización de componentes
-  - Separación de responsabilidades
-  - Convenciones de nomenclatura
-- **Audiencia**: Desarrolladores que quieren entender la arquitectura
-
-## 🎯 Casos de Uso Comunes
-
-### Lista Simple con Datos Estáticos
-```swift
-// ✅ Forma recomendada - Usar DynamicListBuilder
-DynamicListBuilder<User>()
-    .items(users)
-    .rowContent { user in
-        Text(user.name)
-    }
-    .detailContent { user in
-        Text("Detalle de \(user.name)")
-    }
-    .build()
-```
-
-### Lista Reactiva con API
-```swift
-// ✅ Forma recomendada - Usar DynamicListBuilder
-DynamicListBuilder<Product>()
-    .publisher(apiService.fetchProducts())
-    .rowContent { product in
-        ProductRowView(product: product)
-    }
-    .detailContent { product in
-        ProductDetailView(product: product)
-    }
-    .build()
-```
-
-### Lista con Manejo de Errores
-```swift
-// ✅ Forma recomendada - Usar DynamicListBuilder
-DynamicListBuilder<User>()
-    .publisher(failingPublisher)
-    .errorContent { error in
-        CustomErrorView(error: error)
-    }
-    .build()
-```
-
-### Factory Methods (Aún Más Simple)
-```swift
-// ✅ Factory methods para casos comunes
-DynamicListBuilder.simple(
-    items: users,
-    rowContent: { user in Text(user.name) },
-    detailContent: { user in Text("Detalle de \(user.name)") }
-)
-```
-
-## 🔧 Configuración Rápida
-
-### 1. Agregar Dependencia
 ```swift
 dependencies: [
     .package(url: "https://github.com/tu-usuario/DynamicList.git", from: "1.0.0")
 ]
 ```
 
-### 2. Importar el Módulo
-```swift
-import DynamicList
-```
+### Requisitos
 
-### 3. Crear tu Primera Lista
+- iOS 17.0+
+- macOS 14.0+
+- watchOS 10.0+
+- tvOS 17.0+
+- Swift 5.9+
+
+## 📖 Uso Rápido
+
+### Lista Simple
+
 ```swift
+import SwiftUI
+import DynamicList
+
 struct ContentView: View {
+    let users = [
+        User(id: "1", name: "Ana", email: "ana@example.com"),
+        User(id: "2", name: "Bob", email: "bob@example.com")
+    ]
+    
     var body: some View {
         DynamicListBuilder<User>()
-            .items(User.sampleUsers)
+            .items(users)
+            .rowContent { user in
+                HStack {
+                    Text(user.name)
+                        .font(.headline)
+                    Text(user.email)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                }
+            }
+            .detailContent { user in
+                VStack(spacing: 20) {
+                    Text(user.name)
+                        .font(.largeTitle)
+                    Text(user.email)
+                        .font(.title2)
+                }
+            }
+            .title("Usuarios")
             .build()
     }
 }
 ```
 
-## 📱 Plataformas Soportadas
+### Lista con Secciones
 
-- **iOS**: 17.0+
-- **macOS**: 14.0+
-- **watchOS**: 10.0+
-- **tvOS**: 17.0+
+```swift
+struct SectionedContentView: View {
+    let sections = [
+        ListSection(
+            title: "Administradores",
+            items: adminUsers,
+            footer: "\(adminUsers.count) administradores"
+        ),
+        ListSection(
+            title: "Usuarios",
+            items: regularUsers,
+            footer: "\(regularUsers.count) usuarios"
+        )
+    ]
+    
+    var body: some View {
+        SectionedDynamicListBuilder<User>()
+            .sections(sections)
+            .rowContent { user in
+                HStack {
+                    Text(user.name)
+                        .font(.headline)
+                    Text(user.role)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                }
+            }
+            .detailContent { user in
+                UserDetailView(user: user)
+            }
+            .title("Usuarios por Rol")
+            .build()
+    }
+}
+```
 
-## 🛠️ Requisitos
+### Lista Reactiva
 
-- **Xcode**: 15.0+
-- **Swift**: 6.0+
-- **SwiftUI**: 5.0+
-- **Combine**: Disponible en las plataformas soportadas
+```swift
+struct ReactiveListView: View {
+    var body: some View {
+        DynamicListBuilder<User>()
+            .publisher(userService.fetchUsers())
+            .rowContent { user in UserRowView(user: user) }
+            .detailContent { user in UserDetailView(user: user) }
+            .errorContent { error in
+                VStack {
+                    Text("Error: \(error.localizedDescription)")
+                    Button("Reintentar") { /* lógica de reintento */ }
+                }
+            }
+            .skeletonContent {
+                // Skeleton personalizado
+                List(0..<5, id: \.self) { _ in
+                    UserSkeletonRow()
+                }
+            }
+            .build()
+    }
+}
+```
 
-## 🎯 Características Principales
+## 🏗️ Arquitectura Modular
 
-| Característica | Descripción | Estado |
-|----------------|-------------|--------|
-| **Combine Integration** | Soporte nativo para Publishers | ✅ Completo |
-| **Builder Pattern** | API fluida y encadenable | ✅ Completo |
-| **Localization** | Soporte multiidioma | ✅ Completo |
-| **Custom Errors** | Vistas de error personalizables | ✅ Completo |
-| **Navigation** | Soporte para NavigationStack | ✅ Completo |
-| **MVVM** | Patrón Model-View-ViewModel | ✅ Completo |
-| **Type Safety** | Completamente tipado | ✅ Completo |
-| **Clean Code** | Sin @available redundantes | ✅ Completo |
-| **API Design** | Solo expone lo necesario | ✅ Completo |
-| **Documentation** | Documentación completa con ejemplos | ✅ Completo |
+`DynamicList` está organizado en una arquitectura modular que separa claramente las responsabilidades:
 
-## 🎨 Características Principales
+```
+Core Components/
+├── Dynamic List/           # Listas simples sin secciones
+├── Sectioned Dynamic List/ # Listas con secciones
+├── Shared/                 # Componentes compartidos
+└── Default Views/          # Vistas por defecto
+```
 
-| Característica | Descripción | Estado |
-|----------------|-------------|--------|
-| **Combine Integration** | Soporte nativo para Publishers | ✅ Completo |
-| **Builder Pattern** | API fluida y encadenable | ✅ Completo |
-| **Localization** | Soporte multiidioma | ✅ Completo |
-| **Custom Errors** | Vistas de error personalizables | ✅ Completo |
-| **Navigation** | Soporte para NavigationStack | ✅ Completo |
-| **MVVM** | Patrón Model-View-ViewModel | ✅ Completo |
-| **Type Safety** | Completamente tipado | ✅ Completo |
+### 🎯 **Dynamic List**
+- `DynamicList.swift` - Vista principal
+- `DynamicListViewModel.swift` - ViewModel
+- `DynamicListBuilder.swift` - Builder pattern
+- `DynamicListViewState.swift` - Estados de vista
 
-## 🚀 Roadmap
+### 📋 **Sectioned Dynamic List**
+- `SectionedDynamicList.swift` - Vista principal
+- `SectionedDynamicListViewModel.swift` - ViewModel
+- `SectionedDynamicListBuilder.swift` - Builder pattern
+- `SectionedListViewState.swift` - Estados de vista
+- `ListSection.swift` - Modelo de datos
 
-- [ ] **Soporte para Core Data**
-- [ ] **Integración con SwiftData**
-- [ ] **Soporte para Pull-to-Refresh personalizado**
-- [ ] **Animaciones de transición**
-- [ ] **Soporte para listas anidadas**
-- [ ] **Integración con CloudKit**
+### 🔄 **Shared Components**
+- `LoadingState.swift` - Estados de carga compartidos
 
-## 🤝 Contribuir
+### 🎨 **Default Views**
+- `DefaultRowView.swift` - Vista de fila por defecto
+- `DefaultDetailView.swift` - Vista de detalle por defecto
+- `DefaultErrorView.swift` - Vista de error por defecto
+- `DefaultSkeletonView.swift` - Skeleton loading por defecto
+- `DefaultSectionedSkeletonView.swift` - Skeleton para secciones
 
-¡Las contribuciones son bienvenidas! Por favor, revisa nuestras guías de contribución:
+## 🎨 Características Avanzadas
 
-1. **Fork** el repositorio
-2. **Crea** una rama para tu feature
-3. **Implementa** tus cambios
-4. **Añade** tests
-5. **Documenta** tus cambios
-6. **Envía** un Pull Request
+### Estados de Carga Inteligentes
+
+```swift
+DynamicListBuilder<User>()
+    .publisher(userService.fetchUsers())
+    .skeletonContent {
+        // Skeleton personalizado que coincide con tu diseño
+        List(0..<8, id: \.self) { _ in
+            HStack {
+                Circle()
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(width: 50, height: 50)
+                
+                VStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.gray.opacity(0.3))
+                        .frame(height: 20)
+                        .frame(maxWidth: .infinity * 0.8)
+                    
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.gray.opacity(0.2))
+                        .frame(height: 16)
+                        .frame(maxWidth: .infinity * 0.6)
+                }
+                
+                Spacer()
+            }
+            .padding(.vertical, 8)
+        }
+        .redacted(reason: .placeholder)
+    }
+    .build()
+```
+
+### Vistas de Error Personalizadas
+
+```swift
+DynamicListBuilder<User>()
+    .publisher(userService.fetchUsers())
+    .errorContent { error in
+        VStack(spacing: 20) {
+            Image(systemName: "wifi.slash")
+                .font(.system(size: 60))
+                .foregroundColor(.red)
+            
+            Text("Error de Conexión")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+            
+            Text(error.localizedDescription)
+                .font(.body)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+            
+            Button("Reintentar") {
+                // Lógica de reintento
+            }
+            .buttonStyle(.borderedProminent)
+        }
+        .padding()
+    }
+    .build()
+```
+
+### Embedding en Navegación Existente
+
+```swift
+struct AppView: View {
+    @State private var navigationPath = NavigationPath()
+    
+    var body: some View {
+        NavigationStack(path: $navigationPath) {
+            List {
+                NavigationLink("Usuarios", value: "users")
+                NavigationLink("Productos", value: "products")
+            }
+            .navigationDestination(for: String.self) { destination in
+                switch destination {
+                case "users":
+                    DynamicListBuilder<User>()
+                        .items(users)
+                        .buildWithoutNavigation()
+                case "products":
+                    SectionedDynamicListBuilder<Product>()
+                        .sections(productSections)
+                        .buildWithoutNavigation()
+                default:
+                    EmptyView()
+                }
+            }
+        }
+    }
+}
+```
+
+## 🧪 Testing
+
+### Convención de Nombres
+
+Usa la convención `test_whenCondition_expectedBehavior()`:
+
+```swift
+@Test("when initialized with items displays correct items")
+func test_whenInitializedWithItems_displaysCorrectItems() {
+    let items = [TestItem(name: "Test")]
+    let viewModel = DynamicListViewModel(items: items)
+    
+    #expect(viewModel.viewState.items == items)
+    #expect(viewModel.viewState.loadingState == .loaded)
+}
+```
+
+### Testing con CombineSchedulers
+
+```swift
+@Test("when data provider sends items updates state")
+func test_whenDataProviderSendsItems_updatesState() {
+    let pts = PassthroughSubject<[TestItem], Error>()
+    let viewModel = DynamicListViewModel(
+        dataProvider: { pts.eraseToAnyPublisher() },
+        scheduler: .immediate
+    )
+    
+    let items = [TestItem(name: "Updated")]
+    pts.send(items)
+    
+    #expect(viewModel.viewState.items == items)
+    #expect(viewModel.viewState.loadingState == .loaded)
+}
+```
+
+## 📚 Documentación
+
+- [🚀 Guía de Desarrollador](DeveloperGuide.md) - Guía completa de uso
+- [📁 Estructura de Archivos](FileStructure.md) - Organización del código
+- [🔄 Integración con Combine](CombineIntegration.md) - Uso con publishers
+- [🎨 Vistas de Error Personalizadas](CustomErrorViews.md) - Personalización de errores
+- [🏗️ Builder Pattern](DynamicListBuilder.md) - Documentación del builder
+- [🌍 Localización](Localization.md) - Soporte multiidioma
+
+## 🎯 Mejores Prácticas
+
+### 1. **Elige el Tipo Correcto de Lista**
+- **DynamicList**: Para listas simples sin agrupación
+- **SectionedDynamicList**: Para listas con categorías o secciones
+
+### 2. **Usa el Builder Pattern**
+- Más legible y mantenible
+- API fluida y encadenable
+- Configuración por defecto automática
+
+### 3. **Maneja Estados de Carga**
+- Proporciona skeleton loading personalizado
+- Maneja errores de forma elegante
+- Usa pull-to-refresh para recargas
+
+### 4. **Optimiza Performance**
+- Usa `Identifiable` y `Hashable` en tus modelos
+- Implementa `Equatable` para optimizaciones de SwiftUI
+- Considera lazy loading para listas grandes
+
+## 🤝 Contribución
+
+¡Las contribuciones son bienvenidas! Por favor:
+
+1. Fork el repositorio
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
 
 ## 📄 Licencia
 
-Este proyecto está bajo la licencia MIT. Ver el archivo `LICENSE` para más detalles.
+Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
 
 ## 🆘 Soporte
 
-- **Issues**: [GitHub Issues](https://github.com/tu-usuario/DynamicList/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/tu-usuario/DynamicList/discussions)
-- **Documentación**: Esta documentación
+Si encuentras problemas:
+
+1. **Revisa la documentación** - La mayoría de problemas están cubiertos
+2. **Verifica compatibilidad** - Asegúrate de usar iOS 17.0+
+3. **Revisa ejemplos** - El código de ejemplo es funcional
+4. **Abre un issue** - Describe el problema con detalles
 
 ---
 
-**¿Necesitas ayuda?** Comienza con la [Guía de Integración con Combine](./CombineIntegration.md) para una introducción práctica, o revisa el [DynamicList Builder](./DynamicListBuilder.md) para aprender sobre la API fluida.
+**¿Listo para empezar?** Comienza con una [lista simple](DeveloperGuide.md#uso-básico---lista-simple) y luego avanza a [datos reactivos](DeveloperGuide.md#integración-con-combine).
 
 ¡Happy coding! 🎉 

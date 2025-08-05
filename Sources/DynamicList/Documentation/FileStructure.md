@@ -1,206 +1,237 @@
-# Estructura de Archivos del Paquete DynamicList
+# 📁 Estructura de Archivos
 
-## Descripción de la Reorganización
+Esta documentación describe la organización de archivos del paquete `DynamicList` y cómo están estructurados los diferentes componentes.
 
-El código ha sido reorganizado para mejorar la mantenibilidad y separar responsabilidades. Cada componente ahora tiene su propio archivo dedicado.
-
-## Estructura Actual
+## 🏗️ Estructura General
 
 ```
-Sources/DynamicList/
-├── Core Components/
-│   ├── DynamicList.swift                    # Vista principal del componente
-│   ├── DynamicListViewModel.swift           # ViewModel con manejo de estado
-│   ├── DynamicListBuilder.swift             # Builder para simplificar creación
-│   ├── ViewState.swift                      # Estados y tipos relacionados
-│   └── DefaultErrorView.swift               # Vista de error por defecto
-│
-├── Presentation/
-│   ├── DynamicListPresenter.swift           # Cadenas localizadas centralizadas
-│   ├── en.lproj/
-│   │   └── Localizable.strings              # Localización en inglés
-│   ├── es-MX.lproj/
-│   │   └── Localizable.strings              # Localización en español mexicano
-│   ├── fr.lproj/
-│   │   └── Localizable.strings              # Localización en francés
-│   └── pt.lproj/
-│       └── Localizable.strings              # Localización en portugués
-│
-├── PreviewSupport/
-│   ├── DynamicListPreviews.swift           # Todos los previews de SwiftUI
-│   ├── PreviewModels.swift                 # Modelos usados solo en previews
-│   └── BuilderPreviews.swift               # Previews del builder
-│
-├── Examples/
-│   ├── DataServiceExamples.swift           # Ejemplos de servicios de datos
-│   ├── ViewStateExamples.swift             # Ejemplos avanzados con ViewState
-│   ├── BuilderExamples.swift               # Ejemplos del builder
-│   └── LocalizationExamples.swift          # Ejemplos de localización
-│
-└── Documentation/
-    ├── CombineIntegration.md               # Guía de integración con Combine
-    ├── CustomErrorViews.md                 # Guía de vistas de error personalizadas
-    ├── DynamicListBuilder.md               # Guía del builder
-    ├── Localization.md                     # Guía de localización
-    └── FileStructure.md                    # Este archivo
+DynamicList/
+├── Sources/
+│   └── DynamicList/
+│       ├── Core Components/
+│       │   ├── Dynamic List/           # Componentes para listas simples
+│       │   ├── Sectioned Dynamic List/ # Componentes para listas con secciones
+│       │   ├── Shared/                 # Componentes compartidos
+│       │   └── Default Views/          # Vistas por defecto
+│       ├── Documentation/              # Documentación del proyecto
+│       ├── Presentation/               # Componentes de presentación
+│       └── PreviewSupport/             # Soporte para SwiftUI Previews
+└── Tests/
+    └── DynamicListTests/               # Tests unitarios y de UI
 ```
 
-## Detalles de cada archivo
+## 📋 Core Components
 
-### Core Components
+### 🎯 Dynamic List
+Componentes para listas dinámicas simples (sin secciones).
 
-#### `DynamicList.swift` (90 líneas)
-- **Propósito**: Vista principal del componente
-- **Contenido**:
-  - Struct principal `DynamicList<Item, RowContent, DetailContent, ErrorContent>`
-  - Dos inicializadores (con y sin vista de error personalizada)
-  - Lógica de renderizado principal
-  - Vista de error privada
-
-#### `DynamicListViewModel.swift` (118 líneas)
-- **Propósito**: ViewModel observable con integración Combine
-- **Contenido**:
-  - Clase `DynamicListViewModel<Item>`
-  - Manejo de `ListViewState`
-  - Integración con `AnyPublisher`
-  - Propiedades de conveniencia para compatibilidad hacia atrás
-
-#### `ViewState.swift` (141 líneas)
-- **Propósito**: Definición de estados y tipos relacionados
-- **Contenido**:
-  - Enum `LoadingState` (idle, loading, loaded, error)
-  - Struct `ListViewState<Item>` con propiedades de conveniencia
-  - Métodos de creación estática
-  - Propiedades computadas para estados de UI
-
-#### `DefaultErrorView.swift` (30 líneas)
-- **Propósito**: Vista de error por defecto cuando no se especifica una personalizada
-- **Contenido**:
-  - Struct `DefaultErrorView` con diseño estándar
-  - Ícono de advertencia, título y descripción del error
-  - Diseño responsive y centrado
-
-#### `DynamicListBuilder.swift` (283 líneas)
-- **Propósito**: Builder pattern para simplificar la creación de DynamicList
-- **Contenido**:
-  - Clase `DynamicListBuilder<Item>` con API fluida
-  - Métodos de configuración encadenables
-  - Factory methods para casos comunes
-  - Vistas por defecto automáticas
-
-### Presentation
-
-#### `DynamicListPresenter.swift` (198 líneas)
-- **Propósito**: Centralización de todas las cadenas localizadas
-- **Contenido**:
-  - Clase `DynamicListPresenter` con propiedades estáticas
-  - Cadenas organizadas por categorías (Loading, Error, Navigation, etc.)
-  - Soporte para 4 idiomas (EN, ES-MX, FR, PT)
-  - Comentarios descriptivos para cada cadena
-
-#### Archivos de Localización
-- **Propósito**: Traducciones para diferentes idiomas
-- **Contenido**:
-  - `en.lproj/Localizable.strings` - Inglés (idioma por defecto)
-  - `es-MX.lproj/Localizable.strings` - Español mexicano
-  - `fr.lproj/Localizable.strings` - Francés
-  - `pt.lproj/Localizable.strings` - Portugués
-
-### PreviewSupport
-
-#### `DynamicListPreviews.swift` (194 líneas)
-- **Propósito**: Todos los previews de SwiftUI para demostrar funcionalidad
-- **Contenido**:
-  - Preview con datos estáticos
-  - Preview con Combine Publisher exitoso
-  - Preview con error usando vista por defecto
-  - Preview con vista de error personalizada elaborada
-  - Preview con vista de error minimalista
-
-#### `PreviewModels.swift` (59 líneas)
-- **Propósito**: Modelos y tipos usados exclusivamente en previews
-- **Contenido**:
-  - `FruitColor` enum para ejemplos
-  - `Fruit` struct para datos de muestra
-  - `Task` struct para ejemplos simples
-  - `LoadError` y `SimpleError` para demostraciones de errores
-
-#### `BuilderPreviews.swift` (254 líneas)
-- **Propósito**: Previews específicos para el DynamicListBuilder
-- **Contenido**:
-  - Previews del builder pattern
-  - Ejemplos de factory methods
-  - Demostraciones de diferentes configuraciones
-  - Modelos de preview específicos para el builder
-
-#### `BuilderExamples.swift` (490 líneas)
-- **Propósito**: Ejemplos prácticos del DynamicListBuilder
-- **Contenido**:
-  - Ejemplos de builder pattern
-  - Casos de uso con diferentes fuentes de datos
-  - Vistas de error personalizadas
-  - Factory methods en acción
-  - Modelos de ejemplo (User, Product)
-
-## Beneficios de esta Organización
-
-### ✅ **Mantenibilidad**
-- Cada archivo tiene una responsabilidad clara
-- Fácil localizar y modificar funcionalidades específicas
-- Separación entre código de producción y código de preview
-
-### ✅ **Reutilización**
-- Componentes independientes pueden ser reutilizados
-- `DefaultErrorView` puede usarse fuera de `DynamicList`
-- `DynamicListPresenter` proporciona cadenas reutilizables
-- Modelos de preview no interfieren con código de producción
-
-### ✅ **Testabilidad**
-- ViewState es testeable de forma independiente
-- ViewModels pueden ser probados sin dependencias de UI
-- Separación clara entre lógica y presentación
-
-### ✅ **Navegabilidad**
-- Estructura clara para desarrolladores nuevos
-- Fácil localización de ejemplos y documentación
-- Archivos más pequeños y enfocados
-
-### ✅ **Build Performance**
-- Compilación más eficiente con archivos más pequeños
-- Menos dependencias entre archivos
-- Previews no afectan compilación de producción
-
-## Migración desde Versión Anterior
-
-Si estabas usando la versión anterior donde todo estaba en un solo archivo:
-
-### ✅ **Sin Cambios Requeridos**
-- La API pública sigue siendo idéntica
-- Todos los imports existentes siguen funcionando
-- Compatibilidad hacia atrás 100% garantizada
-
-### ✅ **Nuevas Funcionalidades Disponibles**
-- Vistas de error personalizables
-- ViewState para control granular
-- DynamicListBuilder para creación simplificada
-- Sistema de localización completo
-- Más ejemplos y documentación
-
-## Estructura de Imports
-
-Para usar el paquete, solo necesitas:
-
-```swift
-import DynamicList
-
-// Todos los tipos públicos están disponibles:
-// - DynamicList
-// - DynamicListViewModel  
-// - DynamicListBuilder
-// - DynamicListPresenter
-// - ListViewState
-// - LoadingState
-// - DefaultErrorView
+```
+Dynamic List/
+├── DynamicList.swift              # Vista principal para listas simples
+├── DynamicListViewModel.swift     # ViewModel para listas simples
+├── DynamicListViewState.swift     # Estados de vista para listas simples
+├── DynamicListBuilder.swift       # Builder pattern para listas simples
+├── DynamicListContent.swift       # Contenido interno de la lista
+└── DynamicListWrapper.swift       # Wrapper con NavigationStack
 ```
 
-Los archivos de preview y examples no se incluyen en el paquete compilado, solo están disponibles durante desarrollo y para referencia.
+**Características:**
+- Listas simples con items planos
+- Soporte para datos estáticos y reactivos
+- Estados de carga, error y éxito
+- Pull-to-refresh integrado
+- Navegación automática a detalles
+
+### 📋 Sectioned Dynamic List
+Componentes para listas dinámicas con secciones y headers/footers.
+
+```
+Sectioned Dynamic List/
+├── SectionedDynamicList.swift              # Vista principal para listas con secciones
+├── SectionedDynamicListViewModel.swift     # ViewModel para listas con secciones
+├── SectionedListViewState.swift            # Estados de vista para listas con secciones
+├── SectionedDynamicListBuilder.swift       # Builder pattern para listas con secciones
+├── SectionedDynamicListContent.swift       # Contenido interno de la lista con secciones
+├── SectionedDynamicListWrapper.swift       # Wrapper con NavigationStack
+└── ListSection.swift                       # Modelo de datos para secciones
+```
+
+**Características:**
+- Listas organizadas en secciones
+- Headers y footers por sección
+- Soporte para arrays de arrays `[[Item]]`
+- Misma funcionalidad que listas simples
+- Skeleton loading específico para secciones
+
+### 🔄 Shared
+Componentes compartidos entre ambos tipos de listas.
+
+```
+Shared/
+└── LoadingState.swift             # Estados de carga compartidos
+```
+
+**Características:**
+- Estados de carga reutilizables
+- Enums y tipos compartidos
+- Lógica común entre componentes
+
+### 🎨 Default Views
+Vistas por defecto y componentes de UI reutilizables.
+
+```
+Default Views/
+├── DefaultRowView.swift           # Vista de fila por defecto
+├── DefaultDetailView.swift        # Vista de detalle por defecto
+├── DefaultErrorView.swift         # Vista de error por defecto
+├── DefaultSkeletonView.swift      # Skeleton loading por defecto
+└── DefaultSectionedSkeletonView.swift # Skeleton para secciones
+```
+
+**Características:**
+- Vistas por defecto configurables
+- Skeleton loading personalizable
+- Manejo de errores consistente
+- UI reutilizable entre componentes
+
+## 📚 Documentation
+
+Documentación completa del proyecto.
+
+```
+Documentation/
+├── README.md                      # Documentación principal
+├── DeveloperGuide.md              # Guía para desarrolladores
+├── CombineIntegration.md          # Integración con Combine
+├── CustomErrorViews.md            # Vistas de error personalizadas
+├── DynamicListBuilder.md          # Documentación del Builder Pattern
+├── FileStructure.md               # Este archivo
+└── Localization.md                # Soporte para localización
+```
+
+## 🎭 Presentation
+
+Componentes de presentación y localización.
+
+```
+Presentation/
+├── DynamicListPresenter.swift     # Presentador para localización
+├── en.lproj/                      # Localización en inglés
+├── es-MX.lproj/                   # Localización en español
+├── fr.lproj/                      # Localización en francés
+└── pt.lproj/                      # Localización en portugués
+```
+
+## 👀 PreviewSupport
+
+Soporte para SwiftUI Previews y ejemplos.
+
+```
+PreviewSupport/
+├── DynamicListPreviews.swift      # Previews para listas simples
+├── BuilderExamples.swift          # Ejemplos del Builder Pattern
+├── BuilderPreviews.swift          # Previews del Builder
+└── PreviewModels.swift            # Modelos para previews
+```
+
+## 🧪 Tests
+
+Tests unitarios y de UI.
+
+```
+Tests/DynamicListTests/
+├── DynamicListTests.swift         # Tests de UI para listas simples
+├── DynamicListViewModelTests.swift # Tests unitarios para ViewModels
+└── Helpers/
+    └── TestItem.swift             # Modelo de test
+```
+
+## 🔗 Relaciones entre Componentes
+
+### Dependencias de Dynamic List
+```
+DynamicList
+├── DynamicListViewModel
+├── DynamicListViewState
+├── LoadingState (Shared)
+└── Default Views
+```
+
+### Dependencias de Sectioned Dynamic List
+```
+SectionedDynamicList
+├── SectionedDynamicListViewModel
+├── SectionedListViewState
+├── ListSection
+├── LoadingState (Shared)
+└── Default Views
+```
+
+### Componentes Compartidos
+```
+Shared/
+└── LoadingState
+    ├── DynamicList (usa)
+    └── SectionedDynamicList (usa)
+
+Default Views/
+├── DynamicList (usa)
+└── SectionedDynamicList (usa)
+```
+
+## 🎯 Principios de Organización
+
+### 1. **Separación de Responsabilidades**
+- Cada tipo de lista tiene sus propios componentes
+- Lógica específica separada de lógica compartida
+- Vistas por defecto reutilizables
+
+### 2. **Modularidad**
+- Componentes independientes y autocontenidos
+- Dependencias claras y mínimas
+- Fácil mantenimiento y extensión
+
+### 3. **Reutilización**
+- Componentes compartidos bien definidos
+- Vistas por defecto configurables
+- Estados y tipos reutilizables
+
+### 4. **Escalabilidad**
+- Estructura preparada para futuras extensiones
+- Fácil agregar nuevos tipos de listas
+- Componentes extensibles
+
+## 🚀 Beneficios de la Nueva Estructura
+
+### Para Desarrolladores
+- **Claridad**: Cada tipo de lista tiene su propia carpeta
+- **Mantenimiento**: Cambios aislados por componente
+- **Reutilización**: Componentes compartidos bien definidos
+- **Testing**: Tests organizados por funcionalidad
+
+### Para el Proyecto
+- **Escalabilidad**: Fácil agregar nuevos tipos de listas
+- **Performance**: Solo importar lo necesario
+- **Documentación**: Estructura clara y documentada
+- **Calidad**: Separación clara de responsabilidades
+
+## 📝 Convenciones de Nomenclatura
+
+### Archivos de Componentes
+- `[ComponentName].swift` - Componente principal
+- `[ComponentName]ViewModel.swift` - ViewModel del componente
+- `[ComponentName]ViewState.swift` - Estados del componente
+- `[ComponentName]Builder.swift` - Builder pattern del componente
+
+### Archivos de Soporte
+- `[ComponentName]Content.swift` - Contenido interno
+- `[ComponentName]Wrapper.swift` - Wrapper con navegación
+- `Default[ComponentName].swift` - Vistas por defecto
+
+### Carpetas
+- `Dynamic List/` - Componentes para listas simples
+- `Sectioned Dynamic List/` - Componentes para listas con secciones
+- `Shared/` - Componentes compartidos
+- `Default Views/` - Vistas por defecto
+
+Esta estructura modular permite un desarrollo más eficiente, mantenimiento más fácil y una experiencia de usuario consistente entre diferentes tipos de listas.
