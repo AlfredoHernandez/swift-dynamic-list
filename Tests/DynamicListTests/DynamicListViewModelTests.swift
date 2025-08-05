@@ -4,6 +4,7 @@
 
 @testable import DynamicList
 import Combine
+import CombineSchedulers
 import Foundation
 import Testing
 
@@ -58,16 +59,13 @@ struct DynamicListViewModelTests {
     @Test("Initializes with data provider")
     func init_withDataProvider() {
         let expectedItems = [TestItem(name: "Item 1"), TestItem(name: "Item 2")]
+        let pts = PassthroughSubject<[TestItem], Error>()
 
-        let viewModel = DynamicListViewModel {
-            Just(expectedItems)
-                .setFailureType(to: Error.self)
-                .eraseToAnyPublisher()
-        }
+        let viewModel = DynamicListViewModel(dataProvider: pts.eraseToAnyPublisher, scheduler: .immediate)
+        #expect(viewModel.viewState.loadingState == .loading)
 
-        // Test that the view model was initialized with a data provider
-        // The actual data loading happens asynchronously
-        #expect(viewModel.viewState.loadingState == .loading || viewModel.viewState.loadingState == .loaded)
+        pts.send(expectedItems)
+        #expect(viewModel.viewState.loadingState == .loaded)
     }
 
     @Test("Handles error from data provider")

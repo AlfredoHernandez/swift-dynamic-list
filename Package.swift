@@ -14,10 +14,18 @@ let package = Package(
     products: [
         .library(name: "DynamicList", targets: ["DynamicList"]),
     ],
+    dependencies: [
+        .package(url: "https://github.com/pointfreeco/combine-schedulers.git", from: "1.0.3"),
+    ],
     targets: [
         .target(
             name: "DynamicList",
-            exclude: ["Documentation/"],
+            dependencies: [
+                .product(name: "CombineSchedulers", package: "combine-schedulers"),
+            ],
+            exclude: [
+                "Documentation/",
+            ],
         ),
         .testTarget(name: "DynamicListTests", dependencies: ["DynamicList"]),
     ],

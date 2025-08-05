@@ -3,6 +3,7 @@
 //
 
 import Combine
+import CombineSchedulers
 import Foundation
 import Observation
 
@@ -15,6 +16,8 @@ final class DynamicListViewModel<Item: Identifiable & Hashable> {
     /// The current view state containing items and loading information.
     var viewState: ListViewState<Item>
 
+    var scheduler: AnySchedulerOf<DispatchQueue>
+
     /// Set to store Combine subscriptions.
     private var cancellables = Set<AnyCancellable>()
 
@@ -23,8 +26,9 @@ final class DynamicListViewModel<Item: Identifiable & Hashable> {
 
     /// Initializes the view model with an initial set of items.
     /// - Parameter items: The initial array of items. Defaults to an empty array.
-    init(items: [Item] = []) {
+    init(items: [Item] = [], scheduler: AnySchedulerOf<DispatchQueue> = .main) {
         viewState = .idle(items: items)
+        self.scheduler = scheduler
     }
 
     /// Initializes the view model with a data provider closure that returns a publisher.
@@ -36,9 +40,10 @@ final class DynamicListViewModel<Item: Identifiable & Hashable> {
     /// - Parameters:
     ///   - dataProvider: A closure that returns a Combine publisher emitting arrays of items.
     ///   - initialItems: Initial items to display while loading. Defaults to an empty array.
-    init(dataProvider: @escaping () -> AnyPublisher<[Item], Error>, initialItems: [Item] = []) {
+    init(dataProvider: @escaping () -> AnyPublisher<[Item], Error>, initialItems: [Item] = [], scheduler: AnySchedulerOf<DispatchQueue> = .main) {
         self.dataProvider = dataProvider
         viewState = .loading(items: initialItems)
+        self.scheduler = scheduler
         loadData()
     }
 
@@ -65,13 +70,11 @@ final class DynamicListViewModel<Item: Identifiable & Hashable> {
         viewState = .loading(items: viewState.items)
 
         provider()
-            .receive(on: DispatchQueue.main)
+            .receive(on: scheduler)
             .sink(
                 receiveCompletion: { [weak self] completion in
                     switch completion {
-                    case .finished:
-                        // State is already updated in receiveValue
-                        break
+                    case .finished: break
                     case let .failure(error):
                         self?.viewState = .error(error, items: self?.viewState.items ?? [])
                     }
