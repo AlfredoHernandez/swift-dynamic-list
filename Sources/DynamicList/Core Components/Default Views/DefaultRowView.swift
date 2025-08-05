@@ -8,10 +8,14 @@ import SwiftUI
 ///
 /// This view displays a simple representation of the item with its description
 /// and ID. It's used as a fallback when `rowContent` is not specified.
-struct DefaultRowView<Item: Identifiable & Hashable>: View {
-    let item: Item
+public struct DefaultRowView<Item: Identifiable & Hashable>: View {
+    private let item: Item
 
-    var body: some View {
+    public init(item: Item) {
+        self.item = item
+    }
+
+    public var body: some View {
         VStack(alignment: .leading) {
             Text(String(describing: item))
                 .font(.body)
@@ -20,5 +24,46 @@ struct DefaultRowView<Item: Identifiable & Hashable>: View {
                 .foregroundColor(.secondary)
         }
         .padding(.vertical, 4)
+    }
+}
+
+// MARK: - Preview Support
+
+private struct PreviewItem: Identifiable, Hashable {
+    let id = UUID()
+    let name: String
+    let itemDescription: String
+
+    var description: String {
+        "\(name) - \(itemDescription)"
+    }
+}
+
+// MARK: - Previews
+
+#Preview("Simple Item") {
+    List {
+        DefaultRowView(item: PreviewItem(name: "Apple", itemDescription: "Red fruit"))
+        DefaultRowView(item: PreviewItem(name: "Banana", itemDescription: "Yellow fruit"))
+        DefaultRowView(item: PreviewItem(name: "Orange", itemDescription: "Orange fruit"))
+    }
+}
+
+#Preview("Complex Item") {
+    struct ComplexItem: Identifiable, Hashable {
+        let id = UUID()
+        let title: String
+        let subtitle: String
+        let value: Int
+
+        var description: String {
+            "\(title) (\(subtitle)) - Value: \(value)"
+        }
+    }
+
+    return List {
+        DefaultRowView(item: ComplexItem(title: "User", subtitle: "Admin", value: 42))
+        DefaultRowView(item: ComplexItem(title: "Product", subtitle: "Electronics", value: 100))
+        DefaultRowView(item: ComplexItem(title: "Order", subtitle: "Pending", value: 7))
     }
 }

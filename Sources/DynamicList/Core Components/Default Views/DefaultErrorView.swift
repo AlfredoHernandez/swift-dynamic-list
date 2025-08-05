@@ -33,19 +33,40 @@ public struct DefaultErrorView: View {
 
 private enum PreviewError: Error, LocalizedError {
     case networkTimeout
+    case serverError
+    case noInternetConnection
+    case invalidData
 
     var errorDescription: String? {
         switch self {
         case .networkTimeout:
             "La conexión tardó demasiado tiempo. Verifica tu conexión a internet."
+        case .serverError:
+            "Error del servidor. Por favor, intenta más tarde."
+        case .noInternetConnection:
+            "No hay conexión a internet. Verifica tu conexión y vuelve a intentar."
+        case .invalidData:
+            "Los datos recibidos no son válidos. Contacta al soporte técnico."
         }
     }
 }
 
 // MARK: - Previews
 
-#Preview("Network error") {
+#Preview("Network Timeout") {
     DefaultErrorView(error: PreviewError.networkTimeout)
+}
+
+#Preview("Server Error") {
+    DefaultErrorView(error: PreviewError.serverError)
+}
+
+#Preview("No Internet") {
+    DefaultErrorView(error: PreviewError.noInternetConnection)
+}
+
+#Preview("Invalid Data") {
+    DefaultErrorView(error: PreviewError.invalidData)
 }
 
 #Preview("Long error message") {
@@ -58,4 +79,16 @@ private enum PreviewError: Error, LocalizedError {
     }
 
     return DefaultErrorView(error: LongError())
+}
+
+#Preview("Error in Navigation") {
+    NavigationStack {
+        DefaultErrorView(error: PreviewError.networkTimeout)
+            .navigationTitle("Error")
+    }
+}
+
+#Preview("Error with Background") {
+    DefaultErrorView(error: PreviewError.serverError)
+        .background(Color.gray.opacity(0.1))
 }

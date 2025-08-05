@@ -5,8 +5,10 @@
 import SwiftUI
 
 /// Default skeleton view for loading states
-struct DefaultSkeletonView: View {
-    var body: some View {
+public struct DefaultSkeletonView: View {
+    public init() {}
+
+    public var body: some View {
         List(0 ..< 10, id: \.self) { _ in
             HStack {
                 RoundedRectangle(cornerRadius: 4)
@@ -31,4 +33,23 @@ struct DefaultSkeletonView: View {
         }
         .redacted(reason: .placeholder)
     }
+}
+
+// MARK: - Previews
+
+#Preview("Default Skeleton") {
+    DefaultSkeletonView()
+        .navigationTitle("Cargando...")
+}
+
+#Preview("Skeleton in Navigation") {
+    NavigationStack {
+        DefaultSkeletonView()
+            .navigationTitle("Lista de Usuarios")
+    }
+}
+
+#Preview("Skeleton with Background") {
+    DefaultSkeletonView()
+        .background(Color.gray.opacity(0.1))
 }

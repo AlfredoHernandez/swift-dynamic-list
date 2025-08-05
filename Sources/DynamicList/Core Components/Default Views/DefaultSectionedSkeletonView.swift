@@ -5,8 +5,10 @@
 import SwiftUI
 
 /// Default skeleton view for sectioned loading states
-struct DefaultSectionedSkeletonView: View {
-    var body: some View {
+public struct DefaultSectionedSkeletonView: View {
+    public init() {}
+
+    public var body: some View {
         List {
             ForEach(0 ..< 3, id: \.self) { sectionIndex in
                 Section {
@@ -42,4 +44,23 @@ struct DefaultSectionedSkeletonView: View {
         }
         .redacted(reason: .placeholder)
     }
+}
+
+// MARK: - Previews
+
+#Preview("Sectioned Skeleton") {
+    DefaultSectionedSkeletonView()
+        .navigationTitle("Cargando...")
+}
+
+#Preview("Sectioned Skeleton in Navigation") {
+    NavigationStack {
+        DefaultSectionedSkeletonView()
+            .navigationTitle("Usuarios por Rol")
+    }
+}
+
+#Preview("Sectioned Skeleton with Background") {
+    DefaultSectionedSkeletonView()
+        .background(Color.gray.opacity(0.1))
 }
