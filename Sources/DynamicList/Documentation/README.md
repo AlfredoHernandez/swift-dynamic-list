@@ -142,6 +142,19 @@ struct ContentView: View {
 - **SwiftUI**: 5.0+
 - **Combine**: Disponible en las plataformas soportadas
 
+## 🎯 Características Principales
+
+| Característica | Descripción | Estado |
+|----------------|-------------|--------|
+| **Combine Integration** | Soporte nativo para Publishers | ✅ Completo |
+| **Builder Pattern** | API fluida y encadenable | ✅ Completo |
+| **Localization** | Soporte multiidioma | ✅ Completo |
+| **Custom Errors** | Vistas de error personalizables | ✅ Completo |
+| **Navigation** | Soporte para NavigationStack | ✅ Completo |
+| **MVVM** | Patrón Model-View-ViewModel | ✅ Completo |
+| **Type Safety** | Completamente tipado | ✅ Completo |
+| **Clean Code** | Sin @available redundantes | ✅ Completo |
+
 ## 🎨 Características Principales
 
 | Característica | Descripción | Estado |

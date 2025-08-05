@@ -44,7 +44,6 @@ public enum LoadingState: Equatable {
 }
 
 /// Represents the complete view state for a dynamic list
-@available(iOS 17.0, macOS 14.0, watchOS 10.0, tvOS 17.0, *)
 public struct ListViewState<Item: Identifiable & Hashable>: Equatable {
     /// The current loading state
     public let loadingState: LoadingState
@@ -84,7 +83,6 @@ public struct ListViewState<Item: Identifiable & Hashable>: Equatable {
 
 // MARK: - Convenience Properties
 
-@available(iOS 17.0, macOS 14.0, watchOS 10.0, tvOS 17.0, *)
 public extension ListViewState {
     /// Returns true if the state is loading
     var isLoading: Bool { loadingState.isLoading }

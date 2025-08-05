@@ -307,6 +307,23 @@ DynamicListBuilder<User>()
     .build()
 ```
 
+### 4. Código Limpio
+
+```swift
+// ✅ No usar @available redundantes (ya definido en Package.swift)
+struct UserListView: View {
+    var body: some View {
+        DynamicListBuilder<User>()
+            .items(users)
+            .build()
+    }
+}
+
+// ❌ Evitar redundancia
+// @available(iOS 17.0, macOS 14.0, watchOS 10.0, tvOS 17.0, *)
+// struct UserListView: View { ... }
+```
+
 ## 🧪 Testing
 
 ### Unit Tests

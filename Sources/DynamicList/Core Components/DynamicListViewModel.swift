@@ -98,7 +98,6 @@ public final class DynamicListViewModel<Item: Identifiable & Hashable> {
 
 // MARK: - Convenience Properties (for backward compatibility)
 
-@available(iOS 17.0, macOS 14.0, watchOS 10.0, tvOS 17.0, *)
 public extension DynamicListViewModel {
     /// The collection of items to be displayed.
     var items: [Item] {

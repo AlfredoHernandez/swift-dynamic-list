@@ -7,7 +7,6 @@ import SwiftUI
 
 // MARK: - Preview Data Models
 
-@available(iOS 17.0, macOS 14.0, watchOS 10.0, tvOS 17.0, *)
 struct PreviewUser: Identifiable, Hashable {
     let id = UUID()
     let name: String
@@ -22,7 +21,6 @@ struct PreviewUser: Identifiable, Hashable {
     ]
 }
 
-@available(iOS 17.0, macOS 14.0, watchOS 10.0, tvOS 17.0, *)
 struct PreviewProduct: Identifiable, Hashable {
     let id = UUID()
     let name: String
