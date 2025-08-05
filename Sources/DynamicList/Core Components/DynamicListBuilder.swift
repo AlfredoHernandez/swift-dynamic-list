@@ -155,7 +155,7 @@ private struct DynamicListWrapper<Item: Identifiable & Hashable>: View {
         NavigationStack {
             Group {
                 if viewModel.viewState.shouldShowLoading {
-                    ProgressView("Cargando...")
+                    ProgressView(DynamicListPresenter.loadingContent)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if viewModel.viewState.shouldShowError {
                     errorView
@@ -216,14 +216,14 @@ private struct DefaultDetailView<Item: Identifiable & Hashable>: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            Text("Detalle del Item")
+            Text(DynamicListPresenter.itemDetail)
                 .font(.largeTitle)
                 .fontWeight(.bold)
 
             Text("\(item)")
                 .font(.body)
 
-            Text("ID: \(item.id)")
+            Text("\(DynamicListPresenter.itemID): \(item.id)")
                 .font(.caption)
                 .foregroundColor(.secondary)
         }

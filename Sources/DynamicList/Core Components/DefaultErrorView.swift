@@ -17,7 +17,7 @@ public struct DefaultErrorView: View {
             Image(systemName: "exclamationmark.triangle")
                 .font(.largeTitle)
                 .foregroundColor(.orange)
-            Text("Error al cargar los datos")
+            Text(DynamicListPresenter.errorLoadingData)
                 .font(.headline)
             Text(error.localizedDescription)
                 .font(.caption)

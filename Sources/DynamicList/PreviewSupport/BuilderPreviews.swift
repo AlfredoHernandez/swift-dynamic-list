@@ -74,7 +74,7 @@ struct PreviewProduct: Identifiable, Hashable {
                 Spacer()
             }
             .padding()
-            .navigationTitle("Perfil")
+            .navigationTitle(DynamicListPresenter.profile)
         }
         .build()
 }
@@ -126,7 +126,7 @@ struct PreviewProduct: Identifiable, Hashable {
                 Spacer()
             }
             .padding()
-            .navigationTitle("Detalle")
+            .navigationTitle(DynamicListPresenter.detail)
         }
         .build()
 }
@@ -145,7 +145,7 @@ struct PreviewProduct: Identifiable, Hashable {
         }
         .detailContent { user in
             Text("Detalle de \(user.name)")
-                .navigationTitle("Usuario")
+                .navigationTitle(DynamicListPresenter.userDetail)
         }
         .build()
 }
@@ -180,7 +180,7 @@ struct PreviewProduct: Identifiable, Hashable {
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
 
-                Button("Reintentar") {
+                Button(DynamicListPresenter.retry) {
                     // This would trigger a refresh
                 }
                 .buttonStyle(.borderedProminent)

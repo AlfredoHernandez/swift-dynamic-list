@@ -110,7 +110,7 @@ struct SimpleListExample: View {
                     Spacer()
                 }
                 .padding()
-                .navigationTitle("Perfil")
+                .navigationTitle(DynamicListPresenter.profile)
             }
             .build()
     }
@@ -170,7 +170,7 @@ struct ReactiveListExample: View {
                     Spacer()
                 }
                 .padding()
-                .navigationTitle("Detalle")
+                .navigationTitle(DynamicListPresenter.detail)
             }
             .build()
     }
@@ -194,7 +194,7 @@ struct SimulatedLoadingExample: View {
             }
             .detailContent { user in
                 Text("Detalle de \(user.name)")
-                    .navigationTitle("Usuario")
+                    .navigationTitle(DynamicListPresenter.userDetail)
             }
             .build()
     }
@@ -236,7 +236,7 @@ struct CustomErrorExample: View {
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
 
-                    Button("Reintentar") {
+                    Button(DynamicListPresenter.retry) {
                         // This would trigger a refresh
                     }
                     .buttonStyle(.borderedProminent)
@@ -295,7 +295,7 @@ struct CompleteExample: View {
                             .font(.subheadline)
                             .fontWeight(.semibold)
                             .foregroundColor(.green)
-                        Text("Disponible")
+                        Text(DynamicListPresenter.available)
                             .font(.caption2)
                             .foregroundColor(.green)
                     }
@@ -321,7 +321,7 @@ struct CompleteExample: View {
 
                         VStack(spacing: 16) {
                             HStack {
-                                Text("Precio:")
+                                Text("\(DynamicListPresenter.price):")
                                     .font(.headline)
                                 Spacer()
                                 Text("$\(product.price, specifier: "%.2f")")
@@ -333,7 +333,7 @@ struct CompleteExample: View {
                             Divider()
 
                             HStack {
-                                Text("Categoría:")
+                                Text("\(DynamicListPresenter.category):")
                                     .font(.headline)
                                 Spacer()
                                 Text(product.category)
@@ -344,7 +344,7 @@ struct CompleteExample: View {
                         .background(Color(.systemGray6))
                         .cornerRadius(12)
 
-                        Button("Comprar Ahora") {
+                        Button(DynamicListPresenter.buyNow) {
                             // Purchase action
                         }
                         .buttonStyle(.borderedProminent)
@@ -354,14 +354,14 @@ struct CompleteExample: View {
                     }
                     .padding()
                 }
-                .navigationTitle("Detalle del Producto")
+                .navigationTitle(DynamicListPresenter.productDetail)
             }
             .errorContent { error in
                 VStack(spacing: 20) {
                     Text("⚠️")
                         .font(.system(size: 80))
 
-                    Text("Error al Cargar")
+                    Text(DynamicListPresenter.errorLoading)
                         .font(.title)
                         .fontWeight(.bold)
 
@@ -371,12 +371,12 @@ struct CompleteExample: View {
                         .multilineTextAlignment(.center)
 
                     HStack(spacing: 16) {
-                        Button("Reintentar") {
+                        Button(DynamicListPresenter.retry) {
                             // Retry action
                         }
                         .buttonStyle(.borderedProminent)
 
-                        Button("Cancelar") {
+                        Button(DynamicListPresenter.cancel) {
                             // Cancel action
                         }
                         .buttonStyle(.bordered)

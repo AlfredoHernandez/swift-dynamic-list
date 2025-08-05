@@ -1,0 +1,40 @@
+/* DynamicList Localization - Portuguese */
+
+/* Loading States */
+"loading_content" = "Carregando...";
+"loading_users" = "Carregando usuários...";
+"loading_products" = "Carregando produtos...";
+
+/* Error Messages */
+"network_error" = "Falha na conexão de rede. Verifique sua conexão com a internet.";
+"data_not_available" = "Nenhum dado disponível no momento.";
+"server_error" = "Erro do servidor. Tente novamente mais tarde.";
+"unauthorized_access" = "Você não tem permissão para acessar este recurso.";
+"data_corrupted" = "Os dados recebidos estão corrompidos e não podem ser processados.";
+"connection_timeout" = "Tempo limite de conexão excedido. Verifique sua conexão com a internet.";
+
+/* Error Actions */
+"retry" = "Tentar novamente";
+"cancel" = "Cancelar";
+"refresh" = "Atualizar";
+
+/* Navigation */
+"profile" = "Perfil";
+"detail" = "Detalhe";
+"user_detail" = "Detalhe do usuário";
+"product_detail" = "Detalhe do produto";
+
+/* Content Labels */
+"item_id" = "ID";
+"price" = "Preço";
+"category" = "Categoria";
+"available" = "Disponível";
+"buy_now" = "Comprar agora";
+
+/* Error View Titles */
+"error_loading" = "Erro ao carregar";
+"something_went_wrong" = "Ops! Algo deu errado";
+
+/* Default Views */
+"item_detail" = "Detalhe do item";
+"error_loading_data" = "Erro ao carregar dados"; 
