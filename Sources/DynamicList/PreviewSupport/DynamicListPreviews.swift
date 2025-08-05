@@ -61,9 +61,9 @@ import SwiftUI
         ])
         .delay(for: .seconds(2), scheduler: DispatchQueue.main)
         .setFailureType(to: Error.self)
-        .eraseToAnyPublisher()
+        .eraseToAnyPublisher
 
-        return DynamicListViewModel<Fruit>(publisher: publisher)
+        return DynamicListViewModel<Fruit>(dataProvider: publisher)
     }()
 
     DynamicList(
@@ -104,7 +104,9 @@ import SwiftUI
             .delay(for: .seconds(1), scheduler: DispatchQueue.main)
             .eraseToAnyPublisher()
 
-        return DynamicListViewModel<Fruit>(publisher: publisher)
+        return DynamicListViewModel<Fruit> {
+            publisher
+        }
     }()
 
     DynamicList(
@@ -124,7 +126,9 @@ import SwiftUI
             .delay(for: .seconds(1), scheduler: DispatchQueue.main)
             .eraseToAnyPublisher()
 
-        return DynamicListViewModel<Fruit>(publisher: publisher)
+        return DynamicListViewModel<Fruit> {
+            publisher
+        }
     }()
 
     DynamicList(
@@ -166,7 +170,9 @@ import SwiftUI
     @Previewable @State var viewModel: DynamicListViewModel<Fruit> = {
         let publisher = Fail<[Fruit], Error>(error: SimpleError.failed)
             .eraseToAnyPublisher()
-        return DynamicListViewModel<Fruit>(publisher: publisher)
+        return DynamicListViewModel<Fruit> {
+            publisher
+        }
     }()
 
     DynamicList(

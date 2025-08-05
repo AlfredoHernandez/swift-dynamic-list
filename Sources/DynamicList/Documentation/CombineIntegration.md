@@ -26,6 +26,7 @@
 - Compatible con datos estáticos y dinámicos
 - Cambio de fuente de datos en tiempo de ejecución
 - Manejo de errores integrado
+- **Refresh funcional**: Recarga real de datos con `refresh()`
 
 ## Uso Básico
 
@@ -38,11 +39,11 @@ let viewModel = DynamicListViewModel<Task>(
 )
 ```
 
-### Con Publisher de Combine
+### Con Data Provider (Nueva API)
 ```swift
-let viewModel = DynamicListViewModel<Task>(
-    publisher: dataService.loadTasks()
-)
+let viewModel = DynamicListViewModel<Task> {
+    dataService.loadTasks()
+}
 ```
 
 ## Ejemplos de Implementación
@@ -60,9 +61,9 @@ func loadUsers() -> AnyPublisher<[User], Error> {
 }
 
 // Uso
-let viewModel = DynamicListViewModel<User>(
-    publisher: loadUsers()
-)
+let viewModel = DynamicListViewModel<User> {
+    loadUsers()
+}
 ```
 
 ### 2. JSON Local
@@ -78,6 +79,11 @@ func loadTasksFromBundle() -> AnyPublisher<[Task], Error> {
         .decode(type: [Task].self, decoder: JSONDecoder())
         .receive(on: DispatchQueue.main)
         .eraseToAnyPublisher()
+}
+
+// Uso
+let viewModel = DynamicListViewModel<Task> {
+    loadTasksFromBundle()
 }
 ```
 
@@ -95,6 +101,11 @@ class DatabaseService {
         // Emitir nueva lista
         subject.send(updatedTasks)
     }
+}
+
+// Uso
+let viewModel = DynamicListViewModel<Task> {
+    databaseService.tasksPublisher
 }
 ```
 
@@ -116,6 +127,11 @@ func listenToTasks() -> AnyPublisher<[Task], Error> {
     
     return subject.eraseToAnyPublisher()
 }
+
+// Uso
+let viewModel = DynamicListViewModel<Task> {
+    listenToTasks()
+}
 ```
 
 ## API del ViewModel
@@ -125,16 +141,16 @@ func listenToTasks() -> AnyPublisher<[Task], Error> {
 // Con datos estáticos
 init(items: [Item] = [])
 
-// Con publisher
-init(publisher: AnyPublisher<[Item], Error>, initialItems: [Item] = [])
+// Con data provider (nueva API)
+init(dataProvider: @escaping () -> AnyPublisher<[Item], Error>, initialItems: [Item] = [])
 ```
 
 ### Métodos Públicos
 ```swift
 // Cambiar fuente de datos dinámicamente
-func loadItems(from publisher: AnyPublisher<[Item], Error>)
+func loadItems(from dataProvider: @escaping () -> AnyPublisher<[Item], Error>)
 
-// Recargar datos (para implementación futura)
+// Recargar datos (ahora funcional)
 func refresh()
 ```
 
@@ -152,7 +168,7 @@ La vista `DynamicList` maneja automáticamente:
 1. **Carga Inicial**: Muestra `ProgressView` si `isLoading` es `true` y no hay elementos
 2. **Estado de Error**: Muestra pantalla de error si hay un error y no hay elementos
 3. **Lista con Datos**: Muestra la lista normal cuando hay elementos
-4. **Pull to Refresh**: Soporte básico para refrescar (expandible)
+4. **Pull to Refresh**: Soporte completo para refrescar con datos reales
 
 ## Manejo de Errores
 
@@ -180,39 +196,59 @@ enum ServiceError: Error, LocalizedError {
 ### Cambio Dinámico de Fuente
 ```swift
 // Inicializar con una fuente
-let viewModel = DynamicListViewModel<Task>(
-    publisher: localService.loadTasks()
-)
+let viewModel = DynamicListViewModel<Task> {
+    localService.loadTasks()
+}
 
 // Cambiar a otra fuente más tarde
-viewModel.loadItems(from: firebaseService.loadTasks())
+viewModel.loadItems {
+    firebaseService.loadTasks()
+}
 ```
 
-### Filtros Dinámicos
+### Filtros Dinámicos con Parámetros
 ```swift
 // Cargar todas las tareas
-viewModel.loadItems(from: service.loadAllTasks())
+viewModel.loadItems {
+    service.loadAllTasks()
+}
 
 // Cambiar a solo completadas
-viewModel.loadItems(from: service.loadCompletedTasks())
+viewModel.loadItems {
+    service.loadCompletedTasks()
+}
+
+// Con parámetros dinámicos
+let currentFilter = TaskFilter.completed
+viewModel.loadItems {
+    service.loadTasks(filter: currentFilter)
+}
 ```
 
 ### Datos en Tiempo Real
 ```swift
-// El publisher emite automáticamente cuando cambian los datos
-let viewModel = DynamicListViewModel<Task>(
-    publisher: realtimeService.tasksStream
-)
+// El data provider se llama cada vez que se necesita refrescar
+let viewModel = DynamicListViewModel<Task> {
+    realtimeService.tasksStream
+}
 
 // La UI se actualiza automáticamente
+// Y refresh() obtiene datos frescos
+```
+
+### Refresh Funcional
+```swift
+// Ahora refresh() realmente recarga los datos
+viewModel.refresh() // Llama al data provider y obtiene datos frescos
 ```
 
 ## Consideraciones de Rendimiento
 
 1. **Threading**: Todos los publishers se ejecutan en el hilo principal automáticamente
-2. **Cancelación**: Las suscripciones anteriores se cancelan al cambiar de fuente
+2. **Cancelación**: Las suscripciones anteriores se cancelan al cambiar de fuente o refrescar
 3. **Memoria**: El ViewModel mantiene referencias débiles para evitar ciclos de retención
 4. **Actualizaciones**: Solo se actualiza la UI cuando realmente cambian los datos
+5. **Datos Frescos**: Cada `refresh()` obtiene datos actualizados del data provider
 
 ## Migración desde Versión Anterior
 
@@ -223,11 +259,24 @@ El código existente sigue funcionando sin cambios:
 let viewModel = DynamicListViewModel<Item>(items: staticItems)
 ```
 
-Para aprovechar las nuevas funcionalidades, simplemente pasa un publisher:
+Para aprovechar las nuevas funcionalidades, cambia de publisher directo a data provider:
 
 ```swift
-// Nueva funcionalidad
+// Antes
 let viewModel = DynamicListViewModel<Item>(
     publisher: yourDataService.loadItems()
 )
+
+// Ahora
+let viewModel = DynamicListViewModel<Item> {
+    yourDataService.loadItems()
+}
 ```
+
+## Ventajas de la Nueva API
+
+- ✅ **Refresh funcional**: `refresh()` ahora realmente recarga datos
+- ✅ **Más flexible**: Puedes capturar parámetros en la closure
+- ✅ **Datos frescos**: Cada refresh obtiene datos actualizados
+- ✅ **Mejor testing**: Más fácil mockear una función que un publisher
+- ✅ **Parámetros dinámicos**: El data provider puede usar variables del contexto

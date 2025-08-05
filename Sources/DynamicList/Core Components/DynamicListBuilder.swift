@@ -381,7 +381,7 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     @MainActor
     public func build() -> some View {
         let viewModel: DynamicListViewModel<Item> = if let publisher {
-            DynamicListViewModel(publisher: publisher, initialItems: items)
+            DynamicListViewModel(dataProvider: { publisher }, initialItems: items)
         } else {
             DynamicListViewModel(items: items)
         }
@@ -443,7 +443,7 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     @MainActor
     public func buildWithoutNavigation() -> some View {
         let viewModel: DynamicListViewModel<Item> = if let publisher {
-            DynamicListViewModel(publisher: publisher, initialItems: items)
+            DynamicListViewModel(dataProvider: { publisher }, initialItems: items)
         } else {
             DynamicListViewModel(items: items)
         }
