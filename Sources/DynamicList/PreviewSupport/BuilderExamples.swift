@@ -59,6 +59,7 @@ enum BuilderExample: Hashable {
     case searchableWithStrategy
     case searchableWithPlacement
     case searchableWithConfiguration
+    case sectionedWithSearch
 }
 
 // MARK: - Builder Examples
@@ -88,6 +89,7 @@ struct BuilderExamplesView: View {
                     NavigationLink("Searchable with Strategy", value: BuilderExample.searchableWithStrategy)
                     NavigationLink("Searchable with Placement", value: BuilderExample.searchableWithPlacement)
                     NavigationLink("Searchable with Configuration", value: BuilderExample.searchableWithConfiguration)
+                    NavigationLink("Sectioned with Search", value: BuilderExample.sectionedWithSearch)
                 }
             }
             .navigationTitle("DynamicList Builder")
@@ -119,6 +121,8 @@ struct BuilderExamplesView: View {
                     SearchableWithPlacementExample()
                 case .searchableWithConfiguration:
                     SearchableWithConfigurationExample()
+                case .sectionedWithSearch:
+                    SectionedWithSearchExample()
                 }
             }
         }
@@ -970,6 +974,86 @@ struct SearchableWithConfigurationExample: View {
                     Text(user.email)
                         .font(.body)
                         .foregroundColor(.secondary)
+
+                    Spacer()
+                }
+                .padding()
+                .navigationTitle(DynamicListPresenter.profile)
+            }
+            .buildWithoutNavigation()
+    }
+}
+
+// MARK: - Example: Sectioned List with Search
+
+struct SectionedWithSearchExample: View {
+    var body: some View {
+        let sections = [
+            ListSection(
+                title: "Usuarios con 'a'",
+                items: User.sampleUsers.filter { $0.name.lowercased().contains("a") },
+                footer: "Usuarios cuyo nombre contiene 'a'",
+            ),
+            ListSection(
+                title: "Usuarios con 'o'",
+                items: User.sampleUsers.filter { $0.name.lowercased().contains("o") },
+                footer: "Usuarios cuyo nombre contiene 'o'",
+            ),
+            ListSection(
+                title: "Otros usuarios",
+                items: User.sampleUsers.filter {
+                    !$0.name.lowercased().contains("a") && !$0.name.lowercased().contains("o")
+                },
+                footer: "Resto de usuarios",
+            ),
+        ]
+
+        return SectionedDynamicListBuilder<User>()
+            .sections(sections)
+            .title("Usuarios por Categoría - Con Búsqueda")
+            .searchable(
+                prompt: "Buscar usuarios...",
+                strategy: TokenizedMatchStrategy(),
+                placement: .automatic,
+            )
+            .rowContent { user in
+                HStack {
+                    Text(user.avatar)
+                        .font(.title2)
+                    VStack(alignment: .leading) {
+                        Text(user.name)
+                            .font(.headline)
+                        Text(user.email)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Text(user.email)
+                            .font(.caption2)
+                            .foregroundColor(.blue)
+                    }
+                    Spacer()
+                }
+                .padding(.vertical, 4)
+            }
+            .detailContent { user in
+                VStack(spacing: 20) {
+                    Text(user.avatar)
+                        .font(.system(size: 80))
+
+                    Text(user.name)
+                        .font(.title)
+                        .fontWeight(.bold)
+
+                    Text(user.email)
+                        .font(.body)
+                        .foregroundColor(.secondary)
+
+                    Text(user.email)
+                        .font(.headline)
+                        .foregroundColor(.blue)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(Color.blue.opacity(0.1))
+                        .cornerRadius(8)
 
                     Spacer()
                 }

@@ -115,7 +115,7 @@ struct SectionedContentView: View {
                 HStack {
                     Text(user.name)
                         .font(.headline)
-                    Text(user.role)
+                    Text(user.email)
                         .font(.caption)
                         .foregroundColor(.secondary)
                     Spacer()
@@ -125,6 +125,7 @@ struct SectionedContentView: View {
                 UserDetailView(user: user)
             }
             .title("Usuarios por Rol")
+            .searchable(prompt: "Buscar usuarios...")
             .build()
     }
 }
@@ -291,6 +292,23 @@ DynamicListBuilder<User>()
     )
     .build()
 ```
+
+#### Búsqueda en Listas con Secciones
+
+```swift
+SectionedDynamicListBuilder<User>()
+    .sections(sections)
+    .searchable(
+        prompt: "Buscar usuarios...",
+        strategy: TokenizedMatchStrategy()
+    )
+    .build()
+```
+
+La búsqueda en listas con secciones funciona de manera inteligente:
+- **Filtrado por sección**: Solo se muestran las secciones que contienen items que coinciden con la búsqueda
+- **Preservación de estructura**: Se mantienen los headers y footers de las secciones que tienen resultados
+- **Búsqueda global**: La búsqueda se aplica a todos los items de todas las secciones
 
 #### Estrategias de Búsqueda Disponibles
 

@@ -99,6 +99,8 @@ UI/Sectioned Dynamic List/
 - Listas organizadas en secciones
 - Headers y footers por sección
 - Soporte para arrays de arrays `[[Item]]`
+- Sistema de búsqueda avanzado
+- Filtrado inteligente por sección
 - Misma funcionalidad que listas simples
 - Skeleton loading específico para secciones
 
@@ -231,6 +233,7 @@ SectionedDynamicListBuilder (Public)
 ├── SectionedDynamicListViewModel (Private)
 ├── SectionedListViewState (Private)
 ├── ListSection (Private)
+├── SearchConfiguration (Private)
 ├── LoadingState (Private/Shared)
 └── Default Views (Private)
 ```

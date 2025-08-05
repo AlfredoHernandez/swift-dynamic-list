@@ -70,6 +70,9 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
     /// Whether to hide the navigation bar
     private var navigationBarHidden: Bool = false
 
+    /// Search configuration for the list
+    private var searchConfiguration: SearchConfiguration<Item>?
+
     // MARK: - Initialization
 
     /// Creates a new SectionedDynamicListBuilder instance.
@@ -242,6 +245,196 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
         return self
     }
 
+    // MARK: - Search Configuration
+
+    /// Enables search functionality with a simple prompt.
+    ///
+    /// This method enables search functionality using the default partial match strategy.
+    /// The search will work with items that conform to `Searchable` protocol.
+    ///
+    /// - Parameter prompt: The prompt text for the search field.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// SectionedDynamicListBuilder<User>()
+    ///     .sections(sections)
+    ///     .searchable(prompt: "Buscar usuarios...")
+    ///     .build()
+    /// ```
+    @discardableResult
+    public func searchable(prompt: String) -> Self {
+        searchConfiguration = SearchConfiguration.prompt(prompt)
+        return self
+    }
+
+    /// Enables search functionality with prompt and placement configuration.
+    ///
+    /// - Parameters:
+    ///   - prompt: The prompt text for the search field.
+    ///   - placement: The placement configuration for the search field.
+    /// - Returns: The builder instance for method chaining.
+    @discardableResult
+    public func searchable(
+        prompt: String,
+        placement: SearchFieldPlacement,
+    ) -> Self {
+        searchConfiguration = SearchConfiguration.prompt(prompt, placement: placement)
+        return self
+    }
+
+    /// Enables search functionality with a custom predicate.
+    ///
+    /// Use this method when you want to implement custom search logic that doesn't rely
+    /// on the `Searchable` protocol or when you need more control over the search behavior.
+    ///
+    /// - Parameters:
+    ///   - prompt: The prompt text for the search field.
+    ///   - predicate: A closure that determines if an item matches the search query.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// SectionedDynamicListBuilder<User>()
+    ///     .sections(sections)
+    ///     .searchable(
+    ///         prompt: "Buscar por nombre o email...",
+    ///         predicate: { user, query in
+    ///             user.name.lowercased().contains(query.lowercased()) ||
+    ///             user.email.lowercased().contains(query.lowercased())
+    ///         }
+    ///     )
+    ///     .build()
+    /// ```
+    @discardableResult
+    public func searchable(
+        prompt: String,
+        predicate: @escaping (Item, String) -> Bool,
+    ) -> Self {
+        searchConfiguration = SearchConfiguration(
+            prompt: prompt,
+            predicate: predicate,
+        )
+        return self
+    }
+
+    /// Enables search functionality with a custom predicate and placement.
+    ///
+    /// - Parameters:
+    ///   - prompt: The prompt text for the search field.
+    ///   - predicate: A closure that determines if an item matches the search query.
+    ///   - placement: The placement configuration for the search field.
+    /// - Returns: The builder instance for method chaining.
+    @discardableResult
+    public func searchable(
+        prompt: String,
+        predicate: @escaping (Item, String) -> Bool,
+        placement: SearchFieldPlacement,
+    ) -> Self {
+        searchConfiguration = SearchConfiguration(
+            prompt: prompt,
+            predicate: predicate,
+            placement: placement,
+        )
+        return self
+    }
+
+    /// Enables search functionality with a custom strategy.
+    ///
+    /// Use this method when you want to use a specific search strategy with items that
+    /// conform to the `Searchable` protocol.
+    ///
+    /// - Parameters:
+    ///   - prompt: The prompt text for the search field.
+    ///   - strategy: The search strategy to use for matching items.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// SectionedDynamicListBuilder<User>()
+    ///     .sections(sections)
+    ///     .searchable(
+    ///         prompt: "Buscar usuarios (coincidencia exacta)...",
+    ///         strategy: ExactMatchStrategy()
+    ///     )
+    ///     .build()
+    /// ```
+    @discardableResult
+    public func searchable(
+        prompt: String,
+        strategy: SearchStrategy,
+    ) -> Self {
+        searchConfiguration = SearchConfiguration.prompt(prompt, strategy: strategy)
+        return self
+    }
+
+    /// Enables search functionality with a custom strategy and placement.
+    ///
+    /// - Parameters:
+    ///   - prompt: The prompt text for the search field.
+    ///   - strategy: The search strategy to use for matching items.
+    ///   - placement: The placement configuration for the search field.
+    /// - Returns: The builder instance for method chaining.
+    @discardableResult
+    public func searchable(
+        prompt: String,
+        strategy: SearchStrategy,
+        placement: SearchFieldPlacement,
+    ) -> Self {
+        searchConfiguration = SearchConfiguration.prompt(prompt, strategy: strategy, placement: placement)
+        return self
+    }
+
+    /// Sets the search placement configuration.
+    ///
+    /// Use this method to configure where the search field appears without changing
+    /// other search settings. If no search configuration exists, this will create one
+    /// with default settings.
+    ///
+    /// - Parameter placement: The placement configuration for the search field.
+    /// - Returns: The builder instance for method chaining.
+    @discardableResult
+    public func searchPlacement(_ placement: SearchFieldPlacement) -> Self {
+        if let existingConfig = searchConfiguration {
+            searchConfiguration = SearchConfiguration(
+                prompt: existingConfig.prompt,
+                predicate: existingConfig.predicate,
+                strategy: existingConfig.strategy,
+                placement: placement,
+            )
+        } else {
+            searchConfiguration = SearchConfiguration(placement: placement)
+        }
+        return self
+    }
+
+    /// Sets the search configuration directly.
+    ///
+    /// Use this method when you want to set the complete search configuration
+    /// at once, rather than using individual search methods.
+    ///
+    /// - Parameter configuration: The search configuration to use.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// let searchConfig = SearchConfiguration<User>(
+    ///     prompt: "Buscar usuarios...",
+    ///     strategy: TokenizedMatchStrategy(),
+    ///     placement: .automatic
+    /// )
+    ///
+    /// SectionedDynamicListBuilder<User>()
+    ///     .sections(sections)
+    ///     .searchConfiguration(searchConfig)
+    ///     .build()
+    /// ```
+    @discardableResult
+    public func searchConfiguration(_ configuration: SearchConfiguration<Item>) -> Self {
+        searchConfiguration = configuration
+        return self
+    }
+
     // MARK: - Build Methods
 
     /// Builds a complete SectionedDynamicList with NavigationStack.
@@ -270,6 +463,7 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
             skeletonContent: skeletonContent,
             title: title,
             navigationBarHidden: navigationBarHidden,
+            searchConfiguration: searchConfiguration,
         )
     }
 
@@ -300,6 +494,7 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
             skeletonContent: skeletonContent,
             title: title,
             navigationBarHidden: navigationBarHidden,
+            searchConfiguration: searchConfiguration,
         )
     }
 }
