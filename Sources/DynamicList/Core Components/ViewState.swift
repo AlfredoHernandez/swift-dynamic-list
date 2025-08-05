@@ -5,13 +5,13 @@
 import Foundation
 
 /// Represents the different loading states of the list
-public enum LoadingState: Equatable {
+enum LoadingState: Equatable {
     case idle
     case loading
     case loaded
     case error(Error)
 
-    public static func == (lhs: LoadingState, rhs: LoadingState) -> Bool {
+    static func == (lhs: LoadingState, rhs: LoadingState) -> Bool {
         switch (lhs, rhs) {
         case (.idle, .idle), (.loading, .loading), (.loaded, .loaded):
             true
@@ -23,67 +23,67 @@ public enum LoadingState: Equatable {
     }
 
     /// Returns true if the state is loading
-    public var isLoading: Bool {
+    var isLoading: Bool {
         if case .loading = self { true } else { false }
     }
 
     /// Returns the error if the state is error, nil otherwise
-    public var error: Error? {
+    var error: Error? {
         if case let .error(error) = self { error } else { nil }
     }
 
     /// Returns true if the state has an error
-    public var hasError: Bool {
+    var hasError: Bool {
         if case .error = self { true } else { false }
     }
 
     /// Returns true if data has been loaded successfully
-    public var isLoaded: Bool {
+    var isLoaded: Bool {
         if case .loaded = self { true } else { false }
     }
 }
 
 /// Represents the complete view state for a dynamic list
-public struct ListViewState<Item: Identifiable & Hashable>: Equatable {
+struct ListViewState<Item: Identifiable & Hashable>: Equatable {
     /// The current loading state
-    public let loadingState: LoadingState
+    let loadingState: LoadingState
 
     /// The items to display in the list
-    public let items: [Item]
+    let items: [Item]
 
     /// Creates a new view state
     /// - Parameters:
     ///   - loadingState: The current loading state
     ///   - items: The items to display
-    public init(loadingState: LoadingState, items: [Item]) {
+    init(loadingState: LoadingState, items: [Item]) {
         self.loadingState = loadingState
         self.items = items
     }
 
     /// Creates an idle state with the given items
-    public static func idle(items: [Item] = []) -> Self {
+    static func idle(items: [Item] = []) -> Self {
         Self(loadingState: .idle, items: items)
     }
 
     /// Creates a loading state with the given items (useful for showing previous data while loading new data)
-    public static func loading(items: [Item] = []) -> Self {
+    static func loading(items: [Item] = []) -> Self {
         Self(loadingState: .loading, items: items)
     }
 
     /// Creates a loaded state with the given items
-    public static func loaded(items: [Item]) -> Self {
+    static func loaded(items: [Item]) -> Self {
         Self(loadingState: .loaded, items: items)
     }
 
     /// Creates an error state with the given error and items
-    public static func error(_ error: Error, items: [Item] = []) -> Self {
+    static func error(_ error: Error, items: [Item] = []) -> Self {
         Self(loadingState: .error(error), items: items)
     }
 }
 
 // MARK: - Convenience Properties
 
-public extension ListViewState {
+extension ListViewState {
     /// Returns true if the state is loading
     var isLoading: Bool { loadingState.isLoading }
 

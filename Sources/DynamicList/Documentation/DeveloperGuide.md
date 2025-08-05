@@ -343,6 +343,26 @@ struct UserListView: View {
 // struct UserListView: View { ... }
 ```
 
+### 5. API Pública vs Interna
+
+```swift
+// ✅ API Pública - Lo que debes usar
+DynamicListBuilder<User>()           // Builder principal
+DynamicListPresenter                 // Localización
+DefaultErrorView                     // Vista de error por defecto
+
+// ❌ API Interna - No usar directamente
+// DynamicList<Item, RowContent, DetailContent, ErrorContent>  // Vista base
+// DynamicListViewModel<Item>                                  // ViewModel interno
+// ListViewState<Item>                                         // Estado interno
+```
+
+#### ¿Por qué esta separación?
+
+- **API Pública**: Diseñada para ser usada por desarrolladores
+- **API Interna**: Implementación que puede cambiar sin romper compatibilidad
+- **Flexibilidad**: Podemos mejorar la implementación sin afectar el código del usuario
+
 ## 🧪 Testing
 
 ### Unit Tests

@@ -11,16 +11,16 @@ import Observation
 /// This view model uses the Observation framework to allow SwiftUI views to automatically
 /// track changes to the view state. It also supports reactive data loading using Combine publishers.
 @Observable
-public final class DynamicListViewModel<Item: Identifiable & Hashable> {
+final class DynamicListViewModel<Item: Identifiable & Hashable> {
     /// The current view state containing items and loading information.
-    public var viewState: ListViewState<Item>
+    var viewState: ListViewState<Item>
 
     /// Set to store Combine subscriptions.
     private var cancellables = Set<AnyCancellable>()
 
     /// Initializes the view model with an initial set of items.
     /// - Parameter items: The initial array of items. Defaults to an empty array.
-    public init(items: [Item] = []) {
+    init(items: [Item] = []) {
         viewState = .idle(items: items)
     }
 
@@ -32,7 +32,7 @@ public final class DynamicListViewModel<Item: Identifiable & Hashable> {
     /// - Parameters:
     ///   - publisher: A Combine publisher that emits arrays of items.
     ///   - initialItems: Initial items to display while loading. Defaults to an empty array.
-    public init(publisher: AnyPublisher<[Item], Error>, initialItems: [Item] = []) {
+    init(publisher: AnyPublisher<[Item], Error>, initialItems: [Item] = []) {
         viewState = .loading(items: initialItems)
 
         publisher
@@ -59,7 +59,7 @@ public final class DynamicListViewModel<Item: Identifiable & Hashable> {
     /// This method allows you to change the data source dynamically or refresh the data.
     ///
     /// - Parameter publisher: A new publisher that emits arrays of items.
-    public func loadItems(from publisher: AnyPublisher<[Item], Error>) {
+    func loadItems(from publisher: AnyPublisher<[Item], Error>) {
         // Cancel previous subscriptions
         cancellables.removeAll()
 
@@ -86,7 +86,7 @@ public final class DynamicListViewModel<Item: Identifiable & Hashable> {
     }
 
     /// Reloads the data by resubscribing to the current publisher if available.
-    public func refresh() {
+    func refresh() {
         // This would be implemented if we stored the original publisher
         // For now, this method exists for future extensibility
         // We could set the state to loading to show refresh indicator
@@ -98,7 +98,7 @@ public final class DynamicListViewModel<Item: Identifiable & Hashable> {
 
 // MARK: - Convenience Properties (for backward compatibility)
 
-public extension DynamicListViewModel {
+extension DynamicListViewModel {
     /// The collection of items to be displayed.
     var items: [Item] {
         viewState.items

@@ -7,10 +7,11 @@ Bienvenido a la documentación completa del paquete **DynamicList**, una soluci�
 **DynamicList** es un paquete SwiftUI que simplifica la creación de listas dinámicas con:
 - ✅ **Integración nativa con Combine** para datos reactivos
 - ✅ **Patrón MVVM** con ViewModels observables
-- ✅ **API fluida** con patrón Builder
+- ✅ **API fluida** con patrón Builder (forma recomendada de uso)
 - ✅ **Soporte completo de localización** en múltiples idiomas
 - ✅ **Vistas de error personalizables**
 - ✅ **Navegación moderna** con NavigationStack
+- ✅ **API limpia** - Solo expone lo necesario
 
 ## 📖 Índice de Documentación
 
@@ -69,6 +70,7 @@ Bienvenido a la documentación completa del paquete **DynamicList**, una soluci�
 
 ### Lista Simple con Datos Estáticos
 ```swift
+// ✅ Forma recomendada - Usar DynamicListBuilder
 DynamicListBuilder<User>()
     .items(users)
     .rowContent { user in
@@ -82,6 +84,7 @@ DynamicListBuilder<User>()
 
 ### Lista Reactiva con API
 ```swift
+// ✅ Forma recomendada - Usar DynamicListBuilder
 DynamicListBuilder<Product>()
     .publisher(apiService.fetchProducts())
     .rowContent { product in
@@ -95,12 +98,23 @@ DynamicListBuilder<Product>()
 
 ### Lista con Manejo de Errores
 ```swift
+// ✅ Forma recomendada - Usar DynamicListBuilder
 DynamicListBuilder<User>()
     .publisher(failingPublisher)
     .errorContent { error in
         CustomErrorView(error: error)
     }
     .build()
+```
+
+### Factory Methods (Aún Más Simple)
+```swift
+// ✅ Factory methods para casos comunes
+DynamicListBuilder.simple(
+    items: users,
+    rowContent: { user in Text(user.name) },
+    detailContent: { user in Text("Detalle de \(user.name)") }
+)
 ```
 
 ## 🔧 Configuración Rápida
@@ -154,6 +168,7 @@ struct ContentView: View {
 | **MVVM** | Patrón Model-View-ViewModel | ✅ Completo |
 | **Type Safety** | Completamente tipado | ✅ Completo |
 | **Clean Code** | Sin @available redundantes | ✅ Completo |
+| **API Design** | Solo expone lo necesario | ✅ Completo |
 
 ## 🎨 Características Principales
 

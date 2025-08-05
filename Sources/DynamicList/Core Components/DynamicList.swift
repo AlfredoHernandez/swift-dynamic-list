@@ -10,7 +10,7 @@ import SwiftUI
 /// This view is generic over the type of item, the content of the row, the content of the detail view,
 /// and optionally the content of the error view.
 /// The `Item` type must conform to the `Identifiable` and `Hashable` protocols.
-public struct DynamicList<Item, RowContent, DetailContent, ErrorContent>: View where Item: Identifiable & Hashable, RowContent: View, DetailContent: View,
+struct DynamicList<Item, RowContent, DetailContent, ErrorContent>: View where Item: Identifiable & Hashable, RowContent: View, DetailContent: View,
     ErrorContent: View
 {
     @State private var viewModel: DynamicListViewModel<Item>
@@ -25,7 +25,7 @@ public struct DynamicList<Item, RowContent, DetailContent, ErrorContent>: View w
     ///   - rowContent: A view builder that creates the view for each row in the list.
     ///   - detailContent: A view builder that creates the detail view for an item.
     ///   - errorContent: A view builder that creates the error view when loading fails.
-    public init(
+    init(
         viewModel: DynamicListViewModel<Item>,
         @ViewBuilder rowContent: @escaping (Item) -> RowContent,
         @ViewBuilder detailContent: @escaping (Item) -> DetailContent,
@@ -43,7 +43,7 @@ public struct DynamicList<Item, RowContent, DetailContent, ErrorContent>: View w
     ///   - viewModel: The view model that contains the items to display.
     ///   - rowContent: A view builder that creates the view for each row in the list.
     ///   - detailContent: A view builder that creates the detail view for an item.
-    public init(
+    init(
         viewModel: DynamicListViewModel<Item>,
         @ViewBuilder rowContent: @escaping (Item) -> RowContent,
         @ViewBuilder detailContent: @escaping (Item) -> DetailContent,
@@ -54,7 +54,7 @@ public struct DynamicList<Item, RowContent, DetailContent, ErrorContent>: View w
         errorContent = nil
     }
 
-    public var body: some View {
+    var body: some View {
         NavigationStack {
             Group {
                 if viewModel.viewState.shouldShowLoading {
