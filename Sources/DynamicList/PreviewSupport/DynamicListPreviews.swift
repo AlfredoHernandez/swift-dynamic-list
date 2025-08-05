@@ -333,3 +333,178 @@ import SwiftUI
         }
         .build()
 }
+
+#Preview("Sectioned List - Static") {
+    SectionedDynamicListBuilder<Fruit>()
+        .sections([
+            ListSection(
+                title: "Frutas Rojas",
+                items: [
+                    Fruit(name: "Manzana", symbol: "🍎", color: .red),
+                    Fruit(name: "Sandía", symbol: "🍉", color: .red),
+                    Fruit(name: "Fresa", symbol: "🍓", color: .red),
+                ],
+                footer: "3 frutas rojas disponibles",
+            ),
+            ListSection(
+                title: "Frutas Verdes",
+                items: [
+                    Fruit(name: "Pera", symbol: "🍐", color: .green),
+                    Fruit(name: "Uva Verde", symbol: "🍇", color: .green),
+                ],
+                footer: "2 frutas verdes disponibles",
+            ),
+            ListSection(
+                title: "Frutas Amarillas",
+                items: [
+                    Fruit(name: "Plátano", symbol: "🍌", color: .yellow),
+                    Fruit(name: "Piña", symbol: "🍍", color: .yellow),
+                    Fruit(name: "Limón", symbol: "🍋", color: .yellow),
+                ],
+                footer: "3 frutas amarillas disponibles",
+            ),
+        ])
+        .rowContent { fruit in
+            HStack {
+                Text(fruit.symbol)
+                    .font(.title2)
+                VStack(alignment: .leading) {
+                    Text(fruit.name)
+                        .font(.headline)
+                    Text("Color: \(String(describing: fruit.color))")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+            }
+            .padding(.vertical, 4)
+        }
+        .detailContent { fruit in
+            VStack(spacing: 20) {
+                Text(fruit.symbol)
+                    .font(.system(size: 100))
+                Text(fruit.name)
+                    .font(.largeTitle)
+                    .bold()
+                Text("Color: \(String(describing: fruit.color))")
+                    .font(.headline)
+                    .foregroundColor(.secondary)
+            }
+            .navigationTitle("Detalles")
+            #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+            #endif
+        }
+        .title("Frutas por Color")
+        .build()
+}
+
+#Preview("Sectioned List - Arrays") {
+    SectionedDynamicListBuilder<Fruit>()
+        .arrays(
+            [
+                [
+                    Fruit(name: "Manzana", symbol: "🍎", color: .red),
+                    Fruit(name: "Sandía", symbol: "🍉", color: .red),
+                ],
+                [
+                    Fruit(name: "Pera", symbol: "🍐", color: .green),
+                ],
+                [
+                    Fruit(name: "Plátano", symbol: "🍌", color: .yellow),
+                    Fruit(name: "Piña", symbol: "🍍", color: .yellow),
+                    Fruit(name: "Limón", symbol: "🍋", color: .yellow),
+                ],
+            ],
+            titles: ["Rojas", "Verdes", "Amarillas"],
+        )
+        .rowContent { fruit in
+            HStack {
+                Text(fruit.symbol)
+                    .font(.title2)
+                Text(fruit.name)
+                    .font(.headline)
+                Spacer()
+            }
+            .padding(.vertical, 4)
+        }
+        .detailContent { fruit in
+            VStack(spacing: 20) {
+                Text(fruit.symbol)
+                    .font(.system(size: 100))
+                Text(fruit.name)
+                    .font(.largeTitle)
+                    .bold()
+                Text("Color: \(String(describing: fruit.color))")
+                    .font(.headline)
+                    .foregroundColor(.secondary)
+            }
+            .navigationTitle("Detalles")
+            #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+            #endif
+        }
+        .title("Frutas por Categoría")
+        .build()
+}
+
+#Preview("Sectioned List - Reactive") {
+    SectionedDynamicListBuilder<Fruit>()
+        .publisher(
+            Just([
+                [
+                    Fruit(name: "Manzana", symbol: "🍎", color: .red),
+                    Fruit(name: "Sandía", symbol: "🍉", color: .red),
+                    Fruit(name: "Fresa", symbol: "🍓", color: .red),
+                ],
+                [
+                    Fruit(name: "Pera", symbol: "🍐", color: .green),
+                    Fruit(name: "Uva Verde", symbol: "🍇", color: .green),
+                ],
+                [
+                    Fruit(name: "Plátano", symbol: "🍌", color: .yellow),
+                    Fruit(name: "Piña", symbol: "🍍", color: .yellow),
+                    Fruit(name: "Limón", symbol: "🍋", color: .yellow),
+                ],
+            ])
+            .delay(for: .seconds(2), scheduler: DispatchQueue.main)
+            .setFailureType(to: Error.self)
+            .eraseToAnyPublisher(),
+        )
+        .rowContent { fruit in
+            HStack {
+                Text(fruit.symbol)
+                    .font(.title2)
+                VStack(alignment: .leading) {
+                    Text(fruit.name)
+                        .font(.headline)
+                    Text("Color: \(String(describing: fruit.color))")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+            }
+            .padding(.vertical, 4)
+        }
+        .detailContent { fruit in
+            VStack(spacing: 20) {
+                Text(fruit.symbol)
+                    .font(.system(size: 100))
+                Text(fruit.name)
+                    .font(.largeTitle)
+                    .bold()
+                Text("Color: \(String(describing: fruit.color))")
+                    .font(.headline)
+                    .foregroundColor(.secondary)
+            }
+            .navigationTitle("Detalles")
+            #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+            #endif
+        }
+        .skeletonContent {
+            DefaultSectionedSkeletonView()
+        }
+        .title("Frutas por Color (Reactivo)")
+        .build()
+}
