@@ -1,0 +1,45 @@
+//
+//  Copyright © 2025 Jesús Alfredo Hernández Alarcón. All rights reserved.
+//
+
+import SwiftUI
+
+/// Default skeleton view for sectioned loading states
+struct DefaultSectionedSkeletonView: View {
+    var body: some View {
+        List {
+            ForEach(0 ..< 3, id: \.self) { sectionIndex in
+                Section {
+                    ForEach(0 ..< (sectionIndex + 2), id: \.self) { _ in
+                        HStack {
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(Color.gray.opacity(0.3))
+                                .frame(width: 40, height: 40)
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                RoundedRectangle(cornerRadius: 2)
+                                    .fill(Color.gray.opacity(0.3))
+                                    .frame(height: 16)
+                                    .frame(maxWidth: .infinity)
+
+                                RoundedRectangle(cornerRadius: 2)
+                                    .fill(Color.gray.opacity(0.2))
+                                    .frame(height: 12)
+                                    .frame(maxWidth: .infinity * 0.7)
+                            }
+
+                            Spacer()
+                        }
+                        .padding(.vertical, 4)
+                    }
+                } header: {
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(Color.gray.opacity(0.4))
+                        .frame(height: 20)
+                        .frame(maxWidth: .infinity * 0.5)
+                }
+            }
+        }
+        .redacted(reason: .placeholder)
+    }
+}
