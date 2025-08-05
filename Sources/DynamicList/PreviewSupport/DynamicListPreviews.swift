@@ -198,3 +198,56 @@ import SwiftUI
         },
     )
 }
+
+#Preview("Skeleton Loading") {
+    @Previewable @State var viewModel: DynamicListViewModel<Fruit> = {
+        // Simula una carga lenta para mostrar skeleton
+        let publisher = Just([
+            Fruit(name: "Sandía", symbol: "🍉", color: .red),
+            Fruit(name: "Pera", symbol: "🍐", color: .green),
+            Fruit(name: "Manzana", symbol: "🍎", color: .red),
+        ])
+        .delay(for: .seconds(3), scheduler: DispatchQueue.main)
+        .setFailureType(to: Error.self)
+        .eraseToAnyPublisher()
+
+        return DynamicListViewModel<Fruit> {
+            publisher
+        }
+    }()
+
+    DynamicList(
+        viewModel: viewModel,
+        rowContent: { fruit in
+            HStack {
+                Text(fruit.symbol)
+                    .font(.title2)
+                VStack(alignment: .leading) {
+                    Text(fruit.name)
+                        .font(.headline)
+                    Text("Color: \(String(describing: fruit.color))")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+            }
+            .padding(.vertical, 4)
+        },
+        detailContent: { fruit in
+            VStack(spacing: 20) {
+                Text(fruit.symbol)
+                    .font(.system(size: 100))
+                Text(fruit.name)
+                    .font(.largeTitle)
+                    .bold()
+                Text("Color: \(String(describing: fruit.color))")
+                    .font(.headline)
+                    .foregroundColor(.secondary)
+            }
+            .navigationTitle("Detalles")
+            #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+            #endif
+        },
+    )
+}

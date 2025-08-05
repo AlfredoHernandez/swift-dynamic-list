@@ -272,6 +272,87 @@ Just(users)
     .eraseToAnyPublisher()
 ```
 
+## 🎨 Estados Visuales y Skeleton Loading
+
+### Estados de Carga Inteligentes
+
+`DynamicList` maneja automáticamente diferentes estados de carga para una mejor experiencia de usuario:
+
+#### 1. **Skeleton Loading (Carga Inicial)**
+Cuando no hay datos y está cargando, muestra un skeleton con placeholders:
+
+```swift
+// Se muestra automáticamente cuando:
+// - viewModel.viewState.shouldShowLoading == true
+// - No hay items disponibles
+```
+
+#### 2. **Redacted Content (Contenido con Placeholder)**
+Cuando hay datos pero está recargando, aplica `.redacted(reason: .placeholder)`:
+
+```swift
+// Se muestra automáticamente cuando:
+// - Hay items en la lista
+// - viewModel.viewState.isLoading == true
+```
+
+#### 3. **Contenido Normal**
+Cuando los datos están cargados y disponibles:
+
+```swift
+// Se muestra cuando:
+// - Hay items en la lista
+// - viewModel.viewState.isLoading == false
+```
+
+### Personalización del Skeleton
+
+El skeleton por defecto incluye:
+- **5 filas de placeholder**
+- **Avatar circular** (40x40)
+- **Título y subtítulo** con diferentes anchos
+- **Animación de placeholder** nativa de SwiftUI
+
+### Ejemplo de Uso
+
+```swift
+struct UserListView: View {
+    @StateObject private var viewModel = UserListViewModel()
+    
+    var body: some View {
+        DynamicListBuilder<User>()
+            .publisher(viewModel.usersPublisher)
+            .rowContent { user in
+                HStack {
+                    AsyncImage(url: user.avatarURL) { image in
+                        image.resizable()
+                    } placeholder: {
+                        Circle()
+                            .fill(Color.gray.opacity(0.3))
+                    }
+                    .frame(width: 40, height: 40)
+                    
+                    VStack(alignment: .leading) {
+                        Text(user.name)
+                            .font(.headline)
+                        Text(user.email)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Spacer()
+                }
+            }
+            .build()
+    }
+}
+```
+
+**Resultado**:
+- **Carga inicial**: Skeleton con placeholders
+- **Refresh**: Contenido real con `.redacted`
+- **Cargado**: Contenido normal sin efectos
+
 ## 📊 Mejores Prácticas
 
 ### 1. Organización del Código
