@@ -361,6 +361,68 @@ DynamicListBuilder<User>()
     .build()
 ```
 
+### Búsqueda con Placement Personalizado
+
+Para controlar cuándo y dónde aparece la barra de búsqueda:
+
+```swift
+DynamicListBuilder<User>()
+    .items(users)
+    .searchable(
+        prompt: "Buscar usuarios...",
+        placement: .navigationBarDrawer // Siempre visible
+    )
+    .build()
+```
+
+### Combinando Estrategia y Placement
+
+```swift
+DynamicListBuilder<User>()
+    .items(users)
+    .searchable(
+        prompt: "Buscar usuarios...",
+        strategy: TokenizedMatchStrategy(),
+        placement: .navigationBarDrawer
+    )
+    .build()
+```
+
+### Opciones de Placement Disponibles
+
+- **`.automatic`** (por defecto): La barra de búsqueda aparece automáticamente cuando el usuario hace scroll
+- **`.navigationBarDrawer`**: La barra de búsqueda siempre está visible en la barra de navegación
+- **`.sidebar`**: La barra de búsqueda aparece en la barra lateral (macOS)
+- **`.toolbar`**: La barra de búsqueda aparece en la barra de herramientas
+
+### Casos de Uso por Placement
+
+#### `.navigationBarDrawer` - Búsqueda Siempre Visible
+Ideal para listas largas donde la búsqueda es una funcionalidad principal:
+
+```swift
+DynamicListBuilder<Contact>()
+    .items(contacts)
+    .searchable(
+        prompt: "Buscar contactos...",
+        placement: .navigationBarDrawer
+    )
+    .build()
+```
+
+#### `.automatic` - Búsqueda Automática
+Perfecto para listas donde la búsqueda es secundaria:
+
+```swift
+DynamicListBuilder<Product>()
+    .items(products)
+    .searchable(
+        prompt: "Buscar productos...",
+        placement: .automatic
+    )
+    .build()
+```
+
 ### Estrategias Personalizadas
 
 Puedes crear tus propias estrategias de búsqueda:

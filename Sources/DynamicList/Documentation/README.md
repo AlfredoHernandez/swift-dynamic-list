@@ -253,6 +253,18 @@ DynamicListBuilder<User>()
     .build()
 ```
 
+#### Búsqueda con Placement Personalizado
+
+```swift
+DynamicListBuilder<User>()
+    .items(users)
+    .searchable(
+        prompt: "Buscar usuarios...",
+        placement: .navigationBarDrawer // Siempre visible
+    )
+    .build()
+```
+
 #### Búsqueda con Predicado Personalizado
 
 ```swift
@@ -273,6 +285,13 @@ DynamicListBuilder<User>()
 - **`PartialMatchStrategy`** (por defecto): Búsqueda parcial insensible a mayúsculas
 - **`ExactMatchStrategy`**: Coincidencia exacta insensible a mayúsculas
 - **`TokenizedMatchStrategy`**: Búsqueda por tokens/palabras
+
+#### Opciones de Placement Disponibles
+
+- **`.automatic`** (por defecto): La barra de búsqueda aparece automáticamente
+- **`.navigationBarDrawer`**: La barra de búsqueda siempre está visible
+- **`.sidebar`**: La barra de búsqueda aparece en la barra lateral (macOS)
+- **`.toolbar`**: La barra de búsqueda aparece en la barra de herramientas
 
 #### Protocolo Searchable
 

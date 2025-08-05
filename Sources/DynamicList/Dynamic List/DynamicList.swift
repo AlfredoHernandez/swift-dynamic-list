@@ -24,6 +24,7 @@ struct DynamicList<Item, RowContent, DetailContent, ErrorContent, SkeletonConten
     private let searchPrompt: String?
     private let searchPredicate: ((Item, String) -> Bool)?
     private let searchStrategy: SearchStrategy?
+    private let searchPlacement: SearchFieldPlacement
 
     /// Creates a new DynamicList with a view model, custom error view, and custom skeleton view.
     ///
@@ -36,6 +37,7 @@ struct DynamicList<Item, RowContent, DetailContent, ErrorContent, SkeletonConten
     ///   - searchPrompt: Optional prompt text for the search field.
     ///   - searchPredicate: Optional custom search predicate for filtering items.
     ///   - searchStrategy: Optional search strategy for Searchable items.
+    ///   - searchPlacement: Optional placement configuration for the search field.
     init(
         viewModel: DynamicListViewModel<Item>,
         @ViewBuilder rowContent: @escaping (Item) -> RowContent,
@@ -45,6 +47,7 @@ struct DynamicList<Item, RowContent, DetailContent, ErrorContent, SkeletonConten
         searchPrompt: String? = nil,
         searchPredicate: ((Item, String) -> Bool)? = nil,
         searchStrategy: SearchStrategy? = nil,
+        searchPlacement: SearchFieldPlacement = .automatic,
     ) {
         _viewModel = State(initialValue: viewModel)
         self.rowContent = rowContent
@@ -54,6 +57,7 @@ struct DynamicList<Item, RowContent, DetailContent, ErrorContent, SkeletonConten
         self.searchPrompt = searchPrompt
         self.searchPredicate = searchPredicate
         self.searchStrategy = searchStrategy
+        self.searchPlacement = searchPlacement
     }
 
     /// Creates a new DynamicList with a view model, custom skeleton view, and default error view.
@@ -64,8 +68,10 @@ struct DynamicList<Item, RowContent, DetailContent, ErrorContent, SkeletonConten
     ///   - detailContent: A view builder that creates the detail view for an item.
     ///   - skeletonContent: A view builder that creates the skeleton view when loading with no items.
     ///   - searchPrompt: Optional prompt text for the search field.
+    ///   - searchPrompt: Optional prompt text for the search field.
     ///   - searchPredicate: Optional custom search predicate for filtering items.
     ///   - searchStrategy: Optional search strategy for Searchable items.
+    ///   - searchPlacement: Optional placement configuration for the search field.
     init(
         viewModel: DynamicListViewModel<Item>,
         @ViewBuilder rowContent: @escaping (Item) -> RowContent,
@@ -74,6 +80,7 @@ struct DynamicList<Item, RowContent, DetailContent, ErrorContent, SkeletonConten
         searchPrompt: String? = nil,
         searchPredicate: ((Item, String) -> Bool)? = nil,
         searchStrategy: SearchStrategy? = nil,
+        searchPlacement: SearchFieldPlacement = .automatic,
     ) where ErrorContent == DefaultErrorView {
         _viewModel = State(initialValue: viewModel)
         self.rowContent = rowContent
@@ -83,6 +90,7 @@ struct DynamicList<Item, RowContent, DetailContent, ErrorContent, SkeletonConten
         self.searchPrompt = searchPrompt
         self.searchPredicate = searchPredicate
         self.searchStrategy = searchStrategy
+        self.searchPlacement = searchPlacement
     }
 
     /// Creates a new DynamicList with a view model using the default error view and default skeleton view.
@@ -94,6 +102,7 @@ struct DynamicList<Item, RowContent, DetailContent, ErrorContent, SkeletonConten
     ///   - searchPrompt: Optional prompt text for the search field.
     ///   - searchPredicate: Optional custom search predicate for filtering items.
     ///   - searchStrategy: Optional search strategy for Searchable items.
+    ///   - searchPlacement: Optional placement configuration for the search field.
     init(
         viewModel: DynamicListViewModel<Item>,
         @ViewBuilder rowContent: @escaping (Item) -> RowContent,
@@ -101,6 +110,7 @@ struct DynamicList<Item, RowContent, DetailContent, ErrorContent, SkeletonConten
         searchPrompt: String? = nil,
         searchPredicate: ((Item, String) -> Bool)? = nil,
         searchStrategy: SearchStrategy? = nil,
+        searchPlacement: SearchFieldPlacement = .automatic,
     ) where ErrorContent == DefaultErrorView, SkeletonContent == DefaultSkeletonView {
         _viewModel = State(initialValue: viewModel)
         self.rowContent = rowContent
@@ -110,6 +120,7 @@ struct DynamicList<Item, RowContent, DetailContent, ErrorContent, SkeletonConten
         self.searchPrompt = searchPrompt
         self.searchPredicate = searchPredicate
         self.searchStrategy = searchStrategy
+        self.searchPlacement = searchPlacement
     }
 
     var body: some View {
@@ -138,6 +149,7 @@ struct DynamicList<Item, RowContent, DetailContent, ErrorContent, SkeletonConten
             }
             .searchable(
                 text: $searchText,
+                placement: searchPlacement,
                 prompt: searchPrompt ?? "Buscar...",
             )
         }

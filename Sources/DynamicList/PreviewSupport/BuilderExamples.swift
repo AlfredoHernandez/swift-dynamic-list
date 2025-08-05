@@ -57,6 +57,7 @@ enum BuilderExample: Hashable {
     case searchableList
     case searchableWithPredicate
     case searchableWithStrategy
+    case searchableWithPlacement
 }
 
 // MARK: - Builder Examples
@@ -84,6 +85,7 @@ struct BuilderExamplesView: View {
                     NavigationLink("Searchable List", value: BuilderExample.searchableList)
                     NavigationLink("Searchable with Predicate", value: BuilderExample.searchableWithPredicate)
                     NavigationLink("Searchable with Strategy", value: BuilderExample.searchableWithStrategy)
+                    NavigationLink("Searchable with Placement", value: BuilderExample.searchableWithPlacement)
                 }
             }
             .navigationTitle("DynamicList Builder")
@@ -111,6 +113,8 @@ struct BuilderExamplesView: View {
                     SearchableWithPredicateExample()
                 case .searchableWithStrategy:
                     SearchableWithStrategyExample()
+                case .searchableWithPlacement:
+                    SearchableWithPlacementExample()
                 }
             }
         }
@@ -871,6 +875,54 @@ enum FactoryExample: Hashable {
     case simpleFactory
     case reactiveFactory
     case simulatedFactory
+}
+
+// MARK: - Example: Searchable with Placement
+
+struct SearchableWithPlacementExample: View {
+    var body: some View {
+        DynamicListBuilder<User>()
+            .items(User.sampleUsers)
+            .title("Usuarios - Búsqueda con Placement")
+            .searchable(
+                prompt: "Buscar usuarios...",
+                placement: .navigationBarDrawer(displayMode: .always),
+            )
+            .rowContent { user in
+                HStack {
+                    Text(user.avatar)
+                        .font(.title2)
+                    VStack(alignment: .leading) {
+                        Text(user.name)
+                            .font(.headline)
+                        Text(user.email)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                }
+                .padding(.vertical, 4)
+            }
+            .detailContent { user in
+                VStack(spacing: 20) {
+                    Text(user.avatar)
+                        .font(.system(size: 80))
+
+                    Text(user.name)
+                        .font(.title)
+                        .fontWeight(.bold)
+
+                    Text(user.email)
+                        .font(.body)
+                        .foregroundColor(.secondary)
+
+                    Spacer()
+                }
+                .padding()
+                .navigationTitle(DynamicListPresenter.profile)
+            }
+            .buildWithoutNavigation()
+    }
 }
 
 // MARK: - Convenience Factory Examples

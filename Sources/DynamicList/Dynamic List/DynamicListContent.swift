@@ -21,6 +21,7 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
     private let searchPrompt: String?
     private let searchPredicate: ((Item, String) -> Bool)?
     private let searchStrategy: SearchStrategy?
+    private let searchPlacement: SearchFieldPlacement
 
     init(
         viewModel: DynamicListViewModel<Item>,
@@ -33,6 +34,7 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
         searchPrompt: String?,
         searchPredicate: ((Item, String) -> Bool)?,
         searchStrategy: SearchStrategy?,
+        searchPlacement: SearchFieldPlacement,
     ) {
         _viewModel = State(initialValue: viewModel)
         self.rowContent = rowContent
@@ -44,6 +46,7 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
         self.searchPrompt = searchPrompt
         self.searchPredicate = searchPredicate
         self.searchStrategy = searchStrategy
+        self.searchPlacement = searchPlacement
     }
 
     var body: some View {
@@ -73,6 +76,7 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
         #endif
             .searchable(
                 text: $searchText,
+                placement: searchPlacement,
                 prompt: searchPrompt ?? "Buscar...",
             )
     }

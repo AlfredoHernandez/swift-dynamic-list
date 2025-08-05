@@ -95,6 +95,9 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     /// Search strategy for Searchable items
     private var searchStrategy: SearchStrategy?
 
+    /// Search placement configuration
+    private var searchPlacement: SearchFieldPlacement = .automatic
+
     // MARK: - Initialization
 
     /// Creates a new DynamicListBuilder instance.
@@ -404,6 +407,40 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
         return self
     }
 
+    /// Enables search functionality with a prompt and placement.
+    ///
+    /// Use this method to enable search functionality with Searchable items using the default
+    /// PartialMatchStrategy and control the search field placement.
+    ///
+    /// - Parameters:
+    ///   - prompt: The placeholder text for the search field.
+    ///   - placement: The placement configuration for the search field.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// DynamicListBuilder<User>()
+    ///     .items(users)
+    ///     .searchable(
+    ///         prompt: "Buscar usuarios...",
+    ///         placement: .navigationBarDrawer
+    ///     )
+    ///     .build()
+    /// ```
+    ///
+    /// ## Requirements
+    /// - Items should conform to `Searchable` protocol for automatic filtering
+    /// - Or use `searchable(prompt:predicate:placement:)` for custom search logic
+    @discardableResult
+    public func searchable(
+        prompt: String,
+        placement: SearchFieldPlacement,
+    ) -> Self {
+        searchPrompt = prompt
+        searchPlacement = placement
+        return self
+    }
+
     /// Enables search functionality with custom search logic.
     ///
     /// Use this method when you need custom search behavior that goes beyond the Searchable protocol.
@@ -437,6 +474,43 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
         return self
     }
 
+    /// Enables search functionality with custom search logic and placement.
+    ///
+    /// Use this method when you need custom search behavior that goes beyond the Searchable protocol
+    /// and want to control the search field placement.
+    ///
+    /// - Parameters:
+    ///   - prompt: The placeholder text for the search field.
+    ///   - predicate: A closure that determines if an item matches the search text.
+    ///   - placement: The placement configuration for the search field.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// DynamicListBuilder<User>()
+    ///     .items(users)
+    ///     .searchable(
+    ///         prompt: "Buscar por nombre o email...",
+    ///         predicate: { user, searchText in
+    ///             user.name.lowercased().contains(searchText.lowercased()) ||
+    ///             user.email.lowercased().contains(searchText.lowercased())
+    ///         },
+    ///         placement: .navigationBarDrawer
+    ///     )
+    ///     .build()
+    /// ```
+    @discardableResult
+    public func searchable(
+        prompt: String,
+        predicate: @escaping (Item, String) -> Bool,
+        placement: SearchFieldPlacement,
+    ) -> Self {
+        searchPrompt = prompt
+        searchPredicate = predicate
+        searchPlacement = placement
+        return self
+    }
+
     /// Enables search functionality with a custom search strategy.
     ///
     /// Use this method when you want to use a specific search strategy with Searchable items.
@@ -464,6 +538,61 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     ) -> Self {
         searchPrompt = prompt
         searchStrategy = strategy
+        return self
+    }
+
+    /// Enables search functionality with a custom search strategy and placement.
+    ///
+    /// Use this method when you want to use a specific search strategy with Searchable items
+    /// and control the search field placement.
+    ///
+    /// - Parameters:
+    ///   - prompt: The placeholder text for the search field.
+    ///   - strategy: The search strategy to use for matching.
+    ///   - placement: The placement configuration for the search field.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// DynamicListBuilder<User>()
+    ///     .items(users)
+    ///     .searchable(
+    ///         prompt: "Buscar usuarios...",
+    ///         strategy: TokenizedMatchStrategy(),
+    ///         placement: .navigationBarDrawer
+    ///     )
+    ///     .build()
+    /// ```
+    @discardableResult
+    public func searchable(
+        prompt: String,
+        strategy: SearchStrategy,
+        placement: SearchFieldPlacement,
+    ) -> Self {
+        searchPrompt = prompt
+        searchStrategy = strategy
+        searchPlacement = placement
+        return self
+    }
+
+    /// Configures the search field placement.
+    ///
+    /// Use this method to control when and where the search field is displayed.
+    ///
+    /// - Parameter placement: The placement configuration for the search field.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// DynamicListBuilder<User>()
+    ///     .items(users)
+    ///     .searchable(prompt: "Buscar usuarios...")
+    ///     .searchPlacement(.navigationBarDrawer) // Always visible
+    ///     .build()
+    /// ```
+    @discardableResult
+    public func searchPlacement(_ placement: SearchFieldPlacement) -> Self {
+        searchPlacement = placement
         return self
     }
 
@@ -551,6 +680,7 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
             searchPrompt: searchPrompt,
             searchPredicate: searchPredicate,
             searchStrategy: searchStrategy,
+            searchPlacement: searchPlacement,
         )
     }
 
@@ -617,6 +747,7 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
             searchPrompt: searchPrompt,
             searchPredicate: searchPredicate,
             searchStrategy: searchStrategy,
+            searchPlacement: searchPlacement,
         )
     }
 }
