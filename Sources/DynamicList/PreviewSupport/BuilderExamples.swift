@@ -392,27 +392,39 @@ struct CompleteExample: View {
     }
 }
 
+// MARK: - Factory Navigation Types
+
+enum FactoryExample: Hashable {
+    case simpleFactory
+    case reactiveFactory
+    case simulatedFactory
+}
+
 // MARK: - Convenience Factory Examples
 
 struct FactoryExamplesView: View {
+    @State private var navigationPath = NavigationPath()
+
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navigationPath) {
             List {
                 Section("Factory Methods") {
-                    NavigationLink("Simple Factory") {
-                        SimpleFactoryExample()
-                    }
-
-                    NavigationLink("Reactive Factory") {
-                        ReactiveFactoryExample()
-                    }
-
-                    NavigationLink("Simulated Factory") {
-                        SimulatedFactoryExample()
-                    }
+                    NavigationLink("Simple Factory", value: FactoryExample.simpleFactory)
+                    NavigationLink("Reactive Factory", value: FactoryExample.reactiveFactory)
+                    NavigationLink("Simulated Factory", value: FactoryExample.simulatedFactory)
                 }
             }
             .navigationTitle("Factory Methods")
+            .navigationDestination(for: FactoryExample.self) { example in
+                switch example {
+                case .simpleFactory:
+                    SimpleFactoryExample()
+                case .reactiveFactory:
+                    ReactiveFactoryExample()
+                case .simulatedFactory:
+                    SimulatedFactoryExample()
+                }
+            }
         }
     }
 }

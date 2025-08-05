@@ -111,33 +111,52 @@ struct ReactiveListView: View {
 ### 3. Lista con Navegación Personalizada
 
 ```swift
+// ✅ Patrón consistente para múltiples vistas de ejemplos
+enum BuilderExample: Hashable {
+    case simpleList, reactiveList, customError
+}
+
+enum FactoryExample: Hashable {
+    case simpleFactory, reactiveFactory, simulatedFactory
+}
+
 struct ExamplesView: View {
     @State private var navigationPath = NavigationPath()
     
     var body: some View {
         NavigationStack(path: $navigationPath) {
             List {
-                NavigationLink("Users", value: NavigationItem.users)
-                NavigationLink("Products", value: NavigationItem.products)
+                NavigationLink("Builder Examples", value: BuilderExample.simpleList)
+                NavigationLink("Factory Examples", value: FactoryExample.simpleFactory)
             }
-            .navigationDestination(for: NavigationItem.self) { item in
-                switch item {
-                case .users:
+            .navigationDestination(for: BuilderExample.self) { example in
+                switch example {
+                case .simpleList:
                     DynamicListBuilder<User>()
-                        .items(User.sampleUsers)
+                        .items(users)
                         .buildWithoutNavigation()
-                case .products:
+                case .reactiveList:
                     DynamicListBuilder<Product>()
-                        .publisher(ProductService.shared.productsPublisher)
+                        .publisher(publisher)
                         .buildWithoutNavigation()
+                case .customError:
+                    DynamicListBuilder<User>()
+                        .publisher(failingPublisher)
+                        .buildWithoutNavigation()
+                }
+            }
+            .navigationDestination(for: FactoryExample.self) { example in
+                switch example {
+                case .simpleFactory:
+                    SimpleFactoryExample()
+                case .reactiveFactory:
+                    ReactiveFactoryExample()
+                case .simulatedFactory:
+                    SimulatedFactoryExample()
                 }
             }
         }
     }
-}
-
-enum NavigationItem: Hashable {
-    case users, products
 }
 ```
 

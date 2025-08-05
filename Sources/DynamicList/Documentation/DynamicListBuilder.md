@@ -418,6 +418,41 @@ struct BuilderExamplesView: View {
 }
 ```
 
+### Ejemplo con Factory Methods
+
+```swift
+// ✅ Factory Examples también usa NavigationStack(path:)
+enum FactoryExample: Hashable {
+    case simpleFactory
+    case reactiveFactory
+    case simulatedFactory
+}
+
+struct FactoryExamplesView: View {
+    @State private var navigationPath = NavigationPath()
+    
+    var body: some View {
+        NavigationStack(path: $navigationPath) {
+            List {
+                NavigationLink("Simple Factory", value: FactoryExample.simpleFactory)
+                NavigationLink("Reactive Factory", value: FactoryExample.reactiveFactory)
+                NavigationLink("Simulated Factory", value: FactoryExample.simulatedFactory)
+            }
+            .navigationDestination(for: FactoryExample.self) { example in
+                switch example {
+                case .simpleFactory:
+                    SimpleFactoryExample()
+                case .reactiveFactory:
+                    ReactiveFactoryExample()
+                case .simulatedFactory:
+                    SimulatedFactoryExample()
+                }
+            }
+        }
+    }
+}
+```
+
 ### Ventajas de NavigationStack(path:)
 
 - ✅ **Sin NavigationStack anidados** - Evita comportamientos extraños
