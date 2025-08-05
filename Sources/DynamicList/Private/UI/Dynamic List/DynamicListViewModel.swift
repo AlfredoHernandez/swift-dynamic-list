@@ -24,6 +24,12 @@ final class DynamicListViewModel<Item: Identifiable & Hashable> {
     /// Closure that provides a publisher for loading data.
     private var dataProvider: (() -> AnyPublisher<[Item], Error>)?
 
+    /// Search configuration for filtering items
+    private var searchConfiguration: SearchConfiguration<Item>?
+
+    /// Current search text
+    private var searchText: String = ""
+
     /// Initializes the view model with an initial set of items.
     /// - Parameter items: The initial array of items. Defaults to an empty array.
     init(items: [Item] = [], scheduler: AnySchedulerOf<DispatchQueue> = .main) {
@@ -93,6 +99,46 @@ final class DynamicListViewModel<Item: Identifiable & Hashable> {
     func refresh() {
         loadData()
     }
+
+    /// Sets the search configuration for filtering items.
+    ///
+    /// - Parameter configuration: The search configuration to use for filtering.
+    func setSearchConfiguration(_ configuration: SearchConfiguration<Item>?) {
+        searchConfiguration = configuration
+    }
+
+    /// Updates the search text and triggers filtering.
+    ///
+    /// - Parameter text: The new search text to filter by.
+    func updateSearchText(_ text: String) {
+        searchText = text
+    }
+
+    /// Returns the filtered items based on the current search text and configuration.
+    ///
+    /// If no search text is provided or no search configuration is set,
+    /// returns all items. Otherwise, applies the search logic to filter items.
+    ///
+    /// - Returns: The filtered array of items.
+    func filteredItems() -> [Item] {
+        guard !searchText.isEmpty else {
+            return viewState.items
+        }
+
+        return viewState.items.filter { item in
+            if let searchConfiguration {
+                if let predicate = searchConfiguration.predicate {
+                    return predicate(item, searchText)
+                } else if let searchableItem = item as? Searchable {
+                    let strategy = searchConfiguration.strategy ?? PartialMatchStrategy()
+                    return strategy.matches(query: searchText, in: searchableItem)
+                }
+            }
+
+            // Fallback: try to use description if available
+            return String(describing: item).lowercased().contains(searchText.lowercased())
+        }
+    }
 }
 
 // MARK: - Convenience Properties (for backward compatibility)
@@ -111,5 +157,10 @@ extension DynamicListViewModel {
     /// Contains any error that occurred during data loading.
     var error: Error? {
         viewState.error
+    }
+
+    /// The filtered collection of items based on current search text and configuration.
+    var filteredItemsList: [Item] {
+        filteredItems()
     }
 }

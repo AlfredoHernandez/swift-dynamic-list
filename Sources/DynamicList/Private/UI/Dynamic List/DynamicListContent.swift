@@ -38,6 +38,9 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
         self.title = title
         self.navigationBarHidden = navigationBarHidden
         self.searchConfiguration = searchConfiguration
+
+        // Configure search in the view model
+        viewModel.setSearchConfiguration(searchConfiguration)
     }
 
     var body: some View {
@@ -47,7 +50,7 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
             } else if viewModel.viewState.shouldShowError {
                 errorView
             } else {
-                List(filteredItems) { item in
+                List(viewModel.filteredItemsList) { item in
                     NavigationLink(value: item) {
                         rowContent(item)
                             .redacted(reason: viewModel.viewState.isLoading ? .placeholder : [])
@@ -66,7 +69,13 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
             .navigationBarHidden(navigationBarHidden)
         #endif
             .searchable(
-                text: $searchText,
+                text: Binding(
+                    get: { searchText },
+                    set: { newValue in
+                        searchText = newValue
+                        viewModel.updateSearchText(newValue)
+                    },
+                ),
                 placement: searchConfiguration?.placement ?? .automatic,
                 prompt: searchConfiguration?.prompt ?? "Buscar...",
             )
@@ -89,27 +98,6 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
             errorContent(error)
         } else if let error = viewModel.viewState.error {
             DefaultErrorView(error: error)
-        }
-    }
-
-    /// Filtered items based on search text
-    private var filteredItems: [Item] {
-        guard !searchText.isEmpty else {
-            return viewModel.viewState.items
-        }
-
-        return viewModel.viewState.items.filter { item in
-            if let searchConfiguration {
-                if let predicate = searchConfiguration.predicate {
-                    return predicate(item, searchText)
-                } else if let searchableItem = item as? Searchable {
-                    let strategy = searchConfiguration.strategy ?? PartialMatchStrategy()
-                    return strategy.matches(query: searchText, in: searchableItem)
-                }
-            }
-
-            // Fallback: try to use description if available
-            return String(describing: item).lowercased().contains(searchText.lowercased())
         }
     }
 }

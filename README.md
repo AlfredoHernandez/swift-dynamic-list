@@ -163,7 +163,7 @@ struct ReactiveListView: View {
 
 ## 🏗️ Arquitectura Modular
 
-`DynamicList` está organizado en una arquitectura modular que separa claramente las responsabilidades:
+`DynamicList` está organizado en una arquitectura modular basada en MVVM que separa claramente las responsabilidades:
 
 ```
 Sources/DynamicList/
@@ -177,6 +177,7 @@ Sources/DynamicList/
 │   ├── Domain/                # Lógica de dominio
 │   │   └── Strategies/        # Estrategias de búsqueda
 │   └── Presentation/          # Componentes de presentación
+│       └── ViewModels/        # ViewModels con lógica de búsqueda
 ├── PreviewSupport/            # Soporte para SwiftUI Previews
 └── Documentation/             # Documentación del proyecto
 ```
@@ -197,6 +198,12 @@ Sources/DynamicList/
 
 ### 🔄 **Shared Components**
 - `LoadingState.swift` - Estados de carga compartidos
+
+### 🔍 **Search Logic in ViewModels**
+- **Lógica centralizada**: La funcionalidad de búsqueda está implementada en los ViewModels
+- **Separación de responsabilidades**: Las vistas solo manejan la UI, los ViewModels manejan la lógica de filtrado
+- **Testabilidad**: La lógica de búsqueda es fácilmente testeable de forma aislada
+- **Reutilización**: Misma lógica de búsqueda para listas simples y con secciones
 
 ### 🎨 **Default Views**
 - `DefaultRowView.swift` - Vista de fila por defecto
@@ -459,6 +466,64 @@ struct SearchStrategyTests {
         let result = strategy.matches(query: "", in: item)
         
         #expect(result == true)
+    }
+}
+```
+
+### Testing de Lógica de Búsqueda en ViewModels
+
+```swift
+import Testing
+import DynamicList
+
+@Suite("SearchViewModel Tests")
+struct SearchViewModelTests {
+    
+    @Test("when search text matches name filters correctly")
+    func test_whenSearchTextMatchesName_filtersCorrectly() {
+        let users = [
+            SearchableUser(name: "Ana", email: "ana@test.com", role: "Admin"),
+            SearchableUser(name: "Bob", email: "bob@test.com", role: "User")
+        ]
+        
+        let viewModel = DynamicListViewModel(items: users)
+        let searchConfig = SearchConfiguration<SearchableUser>(
+            prompt: "Buscar usuarios...",
+            strategy: PartialMatchStrategy()
+        )
+        
+        viewModel.setSearchConfiguration(searchConfig)
+        viewModel.updateSearchText("Ana")
+        
+        #expect(viewModel.filteredItemsList.count == 1)
+        #expect(viewModel.filteredItemsList.first?.name == "Ana")
+    }
+    
+    @Test("when search text matches items in one section filters correctly")
+    func test_whenSearchTextMatchesItemsInOneSection_filtersCorrectly() {
+        let sections = [
+            ListSection(
+                title: "Admins",
+                items: [SearchableUser(name: "Ana", email: "ana@test.com", role: "Admin")]
+            ),
+            ListSection(
+                title: "Users",
+                items: [SearchableUser(name: "Bob", email: "bob@test.com", role: "User")]
+            )
+        ]
+        
+        let viewModel = SectionedDynamicListViewModel(sections: sections)
+        let searchConfig = SearchConfiguration<SearchableUser>(
+            prompt: "Buscar usuarios...",
+            strategy: PartialMatchStrategy()
+        )
+        
+        viewModel.setSearchConfiguration(searchConfig)
+        viewModel.updateSearchText("Ana")
+        
+        #expect(viewModel.filteredSectionsList.count == 1)
+        #expect(viewModel.filteredSectionsList[0].title == "Admins")
+        #expect(viewModel.filteredSectionsList[0].items.first?.name == "Ana")
     }
 }
 ```

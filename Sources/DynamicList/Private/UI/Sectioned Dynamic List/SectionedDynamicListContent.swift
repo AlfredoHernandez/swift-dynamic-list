@@ -38,6 +38,9 @@ struct SectionedDynamicListContent<Item: Identifiable & Hashable>: View {
         self.title = title
         self.navigationBarHidden = navigationBarHidden
         self.searchConfiguration = searchConfiguration
+
+        // Configure search in the view model
+        viewModel.setSearchConfiguration(searchConfiguration)
     }
 
     var body: some View {
@@ -48,7 +51,7 @@ struct SectionedDynamicListContent<Item: Identifiable & Hashable>: View {
                 errorView
             } else {
                 List {
-                    ForEach(filteredSections) { section in
+                    ForEach(viewModel.filteredSectionsList) { section in
                         Section {
                             ForEach(section.items) { item in
                                 NavigationLink(value: item) {
@@ -71,7 +74,13 @@ struct SectionedDynamicListContent<Item: Identifiable & Hashable>: View {
                     viewModel.refresh()
                 }
                 .searchable(
-                    text: $searchText,
+                    text: Binding(
+                        get: { searchText },
+                        set: { newValue in
+                            searchText = newValue
+                            viewModel.updateSearchText(newValue)
+                        },
+                    ),
                     placement: searchConfiguration?.placement ?? .automatic,
                     prompt: searchConfiguration?.prompt ?? "Buscar...",
                 )
@@ -103,38 +112,6 @@ struct SectionedDynamicListContent<Item: Identifiable & Hashable>: View {
             errorContent(error)
         } else if let error = viewModel.viewState.error {
             DefaultErrorView(error: error)
-        }
-    }
-
-    /// Filtered sections based on search text
-    private var filteredSections: [ListSection<Item>] {
-        guard !searchText.isEmpty else {
-            return viewModel.viewState.sections
-        }
-
-        return viewModel.viewState.sections.compactMap { section in
-            let filteredItems = section.items.filter { item in
-                if let searchConfiguration {
-                    if let predicate = searchConfiguration.predicate {
-                        return predicate(item, searchText)
-                    } else if let searchableItem = item as? Searchable {
-                        let strategy = searchConfiguration.strategy ?? PartialMatchStrategy()
-                        return strategy.matches(query: searchText, in: searchableItem)
-                    }
-                }
-
-                // Fallback: try to use description if available
-                return String(describing: item).lowercased().contains(searchText.lowercased())
-            }
-
-            // Only include sections that have matching items
-            guard !filteredItems.isEmpty else { return nil }
-
-            return ListSection(
-                title: section.title,
-                items: filteredItems,
-                footer: section.footer,
-            )
         }
     }
 }

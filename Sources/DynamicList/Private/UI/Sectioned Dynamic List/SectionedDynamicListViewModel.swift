@@ -23,6 +23,12 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable> 
     /// The current subscription to the data provider
     private var cancellables = Set<AnyCancellable>()
 
+    /// Search configuration for filtering items
+    private var searchConfiguration: SearchConfiguration<Item>?
+
+    /// Current search text
+    private var searchText: String = ""
+
     // MARK: - Initialization
 
     /// Creates a new view model with static sections.
@@ -133,5 +139,66 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable> 
             ListSection(title: title, items: items)
         }
         updateSections(sections)
+    }
+
+    // MARK: - Search Methods
+
+    /// Sets the search configuration for filtering items.
+    ///
+    /// - Parameter configuration: The search configuration to use for filtering.
+    public func setSearchConfiguration(_ configuration: SearchConfiguration<Item>?) {
+        searchConfiguration = configuration
+    }
+
+    /// Updates the search text and triggers filtering.
+    ///
+    /// - Parameter text: The new search text to filter by.
+    public func updateSearchText(_ text: String) {
+        searchText = text
+    }
+
+    /// Returns the filtered sections based on the current search text and configuration.
+    ///
+    /// If no search text is provided or no search configuration is set,
+    /// returns all sections. Otherwise, applies the search logic to filter items
+    /// within each section and only includes sections that have matching items.
+    ///
+    /// - Returns: The filtered array of sections.
+    public func filteredSections() -> [ListSection<Item>] {
+        guard !searchText.isEmpty else {
+            return viewState.sections
+        }
+
+        return viewState.sections.compactMap { section in
+            let filteredItems = section.items.filter { item in
+                if let searchConfiguration {
+                    if let predicate = searchConfiguration.predicate {
+                        return predicate(item, searchText)
+                    } else if let searchableItem = item as? Searchable {
+                        let strategy = searchConfiguration.strategy ?? PartialMatchStrategy()
+                        return strategy.matches(query: searchText, in: searchableItem)
+                    }
+                }
+
+                // Fallback: try to use description if available
+                return String(describing: item).lowercased().contains(searchText.lowercased())
+            }
+
+            // Only include sections that have matching items
+            guard !filteredItems.isEmpty else { return nil }
+
+            return ListSection(
+                title: section.title,
+                items: filteredItems,
+                footer: section.footer,
+            )
+        }
+    }
+
+    // MARK: - Convenience Properties
+
+    /// The filtered sections based on current search text and configuration.
+    public var filteredSectionsList: [ListSection<Item>] {
+        filteredSections()
     }
 }
