@@ -365,29 +365,109 @@ DefaultErrorView                     // Vista de error por defecto
 
 ## 🧪 Testing
 
+### Convención de Nombres de Tests
+
+Seguimos una convención descriptiva para nombrar nuestros tests que hace que sean fáciles de entender y mantener:
+
+```swift
+func test_whenCondition_expectedBehavior()
+```
+
+#### Ejemplos de la Convención:
+
+```swift
+// ✅ Correcto - Descriptivo y claro
+func test_whenInitializedWithItems_displaysCorrectItems()
+func test_whenDataProviderFails_displaysErrorState()
+func test_whenRefreshIsCalled_loadsDataFromProvider()
+func test_whenLoadItemsIsCalled_changesDataProvider()
+func test_whenViewStateIsIdle_providesCorrectConvenienceProperties()
+
+// ❌ Incorrecto - Poco descriptivo
+func testInit()
+func testRefresh()
+func testError()
+```
+
+#### Ventajas de esta Convención:
+
+- **Claridad**: Cada test describe exactamente cuándo y qué se espera
+- **Mantenibilidad**: Los nombres son auto-documentados
+- **Debugging**: Fácil de encontrar tests específicos cuando fallan
+- **Consistencia**: Formato uniforme en todo el proyecto
+
 ### Unit Tests
 
 ```swift
-class DynamicListViewModelTests: XCTestCase {
-    func testInitializationWithItems() {
-        let users = [User(name: "Test", email: "test@example.com")]
-        let viewModel = DynamicListViewModel(items: users)
+@Suite("DynamicListViewModel Tests")
+struct DynamicListViewModelTests {
+    
+    @Test("when initialized with items displays correct items")
+    func test_whenInitializedWithItems_displaysCorrectItems() {
+        let items = [TestItem(name: "Item 1")]
+        let viewModel = DynamicListViewModel(items: items)
         
-        XCTAssertEqual(viewModel.viewState.items.count, 1)
-        XCTAssertFalse(viewModel.viewState.shouldShowLoading)
-        XCTAssertNil(viewModel.viewState.error)
+        #expect(viewModel.items == items)
+        #expect(!viewModel.isLoading)
+        #expect(viewModel.error == nil)
     }
     
-    func testPublisherIntegration() {
-        let publisher = Just([User(name: "Test", email: "test@example.com")])
-            .setFailureType(to: Error.self)
-            .eraseToAnyPublisher()
+    @Test("when data provider fails displays error state")
+    func test_whenDataProviderFails_displaysErrorState() {
+        let testError = NSError(domain: "Test", code: 1, userInfo: nil)
+        let pts = PassthroughSubject<[TestItem], Error>()
         
-        let viewModel = DynamicListViewModel(publisher: publisher)
+        let viewModel = DynamicListViewModel(
+            dataProvider: pts.eraseToAnyPublisher,
+            scheduler: .immediate
+        )
         
-        // Test publisher integration
+        #expect(viewModel.viewState.loadingState == .loading)
+        
+        pts.send(completion: .failure(testError))
+        #expect(viewModel.viewState.loadingState == .error(testError))
+    }
+    
+    @Test("when refresh is called loads data from provider")
+    func test_whenRefreshIsCalled_loadsDataFromProvider() {
+        var callCount = 0
+        let pts = PassthroughSubject<[TestItem], Error>()
+        
+        let viewModel = DynamicListViewModel(
+            dataProvider: {
+                callCount += 1
+                return pts.eraseToAnyPublisher()
+            },
+            scheduler: .immediate
+        )
+        
+        #expect(callCount == 1)
+        
+        viewModel.refresh()
+        #expect(callCount == 2)
     }
 }
+```
+
+### Testing con CombineSchedulers
+
+Para tests síncronos y determinísticos, usamos `CombineSchedulers`:
+
+```swift
+import CombineSchedulers
+
+// ✅ Tests síncronos con .immediate scheduler
+let viewModel = DynamicListViewModel(
+    dataProvider: pts.eraseToAnyPublisher,
+    scheduler: .immediate
+)
+
+// ✅ Control total sobre el flujo de datos
+pts.send(expectedItems)
+#expect(viewModel.viewState.loadingState == .loaded)
+
+pts.send(completion: .failure(testError))
+#expect(viewModel.viewState.loadingState == .error(testError))
 ```
 
 ### UI Tests
