@@ -264,6 +264,7 @@ VStack(spacing: 16) {
 - `errorContent(_:)` - Custom error view
 - `title(_:)` - Navigation title
 - `hideNavigationBar()` - Hide navigation bar
+- `listStyle(_:)` - Customize list appearance
 
 ### Factory Methods
 - `simple(items:rowContent:detailContent:)` - Simple list
@@ -377,6 +378,68 @@ In this example:
 - Active users will show a navigation chevron and can be tapped to view details
 - Inactive users will not show a navigation chevron and cannot be tapped
 - The navigation behavior is determined dynamically based on the item's state
+
+### Customizing List Appearance with List Styles
+
+You can customize the visual appearance of your lists using different list styles:
+
+```swift
+DynamicListBuilder<Product>()
+    .items(products)
+    .title("Products")
+    .listStyle(.grouped) // Apply grouped style
+    .rowContent { product in
+        Text(product.name)
+    }
+    .build()
+```
+
+#### Available List Styles
+
+- **`.automatic`** - Default system style (works on all platforms)
+- **`.plain`** - Simple list without background styling
+- **`.inset`** - List with inset appearance and rounded corners
+- **`.grouped`** - Grouped list style with section backgrounds (iOS only)
+- **`.insetGrouped`** - Inset grouped style with rounded section backgrounds (iOS only)
+
+#### Example with Different Styles
+
+```swift
+// Automatic style (default)
+DynamicListBuilder<User>()
+    .items(users)
+    .listStyle(.automatic)
+    .build()
+
+// Plain style for simple lists
+DynamicListBuilder<User>()
+    .items(users)
+    .listStyle(.plain)
+    .build()
+
+// Inset style for modern appearance
+DynamicListBuilder<Item>()
+    .items(items)
+    .listStyle(.inset)
+    .build()
+
+// Grouped style for settings-like interfaces (iOS only)
+DynamicListBuilder<Setting>()
+    .items(settings)
+    .listStyle(.grouped)
+    .build()
+
+// Inset grouped for modern iOS apps (iOS only)
+DynamicListBuilder<Item>()
+    .items(items)
+    .listStyle(.insetGrouped)
+    .build()
+```
+
+#### Platform Compatibility
+
+- **macOS**: Supports `.automatic`, `.plain`, and `.inset`
+- **iOS**: Supports all styles including `.grouped` and `.insetGrouped`
 
 The `DynamicListBuilder` makes creating dynamic lists as simple as chaining methods! 🎉
 

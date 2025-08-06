@@ -18,6 +18,7 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
     private let title: String?
     private let navigationBarHidden: Bool
     private let searchConfiguration: SearchConfiguration<Item>?
+    private let listStyle: ListStyleType
 
     init(
         viewModel: DynamicListViewModel<Item>,
@@ -28,6 +29,7 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
         title: String?,
         navigationBarHidden: Bool,
         searchConfiguration: SearchConfiguration<Item>?,
+        listStyle: ListStyleType,
     ) {
         _viewModel = State(initialValue: viewModel)
         self.rowContent = rowContent
@@ -37,6 +39,7 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
         self.title = title
         self.navigationBarHidden = navigationBarHidden
         self.searchConfiguration = searchConfiguration
+        self.listStyle = listStyle
 
         // Configure search in the view model
         viewModel.setSearchConfiguration(searchConfiguration)
@@ -62,6 +65,7 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
                             .redacted(reason: viewModel.viewState.isLoading ? .placeholder : [])
                     }
                 }
+                .modifier(ListStyleModifier(style: listStyle))
                 .refreshable {
                     viewModel.refresh()
                 }
@@ -105,6 +109,28 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
             errorContent(error)
         } else if let error = viewModel.viewState.error {
             DefaultErrorView(error: error)
+        }
+    }
+
+    /// ViewModifier to apply list styles
+    private struct ListStyleModifier: ViewModifier {
+        let style: ListStyleType
+
+        func body(content: Content) -> some View {
+            switch style {
+            case .automatic:
+                content.listStyle(.automatic)
+            case .plain:
+                content.listStyle(.plain)
+            case .inset:
+                content.listStyle(.inset)
+            #if os(iOS)
+            case .grouped:
+                content.listStyle(.grouped)
+            case .insetGrouped:
+                content.listStyle(.insetGrouped)
+            #endif
+            }
         }
     }
 }

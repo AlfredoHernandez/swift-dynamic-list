@@ -76,6 +76,9 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
     /// Search configuration for the list
     private var searchConfiguration: SearchConfiguration<Item>?
 
+    /// List style configuration
+    private var listStyle: ListStyleType = .automatic
+
     // MARK: - Initialization
 
     /// Creates a new SectionedDynamicListBuilder instance.
@@ -273,6 +276,34 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
     @discardableResult
     public func hideNavigationBar() -> Self {
         navigationBarHidden = true
+        return self
+    }
+
+    /// Sets the list style for the list.
+    ///
+    /// Use this method to customize the appearance of the list with different styles
+    /// like `.plain`, `.inset`, `.grouped`, etc.
+    ///
+    /// - Parameter style: The list style type to apply to the list.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// SectionedDynamicListBuilder<User>()
+    ///     .sections(sections)
+    ///     .listStyle(.grouped)
+    ///     .build()
+    /// ```
+    ///
+    /// ## Available Styles
+    /// - `.automatic` - Default system style
+    /// - `.plain` - Simple list without background
+    /// - `.inset` - List with inset appearance
+    /// - `.grouped` - Grouped list style (iOS only)
+    /// - `.insetGrouped` - Inset grouped style (iOS only)
+    @discardableResult
+    public func listStyle(_ style: ListStyleType) -> Self {
+        listStyle = style
         return self
     }
 
@@ -493,6 +524,7 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
             title: title,
             navigationBarHidden: navigationBarHidden,
             searchConfiguration: searchConfiguration,
+            listStyle: listStyle,
         )
     }
 
@@ -522,6 +554,7 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
             title: title,
             navigationBarHidden: navigationBarHidden,
             searchConfiguration: searchConfiguration,
+            listStyle: listStyle,
         )
     }
 }

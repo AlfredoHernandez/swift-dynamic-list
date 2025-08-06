@@ -17,6 +17,7 @@ struct DynamicListWrapper<Item: Identifiable & Hashable>: View {
     private let title: String?
     private let navigationBarHidden: Bool
     private let searchConfiguration: SearchConfiguration<Item>?
+    private let listStyle: ListStyleType
 
     init(
         viewModel: DynamicListViewModel<Item>,
@@ -27,6 +28,7 @@ struct DynamicListWrapper<Item: Identifiable & Hashable>: View {
         title: String?,
         navigationBarHidden: Bool,
         searchConfiguration: SearchConfiguration<Item>?,
+        listStyle: ListStyleType,
     ) {
         _viewModel = State(initialValue: viewModel)
         self.rowContent = rowContent
@@ -36,6 +38,7 @@ struct DynamicListWrapper<Item: Identifiable & Hashable>: View {
         self.title = title
         self.navigationBarHidden = navigationBarHidden
         self.searchConfiguration = searchConfiguration
+        self.listStyle = listStyle
     }
 
     var body: some View {
@@ -49,6 +52,7 @@ struct DynamicListWrapper<Item: Identifiable & Hashable>: View {
                 title: title,
                 navigationBarHidden: navigationBarHidden,
                 searchConfiguration: searchConfiguration,
+                listStyle: listStyle,
             )
         }
     }
