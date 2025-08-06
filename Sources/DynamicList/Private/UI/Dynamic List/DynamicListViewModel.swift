@@ -32,7 +32,14 @@ final class DynamicListViewModel<Item: Identifiable & Hashable> {
     private var searchConfiguration: SearchConfiguration<Item>?
 
     /// Current search text
-    var searchText: String = ""
+    var searchText: String = "" {
+        didSet {
+            // Trigger filtering when search text changes
+            if oldValue != searchText {
+                applySearchFilterOnBackground()
+            }
+        }
+    }
 
     /// Current unfiltered items (for filtering operations)
     private var allItems: [Item] = []
@@ -145,7 +152,10 @@ final class DynamicListViewModel<Item: Identifiable & Hashable> {
     /// - Parameter text: The new search text to filter by.
     func updateSearchText(_ text: String) {
         searchText = text
+    }
 
+    /// Applies search filter on background thread when search text changes.
+    private func applySearchFilterOnBackground() {
         // Apply filter to current items on background thread
         ioScheduler.schedule {
             let filteredItems = self.applySearchFilter(to: self.allItems)

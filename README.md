@@ -249,26 +249,59 @@ Publisher → Background Processing → Filtering → UI Update
 
 **Consistencia de Performance**: Tanto `DynamicList` como `SectionedDynamicList` utilizan la misma arquitectura optimizada de filtrado en background, garantizando una experiencia de usuario fluida independientemente del tipo de lista utilizada.
 
-#### Gestión del Estado de Búsqueda
+#### Ventajas del Filtrado Automático
+
+**Antes (Manual):**
+```swift
+// Necesitabas llamar manualmente al método de filtrado
+viewModel.updateSearchText("search")  // Método que actualiza estado + filtra
+```
+
+**Después (Automático):**
+```swift
+// Solo necesitas actualizar el estado, el filtrado es automático
+viewModel.searchText = "search"  // didSet dispara el filtrado automáticamente
+```
+
+**Beneficios:**
+- **Menos código**: No necesitas recordar llamar métodos de filtrado
+- **Menos errores**: El filtrado siempre se ejecuta cuando cambia el estado
+- **Más intuitivo**: Actualizar el estado es suficiente
+- **Mejor performance**: Solo se filtra cuando realmente cambia el valor
+
+#### Gestión del Estado de Búsqueda con Filtrado Automático
 ```swift
 // El estado de búsqueda se maneja completamente en el ViewModel
-viewModel.searchText = "texto de búsqueda"  // Estado centralizado
-viewModel.updateSearchText("nuevo texto")   // Actualización con filtrado automático
+viewModel.searchText = "texto de búsqueda"  // Estado centralizado + filtrado automático
 
 // Las vistas solo reflejan el estado del ViewModel
 .searchable(
     text: Binding(
         get: { viewModel.searchText },      // Leer del ViewModel
-        set: { viewModel.updateSearchText($0) }  // Escribir al ViewModel
+        set: { viewModel.searchText = $0 }  // Escribir directamente al ViewModel
     )
 )
 ```
 
+**Filtrado Automático con `didSet`:**
+```swift
+var searchText: String = "" {
+    didSet {
+        // Trigger filtering when search text changes
+        if oldValue != searchText {
+            applySearchFilterOnBackground()
+        }
+    }
+}
+```
+
 **Beneficios de la centralización del estado:**
+- **Filtrado automático**: El filtrado se dispara automáticamente al cambiar `searchText`
 - **Testabilidad mejorada**: El estado de búsqueda es fácilmente testeable
 - **Consistencia**: Un solo punto de verdad para el estado de búsqueda
 - **Separación clara**: Las vistas solo manejan UI, el ViewModel maneja el estado
 - **Reutilización**: El mismo estado puede ser usado por múltiples vistas
+- **Simplicidad**: No es necesario llamar manualmente a métodos de filtrado
 
 #### Configuración de Schedulers
 ```swift
@@ -527,6 +560,19 @@ struct DynamicListViewModelTests {
         // Test state clearing
         viewModel.updateSearchText("")
         #expect(viewModel.searchText.isEmpty)
+    }
+    
+    @Test("when search text is updated directly triggers automatic filtering")
+    func test_whenSearchTextIsUpdatedDirectly_triggersAutomaticFiltering() {
+        let viewModel = DynamicListViewModel(
+            items: [TestItem(name: "Test")],
+            scheduler: .immediate,
+            ioScheduler: .immediate
+        )
+        
+        // Test that direct assignment triggers filtering
+        viewModel.searchText = "search"  // This should trigger didSet automatically
+        #expect(viewModel.searchText == "search")
     }
 }
 

@@ -33,7 +33,14 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable> 
     private var searchConfiguration: SearchConfiguration<Item>?
 
     /// Current search text
-    var searchText: String = ""
+    var searchText: String = "" {
+        didSet {
+            // Trigger filtering when search text changes
+            if oldValue != searchText {
+                applySearchFilterOnBackground()
+            }
+        }
+    }
 
     /// Current unfiltered sections (for filtering operations)
     private var allSections: [ListSection<Item>] = []
@@ -186,7 +193,10 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable> 
     /// - Parameter text: The new search text to filter by.
     public func updateSearchText(_ text: String) {
         searchText = text
+    }
 
+    /// Applies search filter on background thread when search text changes.
+    private func applySearchFilterOnBackground() {
         // Apply filter to current sections on background thread
         ioScheduler.schedule {
             let filteredSections = self.applySearchFilter(to: self.allSections)

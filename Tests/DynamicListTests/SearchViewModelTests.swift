@@ -327,6 +327,88 @@ struct SearchViewModelTests {
         #expect(viewModel.searchText.isEmpty)
     }
 
+    @Test("when search text is updated directly triggers automatic filtering")
+    func whenSearchTextIsUpdatedDirectly_triggersAutomaticFiltering() {
+        let users = [
+            SearchableUser(name: "Ana", email: "ana@test.com", role: "Admin"),
+            SearchableUser(name: "Bob", email: "bob@test.com", role: "User"),
+        ]
+
+        let viewModel = DynamicListViewModel(
+            items: users,
+            scheduler: .immediate,
+            ioScheduler: .immediate,
+        )
+
+        let searchConfig = SearchConfiguration<SearchableUser>(
+            prompt: "Buscar usuarios...",
+            strategy: PartialMatchStrategy(),
+        )
+        viewModel.setSearchConfiguration(searchConfig)
+
+        // Initial state - all items should be shown
+        #expect(viewModel.filteredItemsList.count == 2)
+
+        // Update search text directly - should trigger automatic filtering
+        viewModel.searchText = "Ana"
+        #expect(viewModel.filteredItemsList.count == 1)
+        #expect(viewModel.filteredItemsList.first?.name == "Ana")
+
+        // Update search text again - should trigger automatic filtering
+        viewModel.searchText = "Bob"
+        #expect(viewModel.filteredItemsList.count == 1)
+        #expect(viewModel.filteredItemsList.first?.name == "Bob")
+
+        // Clear search text - should show all items
+        viewModel.searchText = ""
+        #expect(viewModel.filteredItemsList.count == 2)
+    }
+
+    @Test("when search text is updated directly in sectioned view model triggers automatic filtering")
+    func whenSearchTextIsUpdatedDirectlyInSectionedViewModel_triggersAutomaticFiltering() {
+        let sections = [
+            ListSection(
+                title: "Admins",
+                items: [SearchableUser(name: "Ana", email: "ana@test.com", role: "Admin")],
+            ),
+            ListSection(
+                title: "Users",
+                items: [SearchableUser(name: "Bob", email: "bob@test.com", role: "User")],
+            ),
+        ]
+
+        let viewModel = SectionedDynamicListViewModel(
+            sections: sections,
+            scheduler: .immediate,
+            ioScheduler: .immediate,
+        )
+
+        let searchConfig = SearchConfiguration<SearchableUser>(
+            prompt: "Buscar usuarios...",
+            strategy: PartialMatchStrategy(),
+        )
+        viewModel.setSearchConfiguration(searchConfig)
+
+        // Initial state - all sections should be shown
+        #expect(viewModel.filteredSectionsList.count == 2)
+
+        // Update search text directly - should trigger automatic filtering
+        viewModel.searchText = "Ana"
+        #expect(viewModel.filteredSectionsList.count == 1)
+        #expect(viewModel.filteredSectionsList[0].title == "Admins")
+        #expect(viewModel.filteredSectionsList[0].items.first?.name == "Ana")
+
+        // Update search text again - should trigger automatic filtering
+        viewModel.searchText = "Bob"
+        #expect(viewModel.filteredSectionsList.count == 1)
+        #expect(viewModel.filteredSectionsList[0].title == "Users")
+        #expect(viewModel.filteredSectionsList[0].items.first?.name == "Bob")
+
+        // Clear search text - should show all sections
+        viewModel.searchText = ""
+        #expect(viewModel.filteredSectionsList.count == 2)
+    }
+
     @Test("when search text is updated in sectioned view model reflects in searchText property")
     func whenSearchTextIsUpdatedInSectionedViewModel_reflectsInSearchTextProperty() {
         let sections = [

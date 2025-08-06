@@ -70,9 +70,7 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
             .searchable(
                 text: Binding(
                     get: { viewModel.searchText },
-                    set: { newValue in
-                        viewModel.updateSearchText(newValue)
-                    },
+                    set: { viewModel.searchText = $0 },
                 ),
                 placement: searchConfiguration?.placement ?? .automatic,
                 prompt: searchConfiguration?.prompt ?? "Buscar...",
