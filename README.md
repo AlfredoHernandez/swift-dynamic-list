@@ -3,7 +3,7 @@
 
 ![GitHub last commit](https://img.shields.io/github/last-commit/AlfredoHernandez/swift-dynamic-list?style=for-the-badge)
 ![issues](https://img.shields.io/github/issues/AlfredoHernandez/swift-dynamic-list?color=blue&style=for-the-badge)
-[![GitHub license](https://img.shields.io/github/license/AlfredoHernandez/swift-dynamic-list?color=brigthgreen&style=for-the-badge)](https://github.com/AlfredoHernandez/HackrNews)
+[![GitHub license](https://img.shields.io/github/license/AlfredoHernandez/swift-dynamic-list?color=brigthgreen&style=for-the-badge)](https://github.com/AlfredoHernandez/swift-dynamic-list)
 ![GitHub forks](https://img.shields.io/github/forks/AlfredoHernandez/swift-dynamic-list?style=for-the-badge&color=blueviolet)
 
 A modern and modular SwiftUI library for creating dynamic lists with complete support for reactive data, loading states, advanced search, and multiple list types.
@@ -242,54 +242,54 @@ SectionedDynamicListBuilder<User>()
     .build()
 ```
 
-#### Schedulers Separados
-- **UI Scheduler**: Para actualizaciones de la interfaz (main queue)
-- **IO Scheduler**: Para operaciones de filtrado y procesamiento (background queue)
-- **Testing**: Schedulers inmediatos para tests síncronos
+#### Separate Schedulers
+- **UI Scheduler**: For interface updates (main queue)
+- **IO Scheduler**: For filtering and processing operations (background queue)
+- **Testing**: Immediate schedulers for synchronous tests
 
-#### Flujo de Datos Optimizado
+#### Optimized Data Flow
 ```swift
-// Internamente, el flujo es:
+// Internally, the flow is:
 Publisher → Background Processing → Filtering → UI Update
 ```
 
-**Consistencia de Performance**: Tanto `DynamicList` como `SectionedDynamicList` utilizan la misma arquitectura optimizada de filtrado en background, garantizando una experiencia de usuario fluida independientemente del tipo de lista utilizada.
+**Performance Consistency**: Both `DynamicList` and `SectionedDynamicList` use the same optimized background filtering architecture, ensuring a smooth user experience regardless of the list type used.
 
-#### Ventajas del Filtrado Automático
+#### Advantages of Automatic Filtering
 
-**Antes (Manual):**
+**Before (Manual):**
 ```swift
-// Necesitabas llamar manualmente al método de filtrado
-viewModel.updateSearchText("search")  // Método que actualiza estado + filtra (obsoleto)
+// You needed to manually call the filtering method
+viewModel.updateSearchText("search")  // Method that updates state + filters (obsolete)
 ```
 
-**Después (Automático):**
+**After (Automatic):**
 ```swift
-// Solo necesitas actualizar el estado, el filtrado es automático
-viewModel.searchText = "search"  // didSet dispara el filtrado automáticamente
+// You only need to update the state, filtering is automatic
+viewModel.searchText = "search"  // didSet triggers filtering automatically
 ```
 
-**Beneficios:**
-- **Menos código**: No necesitas recordar llamar métodos de filtrado
-- **Menos errores**: El filtrado siempre se ejecuta cuando cambia el estado
-- **Más intuitivo**: Actualizar el estado es suficiente
-- **Mejor performance**: Solo se filtra cuando realmente cambia el valor
+**Benefits:**
+- **Less code**: You don't need to remember to call filtering methods
+- **Fewer errors**: Filtering always executes when state changes
+- **More intuitive**: Updating the state is sufficient
+- **Better performance**: Only filters when the value actually changes
 
-#### Gestión del Estado de Búsqueda con Filtrado Automático
+#### Search State Management with Automatic Filtering
 ```swift
-// El estado de búsqueda se maneja completamente en el ViewModel
-viewModel.searchText = "texto de búsqueda"  // Estado centralizado + filtrado automático
+// Search state is completely managed in the ViewModel
+viewModel.searchText = "search text"  // Centralized state + automatic filtering
 
-// Las vistas solo reflejan el estado del ViewModel
+// Views only reflect the ViewModel state
 .searchable(
     text: Binding(
-        get: { viewModel.searchText },      // Leer del ViewModel
-        set: { viewModel.searchText = $0 }  // Escribir directamente al ViewModel
+        get: { viewModel.searchText },      // Read from ViewModel
+        set: { viewModel.searchText = $0 }  // Write directly to ViewModel
     )
 )
 ```
 
-**Filtrado Automático con `didSet`:**
+**Automatic Filtering with `didSet`:**
 ```swift
 var searchText: String = "" {
     didSet {
@@ -301,8 +301,8 @@ var searchText: String = "" {
 }
 ```
 
-**Beneficios de la centralización del estado:**
-- **Filtrado automático**: El filtrado se dispara automáticamente al cambiar `searchText`
+**Benefits of state centralization:**
+- **Automatic filtering**: Filtering is triggered automatically when `searchText` changes
 - **Improved testability**: Search state is easily testable
 - **Consistency**: Single source of truth for search state
 - **Clear separation**: Views only handle UI, ViewModel handles state
