@@ -113,21 +113,13 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable> 
             .map { [weak self] arrays -> [ListSection<Item>] in
                 let sections = arrays.map { ListSection(title: nil, items: $0) }
 
-                // Store unfiltered sections for future filtering
-                self?.allSections = sections
-
-                // Apply current search filter if any
+                self?.storeUnfilteredSections(sections)
                 return self?.applySearchFilter(to: sections) ?? sections
             }
             .receive(on: scheduler)
             .sink(
                 receiveCompletion: { [weak self] completion in
-                    switch completion {
-                    case .finished:
-                        break
-                    case let .failure(error):
-                        self?.viewState = .error(error, sections: self?.viewState.sections ?? [])
-                    }
+                    self?.handleDataLoadCompletion(completion)
                 },
                 receiveValue: { [weak self] filteredSections in
                     self?.viewState = .loaded(sections: filteredSections)
@@ -190,13 +182,26 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable> 
 
     /// Applies search filter on background thread when search text changes.
     private func applySearchFilterOnBackground() {
-        // Apply filter to current sections on background thread
         ioScheduler.schedule {
             let filteredSections = self.applySearchFilter(to: self.allSections)
 
             self.scheduler.schedule {
                 self.viewState = .loaded(sections: filteredSections)
             }
+        }
+    }
+
+    // MARK: - Private Helper Methods
+
+    private func storeUnfilteredSections(_ sections: [ListSection<Item>]) {
+        allSections = sections
+    }
+
+    private func handleDataLoadCompletion(_ completion: Subscribers.Completion<Error>) {
+        switch completion {
+        case .finished: break
+        case let .failure(error):
+            viewState = .error(error, sections: viewState.sections)
         }
     }
 

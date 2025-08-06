@@ -101,29 +101,19 @@ final class DynamicListViewModel<Item: Identifiable & Hashable> {
     private func loadData() {
         guard let provider = dataProvider else { return }
 
-        // Cancel previous subscriptions
-        cancellables.removeAll()
-
-        // Preserve current items while loading new ones
-        viewState = .loading(items: viewState.items)
+        cancelPreviousSubscriptions()
+        preserveCurrentItemsWhileLoading()
 
         provider()
             .subscribe(on: ioScheduler)
             .map { [weak self] items -> [Item] in
-                // Store unfiltered items for future filtering
-                self?.allItems = items
-
-                // Apply current search filter if any
+                self?.storeUnfilteredItems(items)
                 return self?.applySearchFilter(to: items) ?? items
             }
             .receive(on: scheduler)
             .sink(
                 receiveCompletion: { [weak self] completion in
-                    switch completion {
-                    case .finished: break
-                    case let .failure(error):
-                        self?.viewState = .error(error, items: self?.viewState.items ?? [])
-                    }
+                    self?.handleDataLoadCompletion(completion)
                 },
                 receiveValue: { [weak self] filteredItems in
                     self?.viewState = .loaded(items: filteredItems)
@@ -149,13 +139,34 @@ final class DynamicListViewModel<Item: Identifiable & Hashable> {
 
     /// Applies search filter on background thread when search text changes.
     private func applySearchFilterOnBackground() {
-        // Apply filter to current items on background thread
         ioScheduler.schedule {
             let filteredItems = self.applySearchFilter(to: self.allItems)
 
             self.scheduler.schedule {
                 self.viewState = .loaded(items: filteredItems)
             }
+        }
+    }
+
+    // MARK: - Private Helper Methods
+
+    private func cancelPreviousSubscriptions() {
+        cancellables.removeAll()
+    }
+
+    private func preserveCurrentItemsWhileLoading() {
+        viewState = .loading(items: viewState.items)
+    }
+
+    private func storeUnfilteredItems(_ items: [Item]) {
+        allItems = items
+    }
+
+    private func handleDataLoadCompletion(_ completion: Subscribers.Completion<Error>) {
+        switch completion {
+        case .finished: break
+        case let .failure(error):
+            viewState = .error(error, items: viewState.items)
         }
     }
 

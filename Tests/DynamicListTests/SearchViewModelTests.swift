@@ -311,18 +311,18 @@ struct SearchViewModelTests {
             ioScheduler: .immediate,
         )
 
-        // Initial state
+        // Verify initial empty state
         #expect(viewModel.searchText.isEmpty)
 
-        // Update search text
+        // Set search text to "Ana"
         viewModel.searchText = "Ana"
         #expect(viewModel.searchText == "Ana")
 
-        // Update again
+        // Change search text to "Bob"
         viewModel.searchText = "Bob"
         #expect(viewModel.searchText == "Bob")
 
-        // Clear search
+        // Clear search text
         viewModel.searchText = ""
         #expect(viewModel.searchText.isEmpty)
     }
@@ -346,20 +346,20 @@ struct SearchViewModelTests {
         )
         viewModel.setSearchConfiguration(searchConfig)
 
-        // Initial state - all items should be shown
+        // Verify all items are shown initially
         #expect(viewModel.filteredItemsList.count == 2)
 
-        // Update search text directly - should trigger automatic filtering
+        // Search for "Ana" - should filter to one item
         viewModel.searchText = "Ana"
         #expect(viewModel.filteredItemsList.count == 1)
         #expect(viewModel.filteredItemsList.first?.name == "Ana")
 
-        // Update search text again - should trigger automatic filtering
+        // Search for "Bob" - should filter to one item
         viewModel.searchText = "Bob"
         #expect(viewModel.filteredItemsList.count == 1)
         #expect(viewModel.filteredItemsList.first?.name == "Bob")
 
-        // Clear search text - should show all items
+        // Clear search - should show all items again
         viewModel.searchText = ""
         #expect(viewModel.filteredItemsList.count == 2)
     }
@@ -389,22 +389,22 @@ struct SearchViewModelTests {
         )
         viewModel.setSearchConfiguration(searchConfig)
 
-        // Initial state - all sections should be shown
+        // Verify all sections are shown initially
         #expect(viewModel.filteredSectionsList.count == 2)
 
-        // Update search text directly - should trigger automatic filtering
+        // Search for "Ana" - should filter to one section
         viewModel.searchText = "Ana"
         #expect(viewModel.filteredSectionsList.count == 1)
         #expect(viewModel.filteredSectionsList[0].title == "Admins")
         #expect(viewModel.filteredSectionsList[0].items.first?.name == "Ana")
 
-        // Update search text again - should trigger automatic filtering
+        // Search for "Bob" - should filter to one section
         viewModel.searchText = "Bob"
         #expect(viewModel.filteredSectionsList.count == 1)
         #expect(viewModel.filteredSectionsList[0].title == "Users")
         #expect(viewModel.filteredSectionsList[0].items.first?.name == "Bob")
 
-        // Clear search text - should show all sections
+        // Clear search - should show all sections again
         viewModel.searchText = ""
         #expect(viewModel.filteredSectionsList.count == 2)
     }
@@ -428,18 +428,18 @@ struct SearchViewModelTests {
             ioScheduler: .immediate,
         )
 
-        // Initial state
+        // Verify initial empty state
         #expect(viewModel.searchText.isEmpty)
 
-        // Update search text
+        // Set search text to "Ana"
         viewModel.searchText = "Ana"
         #expect(viewModel.searchText == "Ana")
 
-        // Update again
+        // Change search text to "Bob"
         viewModel.searchText = "Bob"
         #expect(viewModel.searchText == "Bob")
 
-        // Clear search
+        // Clear search text
         viewModel.searchText = ""
         #expect(viewModel.searchText.isEmpty)
     }
