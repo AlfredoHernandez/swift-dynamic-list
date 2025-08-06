@@ -147,13 +147,6 @@ final class DynamicListViewModel<Item: Identifiable & Hashable> {
         searchConfiguration = configuration
     }
 
-    /// Updates the search text and triggers filtering.
-    ///
-    /// - Parameter text: The new search text to filter by.
-    func updateSearchText(_ text: String) {
-        searchText = text
-    }
-
     /// Applies search filter on background thread when search text changes.
     private func applySearchFilterOnBackground() {
         // Apply filter to current items on background thread
@@ -189,16 +182,6 @@ final class DynamicListViewModel<Item: Identifiable & Hashable> {
             return String(describing: item).lowercased().contains(searchText.lowercased())
         }
     }
-
-    /// Returns the filtered items based on the current search text and configuration.
-    ///
-    /// If no search text is provided or no search configuration is set,
-    /// returns all items. Otherwise, applies the search logic to filter items.
-    ///
-    /// - Returns: The filtered array of items.
-    func filteredItems() -> [Item] {
-        viewState.items
-    }
 }
 
 // MARK: - Convenience Properties (for backward compatibility)
@@ -221,6 +204,6 @@ extension DynamicListViewModel {
 
     /// The filtered collection of items based on current search text and configuration.
     var filteredItemsList: [Item] {
-        filteredItems()
+        viewState.items
     }
 }

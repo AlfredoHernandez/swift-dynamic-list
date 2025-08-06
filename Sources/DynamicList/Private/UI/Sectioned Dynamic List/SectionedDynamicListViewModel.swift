@@ -188,13 +188,6 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable> 
         searchConfiguration = configuration
     }
 
-    /// Updates the search text and triggers filtering.
-    ///
-    /// - Parameter text: The new search text to filter by.
-    public func updateSearchText(_ text: String) {
-        searchText = text
-    }
-
     /// Applies search filter on background thread when search text changes.
     private func applySearchFilterOnBackground() {
         // Apply filter to current sections on background thread
@@ -242,20 +235,10 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable> 
         }
     }
 
-    /// Returns the filtered sections based on the current search text and configuration.
-    ///
-    /// If no search text is provided or no search configuration is set,
-    /// returns all sections. Otherwise, applies the search logic to filter sections.
-    ///
-    /// - Returns: The filtered array of sections.
-    public func filteredSections() -> [ListSection<Item>] {
-        viewState.sections
-    }
-
     // MARK: - Convenience Properties
 
     /// The filtered sections based on current search text and configuration.
     public var filteredSectionsList: [ListSection<Item>] {
-        filteredSections()
+        viewState.sections
     }
 }

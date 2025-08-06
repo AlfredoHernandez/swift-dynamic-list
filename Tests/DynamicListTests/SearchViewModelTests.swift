@@ -37,7 +37,7 @@ struct SearchViewModelTests {
         )
 
         viewModel.setSearchConfiguration(searchConfig)
-        viewModel.updateSearchText("")
+        viewModel.searchText = ""
 
         #expect(viewModel.filteredItemsList.count == 2)
         #expect(viewModel.filteredItemsList.contains(where: { $0.name == "Ana" }))
@@ -62,7 +62,7 @@ struct SearchViewModelTests {
         )
 
         viewModel.setSearchConfiguration(searchConfig)
-        viewModel.updateSearchText("Ana")
+        viewModel.searchText = "Ana"
 
         #expect(viewModel.filteredItemsList.count == 1)
         #expect(viewModel.filteredItemsList.first?.name == "Ana")
@@ -86,7 +86,7 @@ struct SearchViewModelTests {
         )
 
         viewModel.setSearchConfiguration(searchConfig)
-        viewModel.updateSearchText("bob@test.com")
+        viewModel.searchText = "bob@test.com"
 
         #expect(viewModel.filteredItemsList.count == 1)
         #expect(viewModel.filteredItemsList.first?.name == "Bob")
@@ -112,7 +112,7 @@ struct SearchViewModelTests {
         )
 
         viewModel.setSearchConfiguration(searchConfig)
-        viewModel.updateSearchText("admin")
+        viewModel.searchText = "admin"
 
         #expect(viewModel.filteredItemsList.count == 1)
         #expect(viewModel.filteredItemsList.first?.role == "Admin")
@@ -130,7 +130,7 @@ struct SearchViewModelTests {
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
-        viewModel.updateSearchText("Ana")
+        viewModel.searchText = "Ana"
 
         #expect(viewModel.filteredItemsList.count == 1)
         #expect(viewModel.filteredItemsList.first?.name == "Ana")
@@ -162,7 +162,7 @@ struct SearchViewModelTests {
         )
 
         viewModel.setSearchConfiguration(searchConfig)
-        viewModel.updateSearchText("")
+        viewModel.searchText = ""
 
         #expect(viewModel.filteredSectionsList.count == 2)
         #expect(viewModel.filteredSectionsList[0].title == "Admins")
@@ -193,7 +193,7 @@ struct SearchViewModelTests {
         )
 
         viewModel.setSearchConfiguration(searchConfig)
-        viewModel.updateSearchText("Ana")
+        viewModel.searchText = "Ana"
 
         #expect(viewModel.filteredSectionsList.count == 1)
         #expect(viewModel.filteredSectionsList[0].title == "Admins")
@@ -225,7 +225,7 @@ struct SearchViewModelTests {
         )
 
         viewModel.setSearchConfiguration(searchConfig)
-        viewModel.updateSearchText("a")
+        viewModel.searchText = "a"
 
         #expect(viewModel.filteredSectionsList.count == 2)
         #expect(viewModel.filteredSectionsList[0].title == "Admins")
@@ -258,7 +258,7 @@ struct SearchViewModelTests {
         )
 
         viewModel.setSearchConfiguration(searchConfig)
-        viewModel.updateSearchText("xyz")
+        viewModel.searchText = "xyz"
 
         #expect(viewModel.filteredSectionsList.isEmpty)
     }
@@ -287,12 +287,12 @@ struct SearchViewModelTests {
         )
 
         viewModel.setSearchConfiguration(searchConfig)
-        viewModel.updateSearchText("Ana")
+        viewModel.searchText = "Ana"
 
         #expect(viewModel.filteredSectionsList.count == 1)
         #expect(viewModel.filteredSectionsList[0].items.first?.name == "Ana")
 
-        viewModel.updateSearchText("an")
+        viewModel.searchText = "an"
         #expect(viewModel.filteredSectionsList.isEmpty)
     }
 
@@ -315,15 +315,15 @@ struct SearchViewModelTests {
         #expect(viewModel.searchText.isEmpty)
 
         // Update search text
-        viewModel.updateSearchText("Ana")
+        viewModel.searchText = "Ana"
         #expect(viewModel.searchText == "Ana")
 
         // Update again
-        viewModel.updateSearchText("Bob")
+        viewModel.searchText = "Bob"
         #expect(viewModel.searchText == "Bob")
 
         // Clear search
-        viewModel.updateSearchText("")
+        viewModel.searchText = ""
         #expect(viewModel.searchText.isEmpty)
     }
 
@@ -432,15 +432,15 @@ struct SearchViewModelTests {
         #expect(viewModel.searchText.isEmpty)
 
         // Update search text
-        viewModel.updateSearchText("Ana")
+        viewModel.searchText = "Ana"
         #expect(viewModel.searchText == "Ana")
 
         // Update again
-        viewModel.updateSearchText("Bob")
+        viewModel.searchText = "Bob"
         #expect(viewModel.searchText == "Bob")
 
         // Clear search
-        viewModel.updateSearchText("")
+        viewModel.searchText = ""
         #expect(viewModel.searchText.isEmpty)
     }
 }

@@ -8,18 +8,15 @@ import SwiftUI
 // MARK: - DynamicList Previews
 
 #Preview("Static Data") {
-    @Previewable @State var viewModel = DynamicListViewModel<Fruit>(
-        items: [
+    DynamicListBuilder<Fruit>()
+        .items([
             Fruit(name: "Sandía", symbol: "🍉", color: .red),
             Fruit(name: "Pera", symbol: "🍐", color: .green),
             Fruit(name: "Manzana", symbol: "🍎", color: .red),
             Fruit(name: "Naranja", symbol: "🍊", color: .orange),
             Fruit(name: "Plátano", symbol: "🍌", color: .yellow),
-        ],
-    )
-    DynamicList(
-        viewModel: viewModel,
-        rowContent: { fruit in
+        ])
+        .rowContent { fruit in
             HStack {
                 Text(fruit.symbol)
                     .font(.title2)
@@ -28,8 +25,8 @@ import SwiftUI
                 Spacer()
             }
             .padding(.vertical, 4)
-        },
-        detailContent: { fruit in
+        }
+        .detailContent { fruit in
             VStack(spacing: 20) {
                 Text(fruit.symbol)
                     .font(.system(size: 100))
@@ -44,31 +41,26 @@ import SwiftUI
             #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
             #endif
-        },
-    )
+        }
+        .build()
 }
 
 #Preview("Combine Publisher - Success") {
-    @Previewable @State var viewModel: DynamicListViewModel<Fruit> = {
-        // Simula una carga exitosa de datos con delay
-        let publisher = Just([
-            Fruit(name: "Sandía", symbol: "🍉", color: .red),
-            Fruit(name: "Pera", symbol: "🍐", color: .green),
-            Fruit(name: "Manzana", symbol: "🍎", color: .red),
-            Fruit(name: "Naranja", symbol: "🍊", color: .orange),
-            Fruit(name: "Plátano", symbol: "🍌", color: .yellow),
-            Fruit(name: "Uva", symbol: "🍇", color: .purple),
-        ])
-        .delay(for: .seconds(2), scheduler: DispatchQueue.main)
-        .setFailureType(to: Error.self)
-        .eraseToAnyPublisher
-
-        return DynamicListViewModel<Fruit>(dataProvider: publisher)
-    }()
-
-    DynamicList(
-        viewModel: viewModel,
-        rowContent: { fruit in
+    DynamicListBuilder<Fruit>()
+        .publisher(
+            Just([
+                Fruit(name: "Sandía", symbol: "🍉", color: .red),
+                Fruit(name: "Pera", symbol: "🍐", color: .green),
+                Fruit(name: "Manzana", symbol: "🍎", color: .red),
+                Fruit(name: "Naranja", symbol: "🍊", color: .orange),
+                Fruit(name: "Plátano", symbol: "🍌", color: .yellow),
+                Fruit(name: "Uva", symbol: "🍇", color: .purple),
+            ])
+            .delay(for: .seconds(2), scheduler: DispatchQueue.main)
+            .setFailureType(to: Error.self)
+            .eraseToAnyPublisher(),
+        )
+        .rowContent { fruit in
             HStack {
                 Text(fruit.symbol)
                     .font(.title2)
@@ -77,8 +69,8 @@ import SwiftUI
                 Spacer()
             }
             .padding(.vertical, 4)
-        },
-        detailContent: { fruit in
+        }
+        .detailContent { fruit in
             VStack(spacing: 20) {
                 Text(fruit.symbol)
                     .font(.system(size: 100))
@@ -93,51 +85,39 @@ import SwiftUI
             #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
             #endif
-        },
-    )
+        }
+        .build()
 }
 
 #Preview("Combine Publisher - Error (Default)") {
-    @Previewable @State var viewModel: DynamicListViewModel<Fruit> = {
-        // Simula un error en la carga
-        let publisher = Fail<[Fruit], Error>(error: LoadError.networkError)
-            .delay(for: .seconds(1), scheduler: DispatchQueue.main)
-            .eraseToAnyPublisher()
-
-        return DynamicListViewModel<Fruit> {
-            publisher
-        }
-    }()
-
-    DynamicList(
-        viewModel: viewModel,
-        rowContent: { fruit in
+    DynamicListBuilder<Fruit>()
+        .publisher(
+            Fail<[Fruit], Error>(error: LoadError.networkError)
+                .delay(for: .seconds(1), scheduler: DispatchQueue.main)
+                .eraseToAnyPublisher(),
+        )
+        .rowContent { fruit in
             Text(fruit.name)
-        },
-        detailContent: { fruit in
+        }
+        .detailContent { fruit in
             Text("Detail: \(fruit.name)")
-        },
-    )
+        }
+        .build()
 }
 
 #Preview("Custom Error") {
-    @Previewable @State var viewModel: DynamicListViewModel<Fruit> = {
-        let publisher = Fail<[Fruit], Error>(error: SimpleError.failed)
-            .eraseToAnyPublisher()
-        return DynamicListViewModel<Fruit> {
-            publisher
-        }
-    }()
-
-    DynamicList(
-        viewModel: viewModel,
-        rowContent: { fruit in
+    DynamicListBuilder<Fruit>()
+        .publisher(
+            Fail<[Fruit], Error>(error: SimpleError.failed)
+                .eraseToAnyPublisher(),
+        )
+        .rowContent { fruit in
             Text(fruit.name)
-        },
-        detailContent: { fruit in
+        }
+        .detailContent { fruit in
             Text("Detail: \(fruit.name)")
-        },
-        errorContent: { error in
+        }
+        .errorContent { error in
             // Vista de error personalizada
             VStack(spacing: 20) {
                 Image(systemName: "wifi.slash")
@@ -160,31 +140,26 @@ import SwiftUI
             .padding()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(.regularMaterial)
-        },
-        skeletonContent: {
+        }
+        .skeletonContent {
             DefaultSkeletonView()
-        },
-    )
+        }
+        .build()
 }
 
 #Preview("Minimal Custom Error") {
-    @Previewable @State var viewModel: DynamicListViewModel<Fruit> = {
-        let publisher = Fail<[Fruit], Error>(error: SimpleError.failed)
-            .eraseToAnyPublisher()
-        return DynamicListViewModel<Fruit> {
-            publisher
-        }
-    }()
-
-    DynamicList(
-        viewModel: viewModel,
-        rowContent: { fruit in
+    DynamicListBuilder<Fruit>()
+        .publisher(
+            Fail<[Fruit], Error>(error: SimpleError.failed)
+                .eraseToAnyPublisher(),
+        )
+        .rowContent { fruit in
             Text(fruit.name)
-        },
-        detailContent: { fruit in
+        }
+        .detailContent { fruit in
             Text("Detail: \(fruit.name)")
-        },
-        errorContent: { error in
+        }
+        .errorContent { error in
             // Vista de error minimalista
             HStack {
                 Image(systemName: "xmark.circle.fill")
@@ -196,33 +171,26 @@ import SwiftUI
             .background(.regularMaterial)
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-        },
-        skeletonContent: {
+        }
+        .skeletonContent {
             DefaultSkeletonView()
-        },
-    )
+        }
+        .build()
 }
 
 #Preview("Skeleton Loading") {
-    @Previewable @State var viewModel: DynamicListViewModel<Fruit> = {
-        // Simula una carga lenta para mostrar skeleton
-        let publisher = Just([
-            Fruit(name: "Sandía", symbol: "🍉", color: .red),
-            Fruit(name: "Pera", symbol: "🍐", color: .green),
-            Fruit(name: "Manzana", symbol: "🍎", color: .red),
-        ])
-        .delay(for: .seconds(3), scheduler: DispatchQueue.main)
-        .setFailureType(to: Error.self)
-        .eraseToAnyPublisher()
-
-        return DynamicListViewModel<Fruit> {
-            publisher
-        }
-    }()
-
-    DynamicList(
-        viewModel: viewModel,
-        rowContent: { fruit in
+    DynamicListBuilder<Fruit>()
+        .publisher(
+            Just([
+                Fruit(name: "Sandía", symbol: "🍉", color: .red),
+                Fruit(name: "Pera", symbol: "🍐", color: .green),
+                Fruit(name: "Manzana", symbol: "🍎", color: .red),
+            ])
+            .delay(for: .seconds(3), scheduler: DispatchQueue.main)
+            .setFailureType(to: Error.self)
+            .eraseToAnyPublisher(),
+        )
+        .rowContent { fruit in
             HStack {
                 Text(fruit.symbol)
                     .font(.title2)
@@ -236,8 +204,8 @@ import SwiftUI
                 Spacer()
             }
             .padding(.vertical, 4)
-        },
-        detailContent: { fruit in
+        }
+        .detailContent { fruit in
             VStack(spacing: 20) {
                 Text(fruit.symbol)
                     .font(.system(size: 100))
@@ -252,11 +220,11 @@ import SwiftUI
             #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
             #endif
-        },
-        skeletonContent: {
+        }
+        .skeletonContent {
             DefaultSkeletonView()
-        },
-    )
+        }
+        .build()
 }
 
 #Preview("Custom Skeleton with Builder") {

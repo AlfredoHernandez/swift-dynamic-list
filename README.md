@@ -254,7 +254,7 @@ Publisher → Background Processing → Filtering → UI Update
 **Antes (Manual):**
 ```swift
 // Necesitabas llamar manualmente al método de filtrado
-viewModel.updateSearchText("search")  // Método que actualiza estado + filtra
+viewModel.updateSearchText("search")  // Método que actualiza estado + filtra (obsoleto)
 ```
 
 **Después (Automático):**
@@ -554,11 +554,11 @@ struct DynamicListViewModelTests {
         #expect(viewModel.searchText.isEmpty)
         
         // Test state update
-        viewModel.updateSearchText("search")
+        viewModel.searchText = "search"
         #expect(viewModel.searchText == "search")
         
         // Test state clearing
-        viewModel.updateSearchText("")
+        viewModel.searchText = ""
         #expect(viewModel.searchText.isEmpty)
     }
     
@@ -571,7 +571,7 @@ struct DynamicListViewModelTests {
         )
         
         // Test that direct assignment triggers filtering
-        viewModel.searchText = "search"  // This should trigger didSet automatically
+        viewModel.searchText = "search"  // This triggers didSet automatically
         #expect(viewModel.searchText == "search")
     }
 }
