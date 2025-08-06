@@ -64,7 +64,7 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     private var items: [Item] = []
 
     /// Combine publisher for reactive data loading
-    private var publisher: AnyPublisher<[Item], Error>?
+    private var publisher: (() -> AnyPublisher<[Item], Error>)?
 
     /// Custom row content builder
     private var rowContent: ((Item) -> AnyView)?
@@ -123,13 +123,13 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     /// databases, or any service that returns a Combine publisher. The list will
     /// automatically handle loading states, errors, and data updates.
     ///
-    /// - Parameter publisher: A Combine publisher that emits arrays of items.
+    /// - Parameter publisher: A closure that returns a Combine publisher that emits arrays of items.
     /// - Returns: The builder instance for method chaining.
     ///
     /// ## Example
     /// ```swift
     /// DynamicListBuilder<Product>()
-    ///     .publisher(apiService.fetchProducts())
+    ///     .publisher { apiService.fetchProducts() }
     ///     .build()
     /// ```
     ///
@@ -138,7 +138,7 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     /// - Must handle errors appropriately
     /// - Should complete after emitting data
     @discardableResult
-    public func publisher(_ publisher: AnyPublisher<[Item], Error>) -> Self {
+    public func publisher(_ publisher: @escaping () -> AnyPublisher<[Item], Error>) -> Self {
         self.publisher = publisher
         return self
     }
@@ -159,9 +159,11 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     /// ```
     @discardableResult
     public func simplePublisher(_ items: [Item]) -> Self {
-        publisher = Just(items)
-            .setFailureType(to: Error.self)
-            .eraseToAnyPublisher()
+        publisher = {
+            Just(items)
+                .setFailureType(to: Error.self)
+                .eraseToAnyPublisher()
+        }
         return self
     }
 
@@ -183,10 +185,12 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     /// ```
     @discardableResult
     public func simulatedPublisher(_ items: [Item], delay: TimeInterval = 1.0) -> Self {
-        publisher = Just(items)
-            .delay(for: .seconds(delay), scheduler: DispatchQueue.main)
-            .setFailureType(to: Error.self)
-            .eraseToAnyPublisher()
+        publisher = {
+            Just(items)
+                .delay(for: .seconds(delay), scheduler: DispatchQueue.main)
+                .setFailureType(to: Error.self)
+                .eraseToAnyPublisher()
+        }
         return self
     }
 
@@ -685,7 +689,7 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     @MainActor
     public func build() -> some View {
         let viewModel: DynamicListViewModel<Item> = if let publisher {
-            DynamicListViewModel(dataProvider: { publisher }, initialItems: items)
+            DynamicListViewModel(dataProvider: publisher, initialItems: items)
         } else {
             DynamicListViewModel(items: items)
         }
@@ -749,7 +753,7 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     @MainActor
     public func buildWithoutNavigation() -> some View {
         let viewModel: DynamicListViewModel<Item> = if let publisher {
-            DynamicListViewModel(dataProvider: { publisher }, initialItems: items)
+            DynamicListViewModel(dataProvider: publisher, initialItems: items)
         } else {
             DynamicListViewModel(items: items)
         }
@@ -853,7 +857,7 @@ public extension DynamicListBuilder {
         @ViewBuilder detailContent: @escaping (Item) -> some View,
     ) -> some View {
         DynamicListBuilder<Item>()
-            .publisher(publisher)
+            .publisher { publisher }
             .rowContent(rowContent)
             .detailContent(detailContent)
             .buildWithoutNavigation()

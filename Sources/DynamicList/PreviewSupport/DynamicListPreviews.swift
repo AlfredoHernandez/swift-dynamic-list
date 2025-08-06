@@ -93,7 +93,7 @@ enum SimpleError: Error, LocalizedError {
 
 #Preview("Combine Publisher - Success") {
     DynamicListBuilder<Fruit>()
-        .publisher(
+        .publisher {
             Just([
                 Fruit(name: "Sandía", symbol: "🍉", color: .red),
                 Fruit(name: "Pera", symbol: "🍐", color: .green),
@@ -104,8 +104,8 @@ enum SimpleError: Error, LocalizedError {
             ])
             .delay(for: .seconds(2), scheduler: DispatchQueue.main)
             .setFailureType(to: Error.self)
-            .eraseToAnyPublisher(),
-        )
+            .eraseToAnyPublisher()
+        }
         .rowContent { fruit in
             HStack {
                 Text(fruit.symbol)
@@ -137,11 +137,11 @@ enum SimpleError: Error, LocalizedError {
 
 #Preview("Combine Publisher - Error (Default)") {
     DynamicListBuilder<Fruit>()
-        .publisher(
+        .publisher {
             Fail<[Fruit], Error>(error: LoadError.networkError)
                 .delay(for: .seconds(1), scheduler: DispatchQueue.main)
-                .eraseToAnyPublisher(),
-        )
+                .eraseToAnyPublisher()
+        }
         .rowContent { fruit in
             Text(fruit.name)
         }
@@ -153,10 +153,10 @@ enum SimpleError: Error, LocalizedError {
 
 #Preview("Custom Error") {
     DynamicListBuilder<Fruit>()
-        .publisher(
+        .publisher {
             Fail<[Fruit], Error>(error: SimpleError.failed)
-                .eraseToAnyPublisher(),
-        )
+                .eraseToAnyPublisher()
+        }
         .rowContent { fruit in
             Text(fruit.name)
         }
@@ -195,10 +195,10 @@ enum SimpleError: Error, LocalizedError {
 
 #Preview("Minimal Custom Error") {
     DynamicListBuilder<Fruit>()
-        .publisher(
+        .publisher {
             Fail<[Fruit], Error>(error: SimpleError.failed)
-                .eraseToAnyPublisher(),
-        )
+                .eraseToAnyPublisher()
+        }
         .rowContent { fruit in
             Text(fruit.name)
         }
@@ -226,7 +226,7 @@ enum SimpleError: Error, LocalizedError {
 
 #Preview("Skeleton Loading") {
     DynamicListBuilder<Fruit>()
-        .publisher(
+        .publisher {
             Just([
                 Fruit(name: "Sandía", symbol: "🍉", color: .red),
                 Fruit(name: "Pera", symbol: "🍐", color: .green),
@@ -234,8 +234,8 @@ enum SimpleError: Error, LocalizedError {
             ])
             .delay(for: .seconds(3), scheduler: DispatchQueue.main)
             .setFailureType(to: Error.self)
-            .eraseToAnyPublisher(),
-        )
+            .eraseToAnyPublisher()
+        }
         .rowContent { fruit in
             HStack {
                 Text(fruit.symbol)
@@ -275,7 +275,7 @@ enum SimpleError: Error, LocalizedError {
 
 #Preview("Custom Skeleton with Builder") {
     DynamicListBuilder<Fruit>()
-        .publisher(
+        .publisher {
             Just([
                 Fruit(name: "Sandía", symbol: "🍉", color: .red),
                 Fruit(name: "Pera", symbol: "🍐", color: .green),
@@ -283,8 +283,8 @@ enum SimpleError: Error, LocalizedError {
             ])
             .delay(for: .seconds(3), scheduler: DispatchQueue.main)
             .setFailureType(to: Error.self)
-            .eraseToAnyPublisher(),
-        )
+            .eraseToAnyPublisher()
+        }
         .rowContent { fruit in
             HStack {
                 Text(fruit.symbol)
@@ -464,7 +464,7 @@ enum SimpleError: Error, LocalizedError {
 
 #Preview("Sectioned List - Reactive") {
     SectionedDynamicListBuilder<Fruit>()
-        .publisher(
+        .publisher {
             Just([
                 [
                     Fruit(name: "Manzana", symbol: "🍎", color: .red),
@@ -483,8 +483,8 @@ enum SimpleError: Error, LocalizedError {
             ])
             .delay(for: .seconds(2), scheduler: DispatchQueue.main)
             .setFailureType(to: Error.self)
-            .eraseToAnyPublisher(),
-        )
+            .eraseToAnyPublisher()
+        }
         .rowContent { fruit in
             HStack {
                 Text(fruit.symbol)

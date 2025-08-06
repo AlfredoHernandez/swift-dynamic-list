@@ -50,7 +50,7 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
     private var sections: [ListSection<Item>] = []
 
     /// Combine publisher for reactive data loading
-    private var publisher: AnyPublisher<[[Item]], Error>?
+    private var publisher: (() -> AnyPublisher<[[Item]], Error>)?
 
     /// Custom row content builder
     private var rowContent: ((Item) -> AnyView)?
@@ -155,7 +155,7 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
     ///     .build()
     /// ```
     @discardableResult
-    public func publisher(_ publisher: AnyPublisher<[[Item]], Error>) -> Self {
+    public func publisher(_ publisher: @escaping () -> AnyPublisher<[[Item]], Error>) -> Self {
         self.publisher = publisher
         return self
     }
@@ -446,7 +446,7 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
     @MainActor
     public func build() -> some View {
         let viewModel: SectionedDynamicListViewModel<Item> = if let publisher {
-            SectionedDynamicListViewModel(dataProvider: { publisher }, initialSections: sections)
+            SectionedDynamicListViewModel(dataProvider: publisher, initialSections: sections)
         } else {
             SectionedDynamicListViewModel(sections: sections)
         }
@@ -477,7 +477,7 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
     @MainActor
     public func buildWithoutNavigation() -> some View {
         let viewModel: SectionedDynamicListViewModel<Item> = if let publisher {
-            SectionedDynamicListViewModel(dataProvider: { publisher }, initialSections: sections)
+            SectionedDynamicListViewModel(dataProvider: publisher, initialSections: sections)
         } else {
             SectionedDynamicListViewModel(sections: sections)
         }
