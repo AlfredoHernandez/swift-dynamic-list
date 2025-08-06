@@ -1,0 +1,23 @@
+/* DynamicList Localization - Spanish (Mexico) */
+
+/* Loading States */
+"loading_content" = "Cargando...";
+
+/* Error Messages */
+"network_error" = "Error de conexión de red. Verifica tu conexión a internet.";
+
+/* Error Actions */
+"retry" = "Reintentar";
+
+/* Navigation */
+"profile" = "Perfil";
+"detail" = "Detalle";
+"user_detail" = "Detalle del Usuario";
+"product_detail" = "Detalle del Producto";
+
+/* Content Labels */
+"item_id" = "ID";
+
+/* Default Views */
+"item_detail" = "Detalle del Item";
+"error_loading_data" = "Error al cargar los datos"; 

@@ -1,0 +1,23 @@
+/* DynamicList Localization - French */
+
+/* Loading States */
+"loading_content" = "Chargement...";
+
+/* Error Messages */
+"network_error" = "Échec de la connexion réseau. Veuillez vérifier votre connexion internet.";
+
+/* Error Actions */
+"retry" = "Réessayer";
+
+/* Navigation */
+"profile" = "Profil";
+"detail" = "Détail";
+"user_detail" = "Détail de l'utilisateur";
+"product_detail" = "Détail du produit";
+
+/* Content Labels */
+"item_id" = "ID";
+
+/* Default Views */
+"item_detail" = "Détail de l'élément";
+"error_loading_data" = "Erreur lors du chargement des données"; 

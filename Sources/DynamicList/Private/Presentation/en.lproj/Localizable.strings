@@ -1,0 +1,23 @@
+/* DynamicList Localization - English */
+
+/* Loading States */
+"loading_content" = "Loading...";
+
+/* Error Messages */
+"network_error" = "Network connection failed. Please check your internet connection.";
+
+/* Error Actions */
+"retry" = "Retry";
+
+/* Navigation */
+"profile" = "Profile";
+"detail" = "Detail";
+"user_detail" = "User Detail";
+"product_detail" = "Product Detail";
+
+/* Content Labels */
+"item_id" = "ID";
+
+/* Default Views */
+"item_detail" = "Item Detail";
+"error_loading_data" = "Error loading data"; 
