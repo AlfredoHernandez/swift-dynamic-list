@@ -1,19 +1,19 @@
 # Localization System
 
-El `DynamicList` incluye un sistema completo de localización que soporta múltiples idiomas y proporciona una capa de presentación centralizada para todas las cadenas de texto.
+`DynamicList` includes a complete localization system that supports multiple languages and provides a centralized presentation layer for all text strings.
 
-## 🌍 Idiomas Soportados
+## 🌍 Supported Languages
 
-- 🇺🇸 **English (en)** - Idioma por defecto
-- 🇲🇽 **Spanish - Mexico (es-MX)** - Español mexicano
-- 🇫🇷 **French (fr)** - Francés
-- 🇧🇷 **Portuguese (pt)** - Portugués
+- 🇺🇸 **English (en)** - Default language
+- 🇲🇽 **Spanish - Mexico (es-MX)** - Mexican Spanish
+- 🇫🇷 **French (fr)** - French
+- 🇧🇷 **Portuguese (pt)** - Portuguese
 
-## 🏗️ Arquitectura
+## 🏗️ Architecture
 
 ### DynamicListPresenter
 
-La clase `DynamicListPresenter` centraliza todas las cadenas localizadas del componente:
+The `DynamicListPresenter` class centralizes all localized strings of the component:
 
 ```swift
 public final class DynamicListPresenter {
@@ -55,7 +55,7 @@ public final class DynamicListPresenter {
 }
 ```
 
-## 📁 Estructura de Archivos
+## 📁 File Structure
 
 ```
 Sources/DynamicList/
@@ -80,19 +80,19 @@ Sources/DynamicList/
 └── PreviewSupport/
 ```
 
-## 🚀 Uso Básico
+## 🚀 Basic Usage
 
-### 1. Usar Cadenas Localizadas
+### 1. Using Localized Strings
 
 ```swift
-// En lugar de strings hardcodeados
+// Instead of hardcoded strings
 Text("Loading...")
 
-// Usar el presenter
+// Use the presenter
 Text(DynamicListPresenter.loadingContent)
 ```
 
-### 2. En Vistas de Error
+### 2. In Error Views
 
 ```swift
 VStack {
@@ -111,7 +111,7 @@ VStack {
 }
 ```
 
-### 3. En Estados de Carga
+### 3. In Loading States
 
 ```swift
 if isLoading {
@@ -120,7 +120,7 @@ if isLoading {
 }
 ```
 
-### 4. En Navegación
+### 4. In Navigation
 
 ```swift
 .navigationTitle(DynamicListPresenter.profile)
@@ -128,33 +128,33 @@ if isLoading {
 .navigationTitle(DynamicListPresenter.productDetail)
 ```
 
-## 🎯 Categorías de Cadenas
+## 🎯 String Categories
 
 ### Loading States
-- `loadingContent` - Carga general
+- `loadingContent` - General loading
 
 ### Error Messages
-- `networkError` - Error de red
+- `networkError` - Network error
 
 ### Error Actions
-- `retry` - Reintentar
+- `retry` - Retry
 
 ### Navigation
-- `profile` - Perfil
-- `detail` - Detalle
-- `userDetail` - Detalle de usuario
-- `productDetail` - Detalle de producto
+- `profile` - Profile
+- `detail` - Detail
+- `userDetail` - User detail
+- `productDetail` - Product detail
 
 ### Content Labels
-- `itemID` - ID del item
+- `itemID` - Item ID
 
 
 
 ### Default Views
-- `itemDetail` - Detalle del item
-- `errorLoadingData` - Error al cargar datos
+- `itemDetail` - Item detail
+- `errorLoadingData` - Error loading data
 
-## 🌐 Traducciones por Idioma
+## 🌐 Translations by Language
 
 ### English (en)
 ```strings
@@ -188,9 +188,9 @@ if isLoading {
 "profile" = "Perfil";
 ```
 
-## 🔧 Configuración del Package
+## 🔧 Package Configuration
 
-El `Package.swift` incluye la configuración necesaria para la localización:
+The `Package.swift` includes the necessary configuration for localization:
 
 ```swift
 let package = Package(
@@ -211,32 +211,32 @@ let package = Package(
 )
 ```
 
-**Nota:** Los recursos de localización se incluyen automáticamente en el bundle del módulo sin necesidad de configuración adicional en `Package.swift`.
+**Note:** Localization resources are automatically included in the module bundle without additional configuration needed in `Package.swift`.
 
-## 📱 Integración con DynamicListBuilder
+## 📱 Integration with DynamicListBuilder
 
-El `DynamicListBuilder` usa automáticamente las cadenas localizadas:
+The `DynamicListBuilder` automatically uses localized strings:
 
 ```swift
 DynamicListBuilder<User>()
     .items(users)
-    .title("Users") // Título hardcodeado
+    .title("Users") // Hardcoded title
     .rowContent { user in
         Text(user.name)
     }
     .detailContent { user in
         VStack {
             Text(user.name)
-            Text(DynamicListPresenter.profile) // Localizado
+            Text(DynamicListPresenter.profile) // Localized
         }
-        .navigationTitle(DynamicListPresenter.userDetail) // Localizado
+        .navigationTitle(DynamicListPresenter.userDetail) // Localized
     }
     .build()
 ```
 
-## 🎨 Ejemplos de Uso
+## 🎨 Usage Examples
 
-### Error View Personalizada
+### Custom Error View
 ```swift
 DynamicListBuilder<User>()
     .publisher(failingPublisher)
@@ -259,7 +259,7 @@ DynamicListBuilder<User>()
     .build()
 ```
 
-### Loading State Personalizado
+### Custom Loading State
 ```swift
 DynamicListBuilder<Product>()
     .publisher(productsPublisher)
@@ -273,7 +273,7 @@ DynamicListBuilder<Product>()
     .build()
 ```
 
-### Navegación Localizada
+### Localized Navigation
 ```swift
 DynamicListBuilder<User>()
     .items(users)
@@ -284,16 +284,16 @@ DynamicListBuilder<User>()
     .build()
 ```
 
-## 🔄 Agregar Nuevos Idiomas
+## 🔄 Adding New Languages
 
-Para agregar soporte para un nuevo idioma:
+To add support for a new language:
 
-1. **Crear la carpeta de idioma:**
+1. **Create the language folder:**
    ```bash
    mkdir -p Sources/DynamicList/Presentation/it.lproj
    ```
 
-2. **Crear el archivo de strings:**
+2. **Create the strings file:**
    ```strings
    /* DynamicList Localization - Italian */
    
@@ -303,7 +303,7 @@ Para agregar soporte para un nuevo idioma:
    "profile" = "Profilo";
    ```
 
-3. **Agregar nuevas cadenas al presenter:**
+3. **Add new strings to the presenter:**
    ```swift
    public static let newString = NSLocalizedString(
        "new_string",
@@ -312,22 +312,22 @@ Para agregar soporte para un nuevo idioma:
    )
    ```
 
-## ✅ Beneficios
+## ✅ Benefits
 
-1. **Centralización** - Todas las cadenas en un solo lugar
-2. **Type Safety** - Compilación segura con autocompletado
-3. **Mantenibilidad** - Fácil actualización y gestión
-4. **Escalabilidad** - Fácil agregar nuevos idiomas
-5. **Consistencia** - Mismo estilo en toda la app
-6. **Internacionalización** - Soporte nativo para múltiples idiomas
+1. **Centralization** - All strings in one place
+2. **Type Safety** - Safe compilation with autocomplete
+3. **Maintainability** - Easy updating and management
+4. **Scalability** - Easy to add new languages
+5. **Consistency** - Same style throughout the app
+6. **Internationalization** - Native support for multiple languages
 
-## 🎯 Mejores Prácticas
+## 🎯 Best Practices
 
-1. **Siempre usar el presenter** en lugar de strings hardcodeados
-2. **Agrupar cadenas relacionadas** en secciones lógicas
-3. **Proporcionar comentarios descriptivos** en `NSLocalizedString`
-4. **Mantener consistencia** en el estilo de traducción
-5. **Probar con diferentes idiomas** durante el desarrollo
-6. **Usar variables de contexto** cuando sea necesario
+1. **Always use the presenter** instead of hardcoded strings
+2. **Group related strings** in logical sections
+3. **Provide descriptive comments** in `NSLocalizedString`
+4. **Maintain consistency** in translation style
+5. **Test with different languages** during development
+6. **Use context variables** when necessary
 
-¡El sistema de localización hace que `DynamicList` sea verdaderamente internacional! 🌍 
+The localization system makes `DynamicList` truly international! 🌍 

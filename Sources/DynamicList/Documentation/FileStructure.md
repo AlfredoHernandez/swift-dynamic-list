@@ -1,221 +1,221 @@
-# 📁 Estructura de Archivos
+# 📁 File Structure
 
-Esta documentación describe la organización de archivos del paquete `DynamicList` y cómo están estructurados los diferentes componentes.
+This documentation describes the file organization of the `DynamicList` package and how the different components are structured.
 
-## 🏗️ Estructura General
+## 🏗️ General Structure
 
 ```
 DynamicList/
 ├── Sources/
 │   └── DynamicList/
-│       ├── Public/                    # APIs públicas del paquete
-│       ├── Private/                   # Implementaciones internas
-│       │   ├── UI/                    # Componentes de interfaz de usuario
-│       │   │   ├── Dynamic List/      # Componentes para listas simples
-│       │   │   ├── Sectioned Dynamic List/ # Componentes para listas con secciones
-│       │   │   ├── Default Views/     # Vistas por defecto
-│       │   │   └── Shared/            # Componentes compartidos
-│       │   ├── Domain/                # Lógica de dominio
-│       │   │   └── Strategies/        # Estrategias de búsqueda
-│       │   └── Presentation/          # Componentes de presentación
-│       ├── PreviewSupport/            # Soporte para SwiftUI Previews
-│       └── Documentation/             # Documentación del proyecto
+│       ├── Public/                    # Public APIs of the package
+│       ├── Private/                   # Internal implementations
+│       │   ├── UI/                    # User interface components
+│       │   │   ├── Dynamic List/      # Components for simple lists
+│       │   │   ├── Sectioned Dynamic List/ # Components for sectioned lists
+│       │   │   ├── Default Views/     # Default views
+│       │   │   └── Shared/            # Shared components
+│       │   ├── Domain/                # Domain logic
+│       │   │   └── Strategies/        # Search strategies
+│       │   └── Presentation/          # Presentation components
+│       ├── PreviewSupport/            # SwiftUI Previews support
+│       └── Documentation/             # Project documentation
 └── Tests/
-    └── DynamicListTests/              # Tests unitarios y de UI
+    └── DynamicListTests/              # Unit and UI tests
 ```
 
 ## 📋 Public APIs
 
 ### 🎯 DynamicListBuilder
-API pública principal para crear listas dinámicas simples.
+Main public API for creating simple dynamic lists.
 
 ```
 Public/
-└── DynamicListBuilder.swift           # Builder pattern para listas simples
+└── DynamicListBuilder.swift           # Builder pattern for simple lists
 ```
 
-**Características:**
-- API fluida y encadenable
-- Soporte para datos estáticos y reactivos
-- Configuración de búsqueda avanzada
-- Personalización completa de UI
-  - Factory methods para casos comunes
+**Features:**
+- Fluent and chainable API
+- Support for static and reactive data
+- Advanced search configuration
+- Complete UI customization
+  - Factory methods for common cases
 
 ### 📋 SectionedDynamicListBuilder
-API pública para crear listas dinámicas con secciones.
+Public API for creating dynamic lists with sections.
 
 ```
 Public/
-└── SectionedDynamicListBuilder.swift  # Builder pattern para listas con secciones
+└── SectionedDynamicListBuilder.swift  # Builder pattern for sectioned lists
 ```
 
-**Características:**
-- API fluida para listas con secciones
-- Soporte para arrays de arrays `[[Item]]`
-- Headers y footers por sección
-- Misma funcionalidad que listas simples
+**Features:**
+- Fluent API for sectioned lists
+- Support for arrays of arrays `[[Item]]`
+- Headers and footers per section
+- Same functionality as simple lists
 
 ## 🔒 Private Implementation
 
 ### 🎨 UI Components
 
 #### **Dynamic List**
-Componentes para listas dinámicas simples (sin secciones).
+Components for simple dynamic lists (without sections).
 
 ```
 UI/Dynamic List/
-├── DynamicList.swift              # Vista principal para listas simples
-├── DynamicListViewModel.swift     # ViewModel para listas simples
-├── DynamicListViewState.swift     # Estados de vista para listas simples
-├── DynamicListBuilder.swift       # Builder pattern para listas simples
-├── DynamicListContent.swift       # Contenido interno de la lista
-├── DynamicListWrapper.swift       # Wrapper con NavigationStack
-└── SearchConfiguration.swift      # Configuración de búsqueda
+├── DynamicList.swift              # Main view for simple lists
+├── DynamicListViewModel.swift     # ViewModel for simple lists
+├── DynamicListViewState.swift     # View states for simple lists
+├── DynamicListBuilder.swift       # Builder pattern for simple lists
+├── DynamicListContent.swift       # Internal list content
+├── DynamicListWrapper.swift       # Wrapper with NavigationStack
+└── SearchConfiguration.swift      # Search configuration
 ```
 
-**Características:**
-- Listas simples con items planos
-- Soporte para datos estáticos y reactivos
-- Estados de carga, error y éxito
-- Pull-to-refresh integrado
-- Navegación automática a detalles
-- Sistema de búsqueda avanzado
+**Features:**
+- Simple lists with flat items
+- Support for static and reactive data
+- Loading, error, and success states
+- Integrated pull-to-refresh
+- Automatic navigation to details
+- Advanced search system
 
 #### **Sectioned Dynamic List**
-Componentes para listas dinámicas con secciones y headers/footers.
+Components for dynamic lists with sections and headers/footers.
 
 ```
 UI/Sectioned Dynamic List/
-├── SectionedDynamicList.swift              # Vista principal para listas con secciones
-├── SectionedDynamicListViewModel.swift     # ViewModel para listas con secciones
-├── SectionedListViewState.swift            # Estados de vista para listas con secciones
-├── SectionedDynamicListBuilder.swift       # Builder pattern para listas con secciones
-├── SectionedDynamicListContent.swift       # Contenido interno de la lista con secciones
-├── SectionedDynamicListWrapper.swift       # Wrapper con NavigationStack
-└── ListSection.swift                       # Modelo de datos para secciones
+├── SectionedDynamicList.swift              # Main view for sectioned lists
+├── SectionedDynamicListViewModel.swift     # ViewModel for sectioned lists
+├── SectionedListViewState.swift            # View states for sectioned lists
+├── SectionedDynamicListBuilder.swift       # Builder pattern for sectioned lists
+├── SectionedDynamicListContent.swift       # Internal content for sectioned lists
+├── SectionedDynamicListWrapper.swift       # Wrapper with NavigationStack
+└── ListSection.swift                       # Data model for sections
 ```
 
-**Características:**
-- Listas organizadas en secciones
-- Headers y footers por sección
-- Soporte para arrays de arrays `[[Item]]`
-- Sistema de búsqueda avanzado
-- Filtrado inteligente por sección
-- Misma funcionalidad que listas simples
-- Skeleton loading específico para secciones
+**Features:**
+- Lists organized in sections
+- Headers and footers per section
+- Support for arrays of arrays `[[Item]]`
+- Advanced search system
+- Intelligent filtering by section
+- Same functionality as simple lists
+- Section-specific skeleton loading
 
 #### **Default Views**
-Vistas por defecto y componentes de UI reutilizables.
+Default views and reusable UI components.
 
 ```
 UI/Default Views/
-├── DefaultRowView.swift           # Vista de fila por defecto
-├── DefaultDetailView.swift        # Vista de detalle por defecto
-├── DefaultErrorView.swift         # Vista de error por defecto
-├── DefaultSkeletonView.swift      # Skeleton loading por defecto
-└── DefaultSectionedSkeletonView.swift # Skeleton para secciones
+├── DefaultRowView.swift           # Default row view
+├── DefaultDetailView.swift        # Default detail view
+├── DefaultErrorView.swift         # Default error view
+├── DefaultSkeletonView.swift      # Default skeleton loading
+└── DefaultSectionedSkeletonView.swift # Skeleton for sections
 ```
 
-**Características:**
-- Vistas por defecto configurables
-- Skeleton loading personalizable
-- Manejo de errores consistente
-- UI reutilizable entre componentes
+**Features:**
+- Configurable default views
+- Customizable skeleton loading
+- Consistent error handling
+- Reusable UI across components
 
 #### **Shared Components**
-Componentes compartidos entre ambos tipos de listas.
+Components shared between both types of lists.
 
 ```
 UI/Shared/
-└── LoadingState.swift             # Estados de carga compartidos
+└── LoadingState.swift             # Shared loading states
 ```
 
-**Características:**
-- Estados de carga reutilizables
-- Enums y tipos compartidos
-- Lógica común entre componentes
+**Features:**
+- Reusable loading states
+- Shared enums and types
+- Common logic between components
 
 ### 🧠 Domain Layer
 
 #### **Search System**
-Sistema de búsqueda avanzado con estrategias personalizables.
+Advanced search system with customizable strategies.
 
 ```
 Domain/
-├── Searchable.swift               # Protocolo para items buscables
-├── SearchStrategy.swift           # Protocolo de estrategias de búsqueda
-└── Strategies/                    # Implementaciones de estrategias
-    ├── PartialMatchStrategy.swift # Búsqueda parcial (por defecto)
-    ├── ExactMatchStrategy.swift   # Coincidencia exacta
-    └── TokenizedMatchStrategy.swift # Búsqueda por tokens
+├── Searchable.swift               # Protocol for searchable items
+├── SearchStrategy.swift           # Protocol for search strategies
+└── Strategies/                    # Strategy implementations
+    ├── PartialMatchStrategy.swift # Partial search (default)
+    ├── ExactMatchStrategy.swift   # Exact match
+    └── TokenizedMatchStrategy.swift # Token-based search
 ```
 
-**Características:**
-- Protocolo `Searchable` para items buscables
-- Protocolo `SearchStrategy` para estrategias personalizables
-- Estrategias predefinidas: parcial, exacta y tokenizada
-- Separación clara entre datos y lógica de búsqueda
-- Extensible para estrategias personalizadas
+**Features:**
+- `Searchable` protocol for searchable items
+- `SearchStrategy` protocol for customizable strategies
+- Predefined strategies: partial, exact, and tokenized
+- Clear separation between data and search logic
+- Extensible for custom strategies
 
 ### 🎭 Presentation Layer
 
 #### **Localization**
-Soporte para múltiples idiomas.
+Support for multiple languages.
 
 ```
 Presentation/
-├── DynamicListPresenter.swift     # Presentador para localización
-├── en.lproj/                      # Recursos en inglés
-├── es-MX.lproj/                   # Recursos en español mexicano
-├── fr.lproj/                      # Recursos en francés
-└── pt.lproj/                      # Recursos en portugués
+├── DynamicListPresenter.swift     # Presenter for localization
+├── en.lproj/                      # English resources
+├── es-MX.lproj/                   # Mexican Spanish resources
+├── fr.lproj/                      # French resources
+└── pt.lproj/                      # Portuguese resources
 ```
 
-**Características:**
-- Localización completa del paquete
-- Soporte para 4 idiomas principales
-- Textos localizados para errores y UI
-- Fácil extensión a nuevos idiomas
+**Features:**
+- Complete package localization
+- Support for 4 main languages
+- Localized texts for errors and UI
+- Easy extension to new languages
 
 ## 📚 Documentation
 
-Documentación completa del proyecto.
+Complete project documentation.
 
 ```
 Documentation/
-├── README.md                      # Documentación principal
-├── DeveloperGuide.md              # Guía de desarrollador
-└── FileStructure.md               # Esta documentación
+├── README.md                      # Main documentation
+├── DeveloperGuide.md              # Developer guide
+└── FileStructure.md               # This documentation
 ```
 
 ## 👀 PreviewSupport
 
-Soporte para SwiftUI Previews y ejemplos.
+Support for SwiftUI Previews and examples.
 
 ```
 PreviewSupport/
-├── DynamicListPreviews.swift      # Previews para listas simples
-├── BuilderExamples.swift          # Ejemplos del Builder Pattern
-├── BuilderPreviews.swift          # Previews del Builder
-└── PreviewModels.swift            # Modelos para previews
+├── DynamicListPreviews.swift      # Previews for simple lists
+├── BuilderExamples.swift          # Builder Pattern examples
+├── BuilderPreviews.swift          # Builder previews
+└── PreviewModels.swift            # Models for previews
 ```
 
 ## 🧪 Tests
 
-Tests unitarios y de UI.
+Unit and UI tests.
 
 ```
 Tests/DynamicListTests/
-├── DynamicListTests.swift         # Tests de UI para listas simples
-├── DynamicListViewModelTests.swift # Tests unitarios para ViewModels
-├── SearchStrategyTests.swift      # Tests para estrategias de búsqueda
+├── DynamicListTests.swift         # UI tests for simple lists
+├── DynamicListViewModelTests.swift # Unit tests for ViewModels
+├── SearchStrategyTests.swift      # Tests for search strategies
 └── Helpers/
-    └── TestItem.swift             # Modelo de test
+    └── TestItem.swift             # Test model
 ```
 
-## 🔗 Relaciones entre Componentes
+## 🔗 Component Relationships
 
-### Dependencias de Dynamic List
+### Dynamic List Dependencies
 ```
 DynamicListBuilder (Public)
 ├── DynamicList (Private)
@@ -226,7 +226,7 @@ DynamicListBuilder (Public)
 └── Default Views (Private)
 ```
 
-### Dependencias de Sectioned Dynamic List
+### Sectioned Dynamic List Dependencies
 ```
 SectionedDynamicListBuilder (Public)
 ├── SectionedDynamicList (Private)
@@ -238,7 +238,7 @@ SectionedDynamicListBuilder (Public)
 └── Default Views (Private)
 ```
 
-### Dependencias del Sistema de Búsqueda
+### Search System Dependencies
 ```
 SearchConfiguration (Private)
 ├── Searchable (Private/Domain)
@@ -246,96 +246,96 @@ SearchConfiguration (Private)
 └── Strategies (Private/Domain)
 ```
 
-### Componentes Compartidos
+### Shared Components
 ```
 Shared/
 └── LoadingState
-    ├── DynamicList (usa)
-    └── SectionedDynamicList (usa)
+    ├── DynamicList (uses)
+    └── SectionedDynamicList (uses)
 
 Default Views/
-├── DynamicList (usa)
-└── SectionedDynamicList (usa)
+├── DynamicList (uses)
+└── SectionedDynamicList (uses)
 
 Domain/
 ├── Searchable
-│   ├── DynamicList (usa)
-│   └── SearchStrategy (usa)
+│   ├── DynamicList (uses)
+│   └── SearchStrategy (uses)
 └── SearchStrategy
-    └── DynamicList (usa)
+    └── DynamicList (uses)
 ```
 
-## 🎯 Principios de Organización
+## 🎯 Organization Principles
 
-### 1. **Separación de Responsabilidades**
-- **Public APIs**: Solo los builders están expuestos públicamente
-- **Private Implementation**: Toda la lógica interna está encapsulada
-- **Domain Layer**: Lógica de negocio separada de la UI
-- **UI Components**: Componentes específicos por tipo de lista
+### 1. **Separation of Responsibilities**
+- **Public APIs**: Only builders are publicly exposed
+- **Private Implementation**: All internal logic is encapsulated
+- **Domain Layer**: Business logic separated from UI
+- **UI Components**: Specific components per list type
 
-### 2. **Modularidad**
-- **Componentes independientes**: Cada tipo de lista tiene sus propios componentes
-- **Dependencias claras**: Jerarquía clara de dependencias
-- **Fácil mantenimiento**: Cambios aislados por componente
-- **Extensibilidad**: Fácil agregar nuevos tipos de listas
+### 2. **Modularity**
+- **Independent components**: Each list type has its own components
+- **Clear dependencies**: Clear hierarchy of dependencies
+- **Easy maintenance**: Isolated changes per component
+- **Extensibility**: Easy to add new list types
 
-### 3. **Reutilización**
-- **Componentes compartidos**: LoadingState y Default Views reutilizables
-- **Domain reutilizable**: Sistema de búsqueda independiente de la UI
-- **Configuraciones flexibles**: SearchConfiguration para diferentes casos de uso
+### 3. **Reusability**
+- **Shared components**: LoadingState and Default Views reusable
+- **Reusable domain**: Search system independent of UI
+- **Flexible configurations**: SearchConfiguration for different use cases
 
-### 4. **Escalabilidad**
-- **Arquitectura preparada**: Estructura preparada para futuras extensiones
-- **APIs estables**: APIs públicas bien definidas y estables
-- **Testing completo**: Tests organizados por funcionalidad
+### 4. **Scalability**
+- **Prepared architecture**: Structure ready for future extensions
+- **Stable APIs**: Well-defined and stable public APIs
+- **Complete testing**: Tests organized by functionality
 
-## 🚀 Beneficios de la Nueva Estructura
+## 🚀 Benefits of the New Structure
 
-### Para Desarrolladores
-- **Claridad**: Separación clara entre APIs públicas e implementación privada
-- **Mantenimiento**: Cambios aislados por componente y capa
-- **Reutilización**: Componentes compartidos bien definidos
-- **Testing**: Tests organizados por funcionalidad
+### For Developers
+- **Clarity**: Clear separation between public APIs and private implementation
+- **Maintenance**: Isolated changes per component and layer
+- **Reusability**: Well-defined shared components
+- **Testing**: Tests organized by functionality
 
-### Para el Proyecto
-- **Escalabilidad**: Fácil agregar nuevos tipos de listas y funcionalidades
-- **Performance**: Solo importar lo necesario
-- **Documentación**: Estructura clara y documentada
-- **Calidad**: Separación clara de responsabilidades
+### For the Project
+- **Scalability**: Easy to add new list types and features
+- **Performance**: Only import what's necessary
+- **Documentation**: Clear and documented structure
+- **Quality**: Clear separation of responsibilities
 
-## 📝 Convenciones de Nomenclatura
+## 📝 Naming Conventions
 
-### Archivos de Componentes
-- `[ComponentName].swift` - Componente principal
-- `[ComponentName]ViewModel.swift` - ViewModel del componente
-- `[ComponentName]ViewState.swift` - Estados de vista
+### Component Files
+- `[ComponentName].swift` - Main component
+- `[ComponentName]ViewModel.swift` - Component ViewModel
+- `[ComponentName]ViewState.swift` - View states
 - `[ComponentName]Builder.swift` - Builder pattern
-- `[ComponentName]Content.swift` - Contenido interno
-- `[ComponentName]Wrapper.swift` - Wrapper con navegación
+- `[ComponentName]Content.swift` - Internal content
+- `[ComponentName]Wrapper.swift` - Wrapper with navigation
 
-### Archivos de Dominio
-- `[Feature].swift` - Protocolos y tipos principales
-- `[Feature]Strategy.swift` - Estrategias específicas
-- `[Feature]Configuration.swift` - Configuraciones
+### Domain Files
+- `[Feature].swift` - Main protocols and types
+- `[Feature]Strategy.swift` - Specific strategies
+- `[Feature]Configuration.swift` - Configurations
 
-### Archivos de Tests
-- `[ComponentName]Tests.swift` - Tests de UI
-- `[ComponentName]ViewModelTests.swift` - Tests de ViewModel
-- `[Feature]Tests.swift` - Tests de funcionalidad específica
+### Test Files
+- `[ComponentName]Tests.swift` - UI tests
+- `[ComponentName]ViewModelTests.swift` - ViewModel tests
+- `[Feature]Tests.swift` - Specific functionality tests
 
-## 🔒 Control de Acceso
+## 🔒 Access Control
 
 ### Public APIs
-- `DynamicListBuilder<Item>` - Builder principal para listas simples
-- `SectionedDynamicListBuilder<Item>` - Builder para listas con secciones
-- `SearchConfiguration<Item>` - Configuración de búsqueda
-- `Searchable` - Protocolo para items buscables
-- `SearchStrategy` - Protocolo para estrategias de búsqueda
+- `DynamicListBuilder<Item>` - Main builder for simple lists
+- `SectionedDynamicListBuilder<Item>` - Builder for sectioned lists
+- `SearchConfiguration<Item>` - Search configuration
+- `Searchable` - Protocol for searchable items
+- `SearchStrategy` - Protocol for search strategies
 
 ### Private Implementation
-- Todos los componentes de UI están marcados como `internal`
-- Los ViewModels y ViewStates son `internal`
-- Los componentes de dominio son `internal`
-- Las estrategias de búsqueda son `internal`
+- All UI components are marked as `internal`
+- ViewModels and ViewStates are `internal`
+- Domain components are `internal`
+- Search strategies are `internal`
 
-Esta estructura proporciona una base sólida y escalable para el paquete `DynamicList`, con una clara separación de responsabilidades y APIs públicas bien definidas.
+This structure provides a solid and scalable foundation for the `DynamicList` package, with clear separation of responsibilities and well-defined public APIs.
