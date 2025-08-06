@@ -87,6 +87,7 @@ struct SectionedDynamicListViewModelTests {
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
+        viewModel.loadData()
         #expect(viewModel.viewState.loadingState == .loading)
 
         pts.send(expectedArrays)
@@ -106,6 +107,7 @@ struct SectionedDynamicListViewModelTests {
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
+        viewModel.loadData()
         #expect(viewModel.viewState.loadingState == .loading)
 
         pts.send(completion: .failure(testError))
@@ -322,6 +324,7 @@ struct SectionedDynamicListViewModelTests {
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
+        viewModel.loadData()
 
         #expect(viewModel.viewState.loadingState == .loading)
         #expect(viewModel.viewState.isLoading)
@@ -360,6 +363,7 @@ struct SectionedDynamicListViewModelTests {
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
+        viewModel.loadData()
 
         pts.send(completion: .failure(testError))
 
@@ -386,6 +390,7 @@ struct SectionedDynamicListViewModelTests {
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
+        viewModel.loadData()
 
         // Initial load
         #expect(viewModel.viewState.sections[0].items.first?.name == "initial")

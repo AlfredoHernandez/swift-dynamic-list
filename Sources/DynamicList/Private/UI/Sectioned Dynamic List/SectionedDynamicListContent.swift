@@ -87,6 +87,7 @@ struct SectionedDynamicListContent<Item: Identifiable & Hashable>: View {
                 )
             }
         }
+        .onAppear(perform: viewModel.loadData)
         .navigationDestination(for: Item.self) { item in
             if let detailContent,
                let detailView = detailContent(item)

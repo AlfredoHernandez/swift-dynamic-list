@@ -94,7 +94,6 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable> 
         self.ioScheduler = ioScheduler
         allSections = initialSections
         self.dataProvider = dataProvider
-        loadData()
     }
 
     // MARK: - Public Methods
@@ -109,13 +108,13 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable> 
         viewState = .loading(sections: viewState.sections)
 
         dataProvider()
-            .subscribe(on: ioScheduler)
             .map { [weak self] arrays -> [ListSection<Item>] in
                 let sections = arrays.map { ListSection(title: nil, items: $0) }
 
                 self?.storeUnfilteredSections(sections)
                 return self?.applySearchFilter(to: sections) ?? sections
             }
+            .subscribe(on: ioScheduler)
             .receive(on: scheduler)
             .sink(
                 receiveCompletion: { [weak self] completion in
@@ -135,11 +134,7 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable> 
     ///
     /// - Parameters:
     ///   - dataProvider: A closure that returns a publisher emitting arrays of arrays
-    ///   - scheduler: The scheduler to use for receiving data
-    public func loadItems(
-        from dataProvider: @escaping () -> AnyPublisher<[[Item]], Error>,
-        scheduler _: AnySchedulerOf<DispatchQueue> = .main,
-    ) {
+    public func loadItems(from dataProvider: @escaping () -> AnyPublisher<[[Item]], Error>) {
         self.dataProvider = dataProvider
         loadData()
     }
