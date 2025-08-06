@@ -59,7 +59,7 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
     private var rowContent: ((Item) -> AnyView)?
 
     /// Custom detail content builder
-    private var detailContent: ((Item) -> AnyView)?
+    private var detailContent: ((Item) -> AnyView?)?
 
     /// Custom error content builder
     private var errorContent: ((Error) -> AnyView)?
@@ -184,6 +184,7 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
     ///
     /// This method allows you to define the detail view that will be displayed when
     /// a user taps on an item in the list. The content builder receives the selected item.
+    /// You can return `nil` to disable navigation for specific items.
     ///
     /// - Parameter content: A view builder that creates the detail view for an item.
     /// - Returns: The builder instance for method chaining.
@@ -192,6 +193,33 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
         detailContent = { item in
             AnyView(content(item))
         }
+        return self
+    }
+
+    /// Sets custom detail content with optional navigation.
+    ///
+    /// Use this method when you want to conditionally enable navigation for specific items.
+    /// Return `nil` to disable navigation for items that shouldn't have a detail view.
+    ///
+    /// - Parameter content: A view builder closure that creates the detail view for each item or returns nil.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// SectionedDynamicListBuilder<User>()
+    ///     .sections(sections)
+    ///     .optionalDetailContent { user in
+    ///         if user.name == "A" {
+    ///             Text("ITEM A")
+    ///         } else {
+    ///             nil // No navigation for other users
+    ///         }
+    ///     }
+    ///     .build()
+    /// ```
+    @discardableResult
+    public func optionalDetailContent(_ content: @escaping (Item) -> AnyView?) -> Self {
+        detailContent = content
         return self
     }
 

@@ -260,6 +260,7 @@ VStack(spacing: 16) {
 ### UI Configuration
 - `rowContent(_:)` - Row content
 - `detailContent(_:)` - Detail content
+- `optionalDetailContent(_:)` - Optional detail content (can return nil)
 - `errorContent(_:)` - Custom error view
 - `title(_:)` - Navigation title
 - `hideNavigationBar()` - Hide navigation bar
@@ -319,6 +320,63 @@ DynamicListBuilder.simple(
     }
 )
 ```
+
+### Conditional Navigation with Optional Detail Content
+
+You can conditionally enable navigation for specific items by using `optionalDetailContent(_:)` and returning `nil` for items that shouldn't have navigation:
+
+```swift
+struct User: Identifiable, Hashable {
+    let id = UUID()
+    let name: String
+    let isActive: Bool
+}
+
+let users = [
+    User(name: "Alice", isActive: true),
+    User(name: "Bob", isActive: false),
+    User(name: "Charlie", isActive: true)
+]
+
+DynamicListBuilder<User>()
+    .items(users)
+    .title("Users")
+    .rowContent { user in
+        HStack {
+            Text(user.name)
+            Spacer()
+            if user.isActive {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundColor(.green)
+            } else {
+                Image(systemName: "xmark.circle.fill")
+                    .foregroundColor(.red)
+            }
+        }
+    }
+    .optionalDetailContent { user in
+        // Only show detail view for active users
+        if user.isActive {
+            AnyView(
+                VStack {
+                    Text(user.name)
+                        .font(.title)
+                    Text("Active User")
+                        .foregroundColor(.green)
+                }
+            )
+        } else {
+            // Return nil for inactive users - no navigation will be shown
+            nil
+        }
+    }
+    .build()
+```
+
+In this example:
+- Active users will show a navigation chevron and can be tapped to view details
+- Inactive users will not show a navigation chevron and cannot be tapped
+- The navigation behavior is determined dynamically based on the item's state
 
 The `DynamicListBuilder` makes creating dynamic lists as simple as chaining methods! 🎉
 

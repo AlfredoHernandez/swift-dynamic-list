@@ -12,7 +12,7 @@ import SwiftUI
 struct SectionedDynamicListContent<Item: Identifiable & Hashable>: View {
     @State private var viewModel: SectionedDynamicListViewModel<Item>
     private let rowContent: (Item) -> AnyView
-    private let detailContent: ((Item) -> AnyView)?
+    private let detailContent: ((Item) -> AnyView?)?
     private let errorContent: ((Error) -> AnyView)?
     private let skeletonContent: (() -> AnyView)?
     private let title: String?
@@ -22,7 +22,7 @@ struct SectionedDynamicListContent<Item: Identifiable & Hashable>: View {
     init(
         viewModel: SectionedDynamicListViewModel<Item>,
         rowContent: @escaping (Item) -> AnyView,
-        detailContent: ((Item) -> AnyView)?,
+        detailContent: ((Item) -> AnyView?)?,
         errorContent: ((Error) -> AnyView)?,
         skeletonContent: (() -> AnyView)?,
         title: String?,
@@ -53,7 +53,9 @@ struct SectionedDynamicListContent<Item: Identifiable & Hashable>: View {
                     ForEach(viewModel.sections) { section in
                         Section {
                             ForEach(section.items) { item in
-                                if detailContent != nil {
+                                if let detailContent,
+                                   let _ = detailContent(item)
+                                {
                                     NavigationLink(value: item) {
                                         rowContent(item)
                                             .redacted(reason: viewModel.viewState.isLoading ? .placeholder : [])
@@ -88,8 +90,10 @@ struct SectionedDynamicListContent<Item: Identifiable & Hashable>: View {
             }
         }
         .navigationDestination(for: Item.self) { item in
-            if let detailContent {
-                detailContent(item)
+            if let detailContent,
+               let detailView = detailContent(item)
+            {
+                detailView
             }
         }
         .navigationTitle(title ?? "")

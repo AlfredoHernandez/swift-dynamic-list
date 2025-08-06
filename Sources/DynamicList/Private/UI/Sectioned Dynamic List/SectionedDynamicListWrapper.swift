@@ -13,7 +13,7 @@ import SwiftUI
 struct SectionedDynamicListWrapper<Item: Identifiable & Hashable>: View {
     @State private var viewModel: SectionedDynamicListViewModel<Item>
     private let rowContent: (Item) -> AnyView
-    private let detailContent: ((Item) -> AnyView)?
+    private let detailContent: ((Item) -> AnyView?)?
     private let errorContent: ((Error) -> AnyView)?
     private let skeletonContent: (() -> AnyView)?
     private let title: String?
@@ -23,7 +23,7 @@ struct SectionedDynamicListWrapper<Item: Identifiable & Hashable>: View {
     init(
         viewModel: SectionedDynamicListViewModel<Item>,
         rowContent: @escaping (Item) -> AnyView,
-        detailContent: ((Item) -> AnyView)?,
+        detailContent: ((Item) -> AnyView?)?,
         errorContent: ((Error) -> AnyView)?,
         skeletonContent: (() -> AnyView)?,
         title: String?,

@@ -12,7 +12,7 @@ import SwiftUI
 struct DynamicListContent<Item: Identifiable & Hashable>: View {
     @State private var viewModel: DynamicListViewModel<Item>
     private let rowContent: (Item) -> AnyView
-    private let detailContent: ((Item) -> AnyView)?
+    private let detailContent: ((Item) -> AnyView?)?
     private let errorContent: ((Error) -> AnyView)?
     private let skeletonContent: (() -> AnyView)?
     private let title: String?
@@ -22,7 +22,7 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
     init(
         viewModel: DynamicListViewModel<Item>,
         rowContent: @escaping (Item) -> AnyView,
-        detailContent: ((Item) -> AnyView)?,
+        detailContent: ((Item) -> AnyView?)?,
         errorContent: ((Error) -> AnyView)?,
         skeletonContent: (() -> AnyView)?,
         title: String?,
@@ -50,7 +50,9 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
                 errorView
             } else {
                 List(viewModel.items) { item in
-                    if detailContent != nil {
+                    if let detailContent,
+                       let _ = detailContent(item)
+                    {
                         NavigationLink(value: item) {
                             rowContent(item)
                                 .redacted(reason: viewModel.viewState.isLoading ? .placeholder : [])
@@ -66,7 +68,11 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
             }
         }
         .navigationDestination(for: Item.self) { item in
-            if let detailContent { detailContent(item) }
+            if let detailContent,
+               let detailView = detailContent(item)
+            {
+                detailView
+            }
         }
         .navigationTitle(title ?? "")
         #if os(iOS)

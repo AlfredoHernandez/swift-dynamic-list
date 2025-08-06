@@ -11,7 +11,7 @@ import SwiftUI
 struct DynamicListWrapper<Item: Identifiable & Hashable>: View {
     @State private var viewModel: DynamicListViewModel<Item>
     private let rowContent: (Item) -> AnyView
-    private let detailContent: ((Item) -> AnyView)?
+    private let detailContent: ((Item) -> AnyView?)?
     private let errorContent: ((Error) -> AnyView)?
     private let skeletonContent: (() -> AnyView)?
     private let title: String?
@@ -21,7 +21,7 @@ struct DynamicListWrapper<Item: Identifiable & Hashable>: View {
     init(
         viewModel: DynamicListViewModel<Item>,
         rowContent: @escaping (Item) -> AnyView,
-        detailContent: ((Item) -> AnyView)?,
+        detailContent: ((Item) -> AnyView?)?,
         errorContent: ((Error) -> AnyView)?,
         skeletonContent: (() -> AnyView)?,
         title: String?,

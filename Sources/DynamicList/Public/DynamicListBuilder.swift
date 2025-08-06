@@ -73,7 +73,7 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     private var rowContent: ((Item) -> AnyView)?
 
     /// Custom detail content builder
-    private var detailContent: ((Item) -> AnyView)?
+    private var detailContent: ((Item) -> AnyView?)?
 
     /// Custom error content builder
     private var errorContent: ((Error) -> AnyView)?
@@ -244,6 +244,7 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     ///
     /// Use this method to customize the detail view that appears when a user taps on a list item.
     /// If not provided, a default detail view will be used that shows the item's description.
+    /// You can return `nil` to disable navigation for specific items.
     ///
     /// - Parameter content: A view builder closure that creates the detail view for each item.
     /// - Returns: The builder instance for method chaining.
@@ -253,27 +254,31 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     /// DynamicListBuilder<User>()
     ///     .items(users)
     ///     .detailContent { user in
-    ///         VStack(spacing: 16) {
-    ///             AsyncImage(url: user.avatarURL) { image in
-    ///                 image.resizable()
-    ///             } placeholder: {
-    ///                 Circle().fill(.gray)
+    ///         if user.isActive {
+    ///             VStack(spacing: 16) {
+    ///                 AsyncImage(url: user.avatarURL) { image in
+    ///                     image.resizable()
+    ///                 } placeholder: {
+    ///                     Circle().fill(.gray)
+    ///                 }
+    ///                 .frame(width: 100, height: 100)
+    ///                 .clipShape(Circle())
+    ///
+    ///                 Text(user.name)
+    ///                     .font(.title)
+    ///                     .fontWeight(.bold)
+    ///
+    ///                 Text(user.email)
+    ///                     .font(.body)
+    ///
+    ///                 Text(user.bio)
+    ///                     .font(.body)
+    ///                     .foregroundColor(.secondary)
     ///             }
-    ///             .frame(width: 100, height: 100)
-    ///             .clipShape(Circle())
-    ///
-    ///             Text(user.name)
-    ///                 .font(.title)
-    ///                 .fontWeight(.bold)
-    ///
-    ///             Text(user.email)
-    ///                 .font(.body)
-    ///
-    ///             Text(user.bio)
-    ///                 .font(.body)
-    ///                 .foregroundColor(.secondary)
+    ///             .padding()
+    ///         } else {
+    ///             nil // No navigation for inactive users
     ///         }
-    ///         .padding()
     ///     }
     ///     .build()
     /// ```
@@ -282,6 +287,33 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
         detailContent = { item in
             AnyView(content(item))
         }
+        return self
+    }
+
+    /// Sets the custom detail content builder with optional navigation.
+    ///
+    /// Use this method when you want to conditionally enable navigation for specific items.
+    /// Return `nil` to disable navigation for items that shouldn't have a detail view.
+    ///
+    /// - Parameter content: A view builder closure that creates the detail view for each item or returns nil.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// DynamicListBuilder<User>()
+    ///     .items(users)
+    ///     .optionalDetailContent { user in
+    ///         if user.name == "A" {
+    ///             Text("ITEM A")
+    ///         } else {
+    ///             nil // No navigation for other users
+    ///         }
+    ///     }
+    ///     .build()
+    /// ```
+    @discardableResult
+    public func optionalDetailContent(_ content: @escaping (Item) -> AnyView?) -> Self {
+        detailContent = content
         return self
     }
 
