@@ -26,6 +26,23 @@ import SwiftUI
 ///     .build()
 /// ```
 ///
+/// ## Custom Row Actions
+/// ```swift
+/// SectionedDynamicListBuilder<Fruit>()
+///     .sections([
+///         ListSection(title: "Frutas Rojas", items: redFruits),
+///         ListSection(title: "Frutas Verdes", items: greenFruits)
+///     ])
+///     .rowContent { fruit in
+///         Text(fruit.name)
+///     }
+///     .onTapRow { fruit in
+///         print("Selected fruit: \(fruit.name)")
+///         // Perform custom action instead of navigation
+///     }
+///     .build()
+/// ```
+///
 /// ## Reactive Data Source
 /// ```swift
 /// SectionedDynamicListBuilder<Fruit>()
@@ -43,6 +60,8 @@ import SwiftUI
 /// - Note: The `Item` type must conform to `Identifiable` and `Hashable` protocols.
 /// - Important: Use `build()` for standalone lists or `buildWithoutNavigation()` when embedding
 ///   within existing navigation contexts to avoid NavigationStack conflicts.
+/// - Note: When using `onTapRow`, the list will not navigate to a detail view. The custom action
+///   will be executed instead of the default navigation behavior.
 public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
     // MARK: - Private Properties
 
@@ -63,6 +82,9 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
 
     /// Custom skeleton content builder
     private var skeletonContent: (() -> AnyView)?
+
+    /// Custom action to execute when a row is tapped
+    private var onTapRow: ((Item) -> Void)?
 
     /// Navigation title for the list
     private var title: String?
@@ -220,6 +242,48 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
         skeletonContent = {
             AnyView(content())
         }
+        return self
+    }
+
+    /// Sets a custom action to execute when a row is tapped.
+    ///
+    /// Use this method to define a closure that will be called when a user taps on a list item.
+    /// This allows you to perform custom actions instead of navigating to a detail view.
+    ///
+    /// - Parameter action: A closure that takes the tapped item as an argument.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// SectionedDynamicListBuilder<User>()
+    ///     .sections(sections)
+    ///     .rowContent { user in
+    ///         HStack {
+    ///             AsyncImage(url: user.avatarURL) { image in
+    ///                 image.resizable()
+    ///             } placeholder: {
+    ///                 Circle().fill(.gray)
+    ///             }
+    ///             .frame(width: 40, height: 40)
+    ///             .clipShape(Circle())
+    ///
+    ///             VStack(alignment: .leading) {
+    ///                 Text(user.name)
+    ///                     .font(.headline)
+    ///                 Text(user.email)
+    ///                     .font(.caption)
+    ///                     .foregroundColor(.secondary)
+    ///             }
+    ///         }
+    ///     }
+    ///     .onTapRow { user in
+    ///         print("Tapped user: \(user.name)")
+    ///     }
+    ///     .build()
+    /// ```
+    @discardableResult
+    public func onTapRow(_ action: @escaping (Item) -> Void) -> Self {
+        onTapRow = action
         return self
     }
 
@@ -464,6 +528,7 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
             title: title,
             navigationBarHidden: navigationBarHidden,
             searchConfiguration: searchConfiguration,
+            onTapRow: onTapRow,
         )
     }
 
@@ -495,6 +560,7 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
             title: title,
             navigationBarHidden: navigationBarHidden,
             searchConfiguration: searchConfiguration,
+            onTapRow: onTapRow,
         )
     }
 }

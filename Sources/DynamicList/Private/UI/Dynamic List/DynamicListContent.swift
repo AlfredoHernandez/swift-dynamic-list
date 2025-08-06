@@ -18,6 +18,7 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
     private let title: String?
     private let navigationBarHidden: Bool
     private let searchConfiguration: SearchConfiguration<Item>?
+    private let onTapRow: ((Item) -> Void)?
 
     init(
         viewModel: DynamicListViewModel<Item>,
@@ -28,6 +29,7 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
         title: String?,
         navigationBarHidden: Bool,
         searchConfiguration: SearchConfiguration<Item>?,
+        onTapRow: ((Item) -> Void)?,
     ) {
         _viewModel = State(initialValue: viewModel)
         self.rowContent = rowContent
@@ -37,6 +39,7 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
         self.title = title
         self.navigationBarHidden = navigationBarHidden
         self.searchConfiguration = searchConfiguration
+        self.onTapRow = onTapRow
 
         // Configure search in the view model
         viewModel.setSearchConfiguration(searchConfiguration)
@@ -50,9 +53,15 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
                 errorView
             } else {
                 List(viewModel.items) { item in
-                    NavigationLink(value: item) {
-                        rowContent(item)
-                            .redacted(reason: viewModel.viewState.isLoading ? .placeholder : [])
+                    if let onTapRow {
+                        Button(action: { onTapRow(item) }) {
+                            rowContent(item).redacted(reason: viewModel.viewState.isLoading ? .placeholder : [])
+                        }
+                        .buttonStyle(.plain)
+                    } else {
+                        NavigationLink(value: item) {
+                            rowContent(item).redacted(reason: viewModel.viewState.isLoading ? .placeholder : [])
+                        }
                     }
                 }
                 .refreshable {
