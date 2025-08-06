@@ -75,9 +75,9 @@ struct ListStyleExample: View {
 
             // Inset Style
             DynamicListBuilder<Product>()
-                .title("Inset Grouped Style")
+                .title("Inset Style")
                 .items(products)
-                .listStyle(.insetGrouped)
+                .listStyle(.inset)
                 .rowContent { product in
                     HStack {
                         VStack(alignment: .leading) {

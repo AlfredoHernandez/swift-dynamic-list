@@ -67,17 +67,11 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
     /// Custom skeleton content builder
     private var skeletonContent: (() -> AnyView)?
 
-    /// Navigation title for the list
-    private var title: String?
-
-    /// Whether to hide the navigation bar
-    private var navigationBarHidden: Bool = false
-
     /// Search configuration for the list
     private var searchConfiguration: SearchConfiguration<Item>?
 
-    /// List style configuration
-    private var listStyle: ListStyleType = .automatic
+    /// List configuration for appearance and behavior
+    private var listConfiguration: ListConfiguration = .default
 
     // MARK: - Initialization
 
@@ -263,7 +257,11 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
     /// - Returns: The builder instance for method chaining.
     @discardableResult
     public func title(_ title: String) -> Self {
-        self.title = title
+        listConfiguration = ListConfiguration(
+            style: listConfiguration.style,
+            navigationBarHidden: listConfiguration.navigationBarHidden,
+            title: title,
+        )
         return self
     }
 
@@ -275,7 +273,11 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
     /// - Returns: The builder instance for method chaining.
     @discardableResult
     public func hideNavigationBar() -> Self {
-        navigationBarHidden = true
+        listConfiguration = ListConfiguration(
+            style: listConfiguration.style,
+            navigationBarHidden: true,
+            title: listConfiguration.title,
+        )
         return self
     }
 
@@ -303,7 +305,35 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
     /// - `.insetGrouped` - Inset grouped style (iOS only)
     @discardableResult
     public func listStyle(_ style: ListStyleType) -> Self {
-        listStyle = style
+        listConfiguration = ListConfiguration(
+            style: style,
+            navigationBarHidden: listConfiguration.navigationBarHidden,
+            title: listConfiguration.title,
+        )
+        return self
+    }
+
+    /// Sets the complete list configuration.
+    ///
+    /// Use this method when you want to set multiple list properties at once.
+    ///
+    /// - Parameter configuration: The list configuration to apply.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// SectionedDynamicListBuilder<User>()
+    ///     .sections(sections)
+    ///     .listConfiguration(ListConfiguration(
+    ///         style: .grouped,
+    ///         navigationBarHidden: false,
+    ///         title: "Users"
+    ///     ))
+    ///     .build()
+    /// ```
+    @discardableResult
+    public func listConfiguration(_ configuration: ListConfiguration) -> Self {
+        listConfiguration = configuration
         return self
     }
 
@@ -521,10 +551,8 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
             detailContent: detailContent,
             errorContent: errorContent,
             skeletonContent: skeletonContent,
-            title: title,
-            navigationBarHidden: navigationBarHidden,
+            listConfiguration: listConfiguration,
             searchConfiguration: searchConfiguration,
-            listStyle: listStyle,
         )
     }
 
@@ -551,10 +579,8 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
             detailContent: detailContent,
             errorContent: errorContent,
             skeletonContent: skeletonContent,
-            title: title,
-            navigationBarHidden: navigationBarHidden,
+            listConfiguration: listConfiguration,
             searchConfiguration: searchConfiguration,
-            listStyle: listStyle,
         )
     }
 }

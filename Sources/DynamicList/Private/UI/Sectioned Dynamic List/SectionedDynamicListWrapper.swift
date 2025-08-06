@@ -16,10 +16,8 @@ struct SectionedDynamicListWrapper<Item: Identifiable & Hashable>: View {
     private let detailContent: ((Item) -> AnyView?)?
     private let errorContent: ((Error) -> AnyView)?
     private let skeletonContent: (() -> AnyView)?
-    private let title: String?
-    private let navigationBarHidden: Bool
+    private let listConfiguration: ListConfiguration
     private let searchConfiguration: SearchConfiguration<Item>?
-    private let listStyle: ListStyleType
 
     init(
         viewModel: SectionedDynamicListViewModel<Item>,
@@ -27,20 +25,16 @@ struct SectionedDynamicListWrapper<Item: Identifiable & Hashable>: View {
         detailContent: ((Item) -> AnyView?)?,
         errorContent: ((Error) -> AnyView)?,
         skeletonContent: (() -> AnyView)?,
-        title: String?,
-        navigationBarHidden: Bool,
+        listConfiguration: ListConfiguration,
         searchConfiguration: SearchConfiguration<Item>?,
-        listStyle: ListStyleType,
     ) {
         _viewModel = State(initialValue: viewModel)
         self.rowContent = rowContent
         self.detailContent = detailContent
         self.errorContent = errorContent
         self.skeletonContent = skeletonContent
-        self.title = title
-        self.navigationBarHidden = navigationBarHidden
+        self.listConfiguration = listConfiguration
         self.searchConfiguration = searchConfiguration
-        self.listStyle = listStyle
     }
 
     var body: some View {
@@ -51,10 +45,8 @@ struct SectionedDynamicListWrapper<Item: Identifiable & Hashable>: View {
                 detailContent: detailContent,
                 errorContent: errorContent,
                 skeletonContent: skeletonContent,
-                title: title,
-                navigationBarHidden: navigationBarHidden,
+                listConfiguration: listConfiguration,
                 searchConfiguration: searchConfiguration,
-                listStyle: listStyle,
             )
         }
     }

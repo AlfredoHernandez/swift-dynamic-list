@@ -15,10 +15,8 @@ struct SectionedDynamicListContent<Item: Identifiable & Hashable>: View {
     private let detailContent: ((Item) -> AnyView?)?
     private let errorContent: ((Error) -> AnyView)?
     private let skeletonContent: (() -> AnyView)?
-    private let title: String?
-    private let navigationBarHidden: Bool
+    private let listConfiguration: ListConfiguration
     private let searchConfiguration: SearchConfiguration<Item>?
-    private let listStyle: ListStyleType
 
     init(
         viewModel: SectionedDynamicListViewModel<Item>,
@@ -26,20 +24,16 @@ struct SectionedDynamicListContent<Item: Identifiable & Hashable>: View {
         detailContent: ((Item) -> AnyView?)?,
         errorContent: ((Error) -> AnyView)?,
         skeletonContent: (() -> AnyView)?,
-        title: String?,
-        navigationBarHidden: Bool,
+        listConfiguration: ListConfiguration,
         searchConfiguration: SearchConfiguration<Item>?,
-        listStyle: ListStyleType,
     ) {
         _viewModel = State(initialValue: viewModel)
         self.rowContent = rowContent
         self.detailContent = detailContent
         self.errorContent = errorContent
         self.skeletonContent = skeletonContent
-        self.title = title
-        self.navigationBarHidden = navigationBarHidden
+        self.listConfiguration = listConfiguration
         self.searchConfiguration = searchConfiguration
-        self.listStyle = listStyle
 
         // Configure search in the view model
         viewModel.setSearchConfiguration(searchConfiguration)
@@ -79,7 +73,7 @@ struct SectionedDynamicListContent<Item: Identifiable & Hashable>: View {
                         }
                     }
                 }
-                .modifier(ListStyleModifier(style: listStyle))
+                .modifier(ListStyleModifier(style: listConfiguration.style))
                 .refreshable {
                     viewModel.refresh()
                 }
@@ -100,9 +94,9 @@ struct SectionedDynamicListContent<Item: Identifiable & Hashable>: View {
                 detailView
             }
         }
-        .navigationTitle(title ?? "")
+        .navigationTitle(listConfiguration.title ?? "")
         #if os(iOS)
-            .navigationBarHidden(navigationBarHidden)
+            .navigationBarHidden(listConfiguration.navigationBarHidden)
         #endif
     }
 

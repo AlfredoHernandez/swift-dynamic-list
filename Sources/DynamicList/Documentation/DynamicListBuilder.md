@@ -265,6 +265,7 @@ VStack(spacing: 16) {
 - `title(_:)` - Navigation title
 - `hideNavigationBar()` - Hide navigation bar
 - `listStyle(_:)` - Customize list appearance
+- `listConfiguration(_:)` - Complete list configuration
 
 ### Factory Methods
 - `simple(items:rowContent:detailContent:)` - Simple list
@@ -440,6 +441,37 @@ DynamicListBuilder<Item>()
 
 - **macOS**: Supports `.automatic`, `.plain`, and `.inset`
 - **iOS**: Supports all styles including `.grouped` and `.insetGrouped`
+
+### Complete List Configuration
+
+For more complex scenarios, you can set multiple list properties at once using `ListConfiguration`:
+
+```swift
+DynamicListBuilder<User>()
+    .items(users)
+    .listConfiguration(ListConfiguration(
+        style: .grouped,
+        navigationBarHidden: false,
+        title: "Users"
+    ))
+    .build()
+```
+
+#### ListConfiguration Factory Methods
+
+```swift
+// Just the style
+ListConfiguration.style(.plain)
+
+// Just the title
+ListConfiguration.title("My List")
+
+// Hidden navigation bar
+ListConfiguration.hiddenNavigationBar
+
+// Default configuration
+ListConfiguration.default
+```
 
 The `DynamicListBuilder` makes creating dynamic lists as simple as chaining methods! 🎉
 
