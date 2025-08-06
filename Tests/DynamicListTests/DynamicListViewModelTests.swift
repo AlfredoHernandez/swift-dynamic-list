@@ -13,7 +13,11 @@ struct DynamicListViewModelTests {
     @Test("when initialized with items displays correct items")
     func whenInitializedWithItems_displaysCorrectItems() {
         let items = [TestItem(name: "Item 1")]
-        let viewModel = DynamicListViewModel(items: items)
+        let viewModel = DynamicListViewModel(
+            items: items,
+            scheduler: .immediate,
+            ioScheduler: .immediate,
+        )
 
         // Test backward compatibility properties
         #expect(viewModel.items == items)
@@ -29,7 +33,10 @@ struct DynamicListViewModelTests {
 
     @Test("when initialized without items displays empty state")
     func whenInitializedWithoutItems_displaysEmptyState() {
-        let viewModel = DynamicListViewModel<TestItem>()
+        let viewModel = DynamicListViewModel<TestItem>(
+            scheduler: .immediate,
+            ioScheduler: .immediate,
+        )
 
         // Test backward compatibility properties
         #expect(viewModel.items.isEmpty)
@@ -46,7 +53,11 @@ struct DynamicListViewModelTests {
     @Test("when view state is idle provides correct convenience properties")
     func whenViewStateIsIdle_providesCorrectConvenienceProperties() {
         let items = [TestItem(name: "Item 1"), TestItem(name: "Item 2")]
-        let viewModel = DynamicListViewModel(items: items)
+        let viewModel = DynamicListViewModel(
+            items: items,
+            scheduler: .immediate,
+            ioScheduler: .immediate,
+        )
 
         // Test state-specific properties
         #expect(viewModel.viewState.shouldShowList)
@@ -61,7 +72,11 @@ struct DynamicListViewModelTests {
         let expectedItems = [TestItem(name: "Item 1"), TestItem(name: "Item 2")]
         let pts = PassthroughSubject<[TestItem], Error>()
 
-        let viewModel = DynamicListViewModel(dataProvider: pts.eraseToAnyPublisher, scheduler: .immediate)
+        let viewModel = DynamicListViewModel(
+            dataProvider: pts.eraseToAnyPublisher,
+            scheduler: .immediate,
+            ioScheduler: .immediate,
+        )
         #expect(viewModel.viewState.loadingState == .loading)
 
         pts.send(expectedItems)
@@ -73,7 +88,11 @@ struct DynamicListViewModelTests {
         let testError = NSError(domain: "Test", code: 1, userInfo: nil)
         let pts = PassthroughSubject<[TestItem], Error>()
 
-        let viewModel = DynamicListViewModel(dataProvider: pts.eraseToAnyPublisher, scheduler: .immediate)
+        let viewModel = DynamicListViewModel(
+            dataProvider: pts.eraseToAnyPublisher,
+            scheduler: .immediate,
+            ioScheduler: .immediate,
+        )
         #expect(viewModel.viewState.loadingState == .loading)
 
         pts.send(completion: .failure(testError))
@@ -92,6 +111,7 @@ struct DynamicListViewModelTests {
                 return pts.eraseToAnyPublisher()
             },
             scheduler: .immediate,
+            ioScheduler: .immediate,
         )
 
         // Verify initial load was called
@@ -122,6 +142,7 @@ struct DynamicListViewModelTests {
         let viewModel = DynamicListViewModel(
             dataProvider: pts1.eraseToAnyPublisher,
             scheduler: .immediate,
+            ioScheduler: .immediate,
         )
 
         #expect(viewModel.viewState.loadingState == .loading)
@@ -155,6 +176,7 @@ struct DynamicListViewModelTests {
                 return pts1.eraseToAnyPublisher()
             },
             scheduler: .immediate,
+            ioScheduler: .immediate,
         )
 
         // Verify initial load
@@ -208,6 +230,7 @@ struct DynamicListViewModelTests {
                 }
             },
             scheduler: .immediate,
+            ioScheduler: .immediate,
         )
 
         // Send initial data with "all" filter

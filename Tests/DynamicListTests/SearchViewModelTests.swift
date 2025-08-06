@@ -51,7 +51,11 @@ struct SearchViewModelTests {
             SearchableUser(name: "Bob", email: "bob@test.com", role: "User"),
         ]
 
-        let viewModel = DynamicListViewModel(items: users)
+        let viewModel = DynamicListViewModel(
+            items: users,
+            scheduler: .immediate,
+            ioScheduler: .immediate,
+        )
         let searchConfig = SearchConfiguration<SearchableUser>(
             prompt: "Buscar usuarios...",
             strategy: PartialMatchStrategy(),
@@ -71,7 +75,11 @@ struct SearchViewModelTests {
             SearchableUser(name: "Bob", email: "bob@test.com", role: "User"),
         ]
 
-        let viewModel = DynamicListViewModel(items: users)
+        let viewModel = DynamicListViewModel(
+            items: users,
+            scheduler: .immediate,
+            ioScheduler: .immediate,
+        )
         let searchConfig = SearchConfiguration<SearchableUser>(
             prompt: "Buscar usuarios...",
             strategy: PartialMatchStrategy(),
@@ -91,7 +99,11 @@ struct SearchViewModelTests {
             SearchableUser(name: "Bob", email: "bob@test.com", role: "User"),
         ]
 
-        let viewModel = DynamicListViewModel(items: users)
+        let viewModel = DynamicListViewModel(
+            items: users,
+            scheduler: .immediate,
+            ioScheduler: .immediate,
+        )
         let searchConfig = SearchConfiguration<SearchableUser>(
             prompt: "Buscar usuarios...",
             predicate: { user, query in
@@ -113,7 +125,11 @@ struct SearchViewModelTests {
             SearchableUser(name: "Bob", email: "bob@test.com", role: "User"),
         ]
 
-        let viewModel = DynamicListViewModel(items: users)
+        let viewModel = DynamicListViewModel(
+            items: users,
+            scheduler: .immediate,
+            ioScheduler: .immediate,
+        )
         viewModel.updateSearchText("Ana")
 
         #expect(viewModel.filteredItemsList.count == 1)

@@ -202,8 +202,10 @@ Sources/DynamicList/
 ### 🔍 **Search Logic in ViewModels**
 - **Lógica centralizada**: La funcionalidad de búsqueda está implementada en los ViewModels
 - **Separación de responsabilidades**: Las vistas solo manejan la UI, los ViewModels manejan la lógica de filtrado
+- **Filtrado en background**: El filtrado se realiza en background threads para mantener la UI responsiva
 - **Testabilidad**: La lógica de búsqueda es fácilmente testeable de forma aislada
 - **Reutilización**: Misma lógica de búsqueda para listas simples y con secciones
+- **Performance optimizada**: Filtrado integrado en el flujo de datos del publisher
 
 ### 🎨 **Default Views**
 - `DefaultRowView.swift` - Vista de fila por defecto
@@ -213,6 +215,47 @@ Sources/DynamicList/
 - `DefaultSectionedSkeletonView.swift` - Skeleton para secciones
 
 ## 🎨 Características Avanzadas
+
+### Performance Optimizada
+
+DynamicList incluye optimizaciones de performance para manejar grandes volúmenes de datos:
+
+#### Filtrado en Background
+```swift
+// El filtrado se realiza automáticamente en background threads
+DynamicListBuilder<User>()
+    .publisher(userService.fetchUsers()) // Datos cargados en background
+    .searchable(prompt: "Buscar usuarios...") // Filtrado en background
+    .build()
+```
+
+#### Schedulers Separados
+- **UI Scheduler**: Para actualizaciones de la interfaz (main queue)
+- **IO Scheduler**: Para operaciones de filtrado y procesamiento (background queue)
+- **Testing**: Schedulers inmediatos para tests síncronos
+
+#### Flujo de Datos Optimizado
+```swift
+// Internamente, el flujo es:
+Publisher → Background Processing → Filtering → UI Update
+```
+
+#### Configuración de Schedulers
+```swift
+// En producción (por defecto):
+DynamicListViewModel(
+    dataProvider: userService.fetchUsers,
+    scheduler: .main,                    // UI updates en main queue
+    ioScheduler: .global(qos: .userInitiated)  // Background processing
+)
+
+// En testing:
+DynamicListViewModel(
+    dataProvider: testPublisher,
+    scheduler: .immediate,               // UI updates síncronos
+    ioScheduler: .immediate              // Background operations síncronos
+)
+```
 
 ### Estados de Carga Inteligentes
 
@@ -408,7 +451,11 @@ struct DynamicListViewModelTests {
     @Test("when initialized with items displays correct items")
     func test_whenInitializedWithItems_displaysCorrectItems() {
         let items = [TestItem(name: "Test")]
-        let viewModel = DynamicListViewModel(items: items)
+        let viewModel = DynamicListViewModel(
+            items: items,
+            scheduler: .immediate,      // UI updates
+            ioScheduler: .immediate     // Background operations
+        )
         
         #expect(viewModel.viewState.items == items)
         #expect(viewModel.viewState.loadingState == .loaded)
@@ -419,7 +466,8 @@ struct DynamicListViewModelTests {
         let pts = PassthroughSubject<[TestItem], Error>()
         let viewModel = DynamicListViewModel(
             dataProvider: { pts.eraseToAnyPublisher() },
-            scheduler: .immediate
+            scheduler: .immediate,      // UI updates
+            ioScheduler: .immediate     // Background operations
         )
         
         let items = [TestItem(name: "Updated")]

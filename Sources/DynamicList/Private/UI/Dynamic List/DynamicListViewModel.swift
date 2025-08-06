@@ -18,6 +18,9 @@ final class DynamicListViewModel<Item: Identifiable & Hashable> {
 
     var scheduler: AnySchedulerOf<DispatchQueue>
 
+    /// Scheduler for background operations like filtering
+    var ioScheduler: AnySchedulerOf<DispatchQueue>
+
     /// Set to store Combine subscriptions.
     private var cancellables = Set<AnyCancellable>()
 
@@ -30,11 +33,23 @@ final class DynamicListViewModel<Item: Identifiable & Hashable> {
     /// Current search text
     private var searchText: String = ""
 
+    /// Current unfiltered items (for filtering operations)
+    private var allItems: [Item] = []
+
     /// Initializes the view model with an initial set of items.
-    /// - Parameter items: The initial array of items. Defaults to an empty array.
-    init(items: [Item] = [], scheduler: AnySchedulerOf<DispatchQueue> = .main) {
+    /// - Parameters:
+    ///   - items: The initial array of items. Defaults to an empty array.
+    ///   - scheduler: The scheduler for UI updates. Defaults to main queue.
+    ///   - ioScheduler: The scheduler for background operations. Defaults to background queue.
+    init(
+        items: [Item] = [],
+        scheduler: AnySchedulerOf<DispatchQueue> = .main,
+        ioScheduler: AnySchedulerOf<DispatchQueue> = .global(qos: .userInitiated),
+    ) {
         viewState = .idle(items: items)
         self.scheduler = scheduler
+        self.ioScheduler = ioScheduler
+        allItems = items
     }
 
     /// Initializes the view model with a data provider closure that returns a publisher.
@@ -46,10 +61,19 @@ final class DynamicListViewModel<Item: Identifiable & Hashable> {
     /// - Parameters:
     ///   - dataProvider: A closure that returns a Combine publisher emitting arrays of items.
     ///   - initialItems: Initial items to display while loading. Defaults to an empty array.
-    init(dataProvider: @escaping () -> AnyPublisher<[Item], Error>, initialItems: [Item] = [], scheduler: AnySchedulerOf<DispatchQueue> = .main) {
+    ///   - scheduler: The scheduler for UI updates. Defaults to main queue.
+    ///   - ioScheduler: The scheduler for background operations. Defaults to background queue.
+    init(
+        dataProvider: @escaping () -> AnyPublisher<[Item], Error>,
+        initialItems: [Item] = [],
+        scheduler: AnySchedulerOf<DispatchQueue> = .main,
+        ioScheduler: AnySchedulerOf<DispatchQueue> = .global(qos: .userInitiated),
+    ) {
         self.dataProvider = dataProvider
         viewState = .loading(items: initialItems)
         self.scheduler = scheduler
+        self.ioScheduler = ioScheduler
+        allItems = initialItems
         loadData()
     }
 
@@ -76,6 +100,14 @@ final class DynamicListViewModel<Item: Identifiable & Hashable> {
         viewState = .loading(items: viewState.items)
 
         provider()
+            .subscribe(on: ioScheduler)
+            .map { [weak self] items -> [Item] in
+                // Store unfiltered items for future filtering
+                self?.allItems = items
+
+                // Apply current search filter if any
+                return self?.applySearchFilter(to: items) ?? items
+            }
             .receive(on: scheduler)
             .sink(
                 receiveCompletion: { [weak self] completion in
@@ -85,8 +117,8 @@ final class DynamicListViewModel<Item: Identifiable & Hashable> {
                         self?.viewState = .error(error, items: self?.viewState.items ?? [])
                     }
                 },
-                receiveValue: { [weak self] items in
-                    self?.viewState = .loaded(items: items)
+                receiveValue: { [weak self] filteredItems in
+                    self?.viewState = .loaded(items: filteredItems)
                 },
             )
             .store(in: &cancellables)
@@ -112,20 +144,27 @@ final class DynamicListViewModel<Item: Identifiable & Hashable> {
     /// - Parameter text: The new search text to filter by.
     func updateSearchText(_ text: String) {
         searchText = text
+
+        // Apply filter to current items on background thread
+        ioScheduler.schedule {
+            let filteredItems = self.applySearchFilter(to: self.allItems)
+
+            self.scheduler.schedule {
+                self.viewState = .loaded(items: filteredItems)
+            }
+        }
     }
 
-    /// Returns the filtered items based on the current search text and configuration.
+    /// Applies search filter to the given items.
     ///
-    /// If no search text is provided or no search configuration is set,
-    /// returns all items. Otherwise, applies the search logic to filter items.
-    ///
+    /// - Parameter items: The items to filter.
     /// - Returns: The filtered array of items.
-    func filteredItems() -> [Item] {
+    private func applySearchFilter(to items: [Item]) -> [Item] {
         guard !searchText.isEmpty else {
-            return viewState.items
+            return items
         }
 
-        return viewState.items.filter { item in
+        return items.filter { item in
             if let searchConfiguration {
                 if let predicate = searchConfiguration.predicate {
                     return predicate(item, searchText)
@@ -138,6 +177,16 @@ final class DynamicListViewModel<Item: Identifiable & Hashable> {
             // Fallback: try to use description if available
             return String(describing: item).lowercased().contains(searchText.lowercased())
         }
+    }
+
+    /// Returns the filtered items based on the current search text and configuration.
+    ///
+    /// If no search text is provided or no search configuration is set,
+    /// returns all items. Otherwise, applies the search logic to filter items.
+    ///
+    /// - Returns: The filtered array of items.
+    func filteredItems() -> [Item] {
+        viewState.items
     }
 }
 

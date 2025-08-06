@@ -68,6 +68,7 @@ struct DynamicListTests {
         let viewModel = DynamicListViewModel(
             dataProvider: pts.eraseToAnyPublisher,
             scheduler: .immediate,
+            ioScheduler: .immediate,
         )
 
         let sut = DynamicList(
@@ -96,6 +97,7 @@ struct DynamicListTests {
         let viewModel = DynamicListViewModel(
             dataProvider: pts.eraseToAnyPublisher,
             scheduler: .immediate,
+            ioScheduler: .immediate,
         )
 
         let sut = DynamicList(
@@ -129,6 +131,7 @@ struct DynamicListTests {
         let viewModel = DynamicListViewModel(
             dataProvider: pts.eraseToAnyPublisher,
             scheduler: .immediate,
+            ioScheduler: .immediate,
         )
 
         let sut = DynamicList(
@@ -163,6 +166,7 @@ struct DynamicListTests {
                 return pts.eraseToAnyPublisher()
             },
             scheduler: .immediate,
+            ioScheduler: .immediate,
         )
 
         _ = DynamicList(
@@ -193,6 +197,7 @@ struct DynamicListTests {
         let viewModel = DynamicListViewModel(
             dataProvider: pts.eraseToAnyPublisher,
             scheduler: .immediate,
+            ioScheduler: .immediate,
         )
 
         let sut = DynamicList(
@@ -235,6 +240,7 @@ struct DynamicListTests {
         let viewModel = DynamicListViewModel(
             dataProvider: pts.eraseToAnyPublisher,
             scheduler: .immediate,
+            ioScheduler: .immediate,
         )
 
         let sut = DynamicList(
@@ -271,6 +277,7 @@ struct DynamicListTests {
         let viewModel = DynamicListViewModel(
             dataProvider: pts.eraseToAnyPublisher,
             scheduler: .immediate,
+            ioScheduler: .immediate,
         )
 
         let sut = DynamicList(
@@ -299,6 +306,7 @@ struct DynamicListTests {
         let viewModel = DynamicListViewModel(
             dataProvider: pts.eraseToAnyPublisher,
             scheduler: .immediate,
+            ioScheduler: .immediate,
         )
 
         let sut = DynamicList(
