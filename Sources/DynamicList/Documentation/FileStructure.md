@@ -39,7 +39,7 @@ Public/
 - Soporte para datos estáticos y reactivos
 - Configuración de búsqueda avanzada
 - Personalización completa de UI
-- Factory methods para casos comunes
+  - Factory methods para casos comunes
 
 ### 📋 SectionedDynamicListBuilder
 API pública para crear listas dinámicas con secciones.
