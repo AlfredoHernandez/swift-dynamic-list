@@ -17,6 +17,12 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable> 
     /// The current view state
     private(set) var viewState: SectionedListViewState<Item>
 
+    /// Scheduler for UI updates
+    var scheduler: AnySchedulerOf<DispatchQueue>
+
+    /// Scheduler for background operations like filtering
+    var ioScheduler: AnySchedulerOf<DispatchQueue>
+
     /// The data provider closure that returns a publisher
     private var dataProvider: (() -> AnyPublisher<[[Item]], Error>)?
 
@@ -29,13 +35,26 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable> 
     /// Current search text
     private var searchText: String = ""
 
+    /// Current unfiltered sections (for filtering operations)
+    private var allSections: [ListSection<Item>] = []
+
     // MARK: - Initialization
 
     /// Creates a new view model with static sections.
     ///
-    /// - Parameter sections: The sections to display in the list.
-    public init(sections: [ListSection<Item>] = []) {
+    /// - Parameters:
+    ///   - sections: The sections to display in the list.
+    ///   - scheduler: The scheduler for UI updates. Defaults to main queue.
+    ///   - ioScheduler: The scheduler for background operations. Defaults to background queue.
+    public init(
+        sections: [ListSection<Item>] = [],
+        scheduler: AnySchedulerOf<DispatchQueue> = .main,
+        ioScheduler: AnySchedulerOf<DispatchQueue> = .global(qos: .userInitiated),
+    ) {
         viewState = .idle(sections: sections)
+        self.scheduler = scheduler
+        self.ioScheduler = ioScheduler
+        allSections = sections
     }
 
     /// Creates a new view model with static arrays of items.
@@ -55,15 +74,20 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable> 
     /// - Parameters:
     ///   - dataProvider: A closure that returns a publisher emitting arrays of arrays
     ///   - initialSections: Initial sections to display while loading
-    ///   - scheduler: The scheduler to use for receiving data (defaults to main queue)
+    ///   - scheduler: The scheduler for UI updates. Defaults to main queue.
+    ///   - ioScheduler: The scheduler for background operations. Defaults to background queue.
     public init(
         dataProvider: @escaping () -> AnyPublisher<[[Item]], Error>,
         initialSections: [ListSection<Item>] = [],
         scheduler: AnySchedulerOf<DispatchQueue> = .main,
+        ioScheduler: AnySchedulerOf<DispatchQueue> = .global(qos: .userInitiated),
     ) {
         viewState = .idle(sections: initialSections)
+        self.scheduler = scheduler
+        self.ioScheduler = ioScheduler
+        allSections = initialSections
         self.dataProvider = dataProvider
-        loadData(scheduler: scheduler)
+        loadData()
     }
 
     // MARK: - Public Methods
@@ -72,14 +96,22 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable> 
     ///
     /// This method will update the view state to loading and then subscribe to the
     /// data provider to receive updates.
-    ///
-    /// - Parameter scheduler: The scheduler to use for receiving data
-    public func loadData(scheduler: AnySchedulerOf<DispatchQueue> = .main) {
+    public func loadData() {
         guard let dataProvider else { return }
 
         viewState = .loading(sections: viewState.sections)
 
         dataProvider()
+            .subscribe(on: ioScheduler)
+            .map { [weak self] arrays -> [ListSection<Item>] in
+                let sections = arrays.map { ListSection(title: nil, items: $0) }
+
+                // Store unfiltered sections for future filtering
+                self?.allSections = sections
+
+                // Apply current search filter if any
+                return self?.applySearchFilter(to: sections) ?? sections
+            }
             .receive(on: scheduler)
             .sink(
                 receiveCompletion: { [weak self] completion in
@@ -90,9 +122,8 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable> 
                         self?.viewState = .error(error, sections: self?.viewState.sections ?? [])
                     }
                 },
-                receiveValue: { [weak self] arrays in
-                    let sections = arrays.map { ListSection(title: nil, items: $0) }
-                    self?.viewState = .loaded(sections: sections)
+                receiveValue: { [weak self] filteredSections in
+                    self?.viewState = .loaded(sections: filteredSections)
                 },
             )
             .store(in: &cancellables)
@@ -108,10 +139,10 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable> 
     ///   - scheduler: The scheduler to use for receiving data
     public func loadItems(
         from dataProvider: @escaping () -> AnyPublisher<[[Item]], Error>,
-        scheduler: AnySchedulerOf<DispatchQueue> = .main,
+        scheduler _: AnySchedulerOf<DispatchQueue> = .main,
     ) {
         self.dataProvider = dataProvider
-        loadData(scheduler: scheduler)
+        loadData()
     }
 
     /// Refreshes the data by calling the current data provider again.
@@ -155,21 +186,27 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable> 
     /// - Parameter text: The new search text to filter by.
     public func updateSearchText(_ text: String) {
         searchText = text
+
+        // Apply filter to current sections on background thread
+        ioScheduler.schedule {
+            let filteredSections = self.applySearchFilter(to: self.allSections)
+
+            self.scheduler.schedule {
+                self.viewState = .loaded(sections: filteredSections)
+            }
+        }
     }
 
-    /// Returns the filtered sections based on the current search text and configuration.
+    /// Applies search filter to the given sections.
     ///
-    /// If no search text is provided or no search configuration is set,
-    /// returns all sections. Otherwise, applies the search logic to filter items
-    /// within each section and only includes sections that have matching items.
-    ///
+    /// - Parameter sections: The sections to filter.
     /// - Returns: The filtered array of sections.
-    public func filteredSections() -> [ListSection<Item>] {
+    private func applySearchFilter(to sections: [ListSection<Item>]) -> [ListSection<Item>] {
         guard !searchText.isEmpty else {
-            return viewState.sections
+            return sections
         }
 
-        return viewState.sections.compactMap { section in
+        return sections.compactMap { section in
             let filteredItems = section.items.filter { item in
                 if let searchConfiguration {
                     if let predicate = searchConfiguration.predicate {
@@ -193,6 +230,16 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable> 
                 footer: section.footer,
             )
         }
+    }
+
+    /// Returns the filtered sections based on the current search text and configuration.
+    ///
+    /// If no search text is provided or no search configuration is set,
+    /// returns all sections. Otherwise, applies the search logic to filter sections.
+    ///
+    /// - Returns: The filtered array of sections.
+    public func filteredSections() -> [ListSection<Item>] {
+        viewState.sections
     }
 
     // MARK: - Convenience Properties

@@ -151,7 +151,11 @@ struct SearchViewModelTests {
             ),
         ]
 
-        let viewModel = SectionedDynamicListViewModel(sections: sections)
+        let viewModel = SectionedDynamicListViewModel(
+            sections: sections,
+            scheduler: .immediate,
+            ioScheduler: .immediate,
+        )
         let searchConfig = SearchConfiguration<SearchableUser>(
             prompt: "Buscar usuarios...",
             strategy: PartialMatchStrategy(),
@@ -178,7 +182,11 @@ struct SearchViewModelTests {
             ),
         ]
 
-        let viewModel = SectionedDynamicListViewModel(sections: sections)
+        let viewModel = SectionedDynamicListViewModel(
+            sections: sections,
+            scheduler: .immediate,
+            ioScheduler: .immediate,
+        )
         let searchConfig = SearchConfiguration<SearchableUser>(
             prompt: "Buscar usuarios...",
             strategy: PartialMatchStrategy(),
@@ -206,7 +214,11 @@ struct SearchViewModelTests {
             ),
         ]
 
-        let viewModel = SectionedDynamicListViewModel(sections: sections)
+        let viewModel = SectionedDynamicListViewModel(
+            sections: sections,
+            scheduler: .immediate,
+            ioScheduler: .immediate,
+        )
         let searchConfig = SearchConfiguration<SearchableUser>(
             prompt: "Buscar usuarios...",
             strategy: PartialMatchStrategy(),
@@ -235,7 +247,11 @@ struct SearchViewModelTests {
             ),
         ]
 
-        let viewModel = SectionedDynamicListViewModel(sections: sections)
+        let viewModel = SectionedDynamicListViewModel(
+            sections: sections,
+            scheduler: .immediate,
+            ioScheduler: .immediate,
+        )
         let searchConfig = SearchConfiguration<SearchableUser>(
             prompt: "Buscar usuarios...",
             strategy: PartialMatchStrategy(),
@@ -260,7 +276,11 @@ struct SearchViewModelTests {
             ),
         ]
 
-        let viewModel = SectionedDynamicListViewModel(sections: sections)
+        let viewModel = SectionedDynamicListViewModel(
+            sections: sections,
+            scheduler: .immediate,
+            ioScheduler: .immediate,
+        )
         let searchConfig = SearchConfiguration<SearchableUser>(
             prompt: "Buscar usuarios...",
             strategy: ExactMatchStrategy(),

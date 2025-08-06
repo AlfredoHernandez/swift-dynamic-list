@@ -227,6 +227,12 @@ DynamicListBuilder<User>()
     .publisher(userService.fetchUsers()) // Datos cargados en background
     .searchable(prompt: "Buscar usuarios...") // Filtrado en background
     .build()
+
+// También funciona para listas con secciones
+SectionedDynamicListBuilder<User>()
+    .sections(userSections) // Datos cargados en background
+    .searchable(prompt: "Buscar usuarios...") // Filtrado en background
+    .build()
 ```
 
 #### Schedulers Separados
@@ -239,6 +245,8 @@ DynamicListBuilder<User>()
 // Internamente, el flujo es:
 Publisher → Background Processing → Filtering → UI Update
 ```
+
+**Consistencia de Performance**: Tanto `DynamicList` como `SectionedDynamicList` utilizan la misma arquitectura optimizada de filtrado en background, garantizando una experiencia de usuario fluida independientemente del tipo de lista utilizada.
 
 #### Configuración de Schedulers
 ```swift
@@ -359,6 +367,8 @@ La búsqueda en listas con secciones funciona de manera inteligente:
 - **Filtrado por sección**: Solo se muestran las secciones que contienen items que coinciden con la búsqueda
 - **Preservación de estructura**: Se mantienen los headers y footers de las secciones que tienen resultados
 - **Búsqueda global**: La búsqueda se aplica a todos los items de todas las secciones
+- **Performance optimizada**: Filtrado en background threads para UI responsiva
+- **Escalabilidad**: Manejo eficiente de grandes volúmenes de datos en secciones
 
 #### Estrategias de Búsqueda Disponibles
 
