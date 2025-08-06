@@ -16,6 +16,7 @@ final class DynamicListViewModel<Item: Identifiable & Hashable> {
     /// The current view state containing items and loading information.
     var viewState: DynamicListViewState<Item>
 
+    /// Scheduler for UI updates
     var scheduler: AnySchedulerOf<DispatchQueue>
 
     /// Scheduler for background operations like filtering
