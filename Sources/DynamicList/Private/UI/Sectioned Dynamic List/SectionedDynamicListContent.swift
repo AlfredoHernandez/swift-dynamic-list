@@ -11,7 +11,6 @@ import SwiftUI
 /// the `buildWithoutNavigation()` method.
 struct SectionedDynamicListContent<Item: Identifiable & Hashable>: View {
     @State private var viewModel: SectionedDynamicListViewModel<Item>
-    @State private var searchText = ""
     private let rowContent: (Item) -> AnyView
     private let detailContent: (Item) -> AnyView
     private let errorContent: ((Error) -> AnyView)?
@@ -75,9 +74,8 @@ struct SectionedDynamicListContent<Item: Identifiable & Hashable>: View {
                 }
                 .searchable(
                     text: Binding(
-                        get: { searchText },
+                        get: { viewModel.searchText },
                         set: { newValue in
-                            searchText = newValue
                             viewModel.updateSearchText(newValue)
                         },
                     ),

@@ -33,7 +33,7 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable> 
     private var searchConfiguration: SearchConfiguration<Item>?
 
     /// Current search text
-    private var searchText: String = ""
+    var searchText: String = ""
 
     /// Current unfiltered sections (for filtering operations)
     private var allSections: [ListSection<Item>] = []

@@ -201,6 +201,7 @@ Sources/DynamicList/
 
 ### 🔍 **Search Logic in ViewModels**
 - **Lógica centralizada**: La funcionalidad de búsqueda está implementada en los ViewModels
+- **Estado centralizado**: El texto de búsqueda se maneja en el ViewModel, no en las vistas
 - **Separación de responsabilidades**: Las vistas solo manejan la UI, los ViewModels manejan la lógica de filtrado
 - **Filtrado en background**: El filtrado se realiza en background threads para mantener la UI responsiva
 - **Testabilidad**: La lógica de búsqueda es fácilmente testeable de forma aislada
@@ -247,6 +248,27 @@ Publisher → Background Processing → Filtering → UI Update
 ```
 
 **Consistencia de Performance**: Tanto `DynamicList` como `SectionedDynamicList` utilizan la misma arquitectura optimizada de filtrado en background, garantizando una experiencia de usuario fluida independientemente del tipo de lista utilizada.
+
+#### Gestión del Estado de Búsqueda
+```swift
+// El estado de búsqueda se maneja completamente en el ViewModel
+viewModel.searchText = "texto de búsqueda"  // Estado centralizado
+viewModel.updateSearchText("nuevo texto")   // Actualización con filtrado automático
+
+// Las vistas solo reflejan el estado del ViewModel
+.searchable(
+    text: Binding(
+        get: { viewModel.searchText },      // Leer del ViewModel
+        set: { viewModel.updateSearchText($0) }  // Escribir al ViewModel
+    )
+)
+```
+
+**Beneficios de la centralización del estado:**
+- **Testabilidad mejorada**: El estado de búsqueda es fácilmente testeable
+- **Consistencia**: Un solo punto de verdad para el estado de búsqueda
+- **Separación clara**: Las vistas solo manejan UI, el ViewModel maneja el estado
+- **Reutilización**: El mismo estado puede ser usado por múltiples vistas
 
 #### Configuración de Schedulers
 ```swift
@@ -486,8 +508,27 @@ struct DynamicListViewModelTests {
         #expect(viewModel.viewState.items == items)
         #expect(viewModel.viewState.loadingState == .loaded)
     }
+    
+    @Test("when search text is updated reflects in view model state")
+    func test_whenSearchTextIsUpdated_reflectsInViewModelState() {
+        let viewModel = DynamicListViewModel(
+            items: [TestItem(name: "Test")],
+            scheduler: .immediate,
+            ioScheduler: .immediate
+        )
+        
+        // Test initial state
+        #expect(viewModel.searchText.isEmpty)
+        
+        // Test state update
+        viewModel.updateSearchText("search")
+        #expect(viewModel.searchText == "search")
+        
+        // Test state clearing
+        viewModel.updateSearchText("")
+        #expect(viewModel.searchText.isEmpty)
+    }
 }
-```
 
 ### Testing de Estrategias de Búsqueda
 

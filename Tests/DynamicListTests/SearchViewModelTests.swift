@@ -295,4 +295,70 @@ struct SearchViewModelTests {
         viewModel.updateSearchText("an")
         #expect(viewModel.filteredSectionsList.isEmpty)
     }
+
+    // MARK: - Search State Tests
+
+    @Test("when search text is updated in view model reflects in searchText property")
+    func whenSearchTextIsUpdatedInViewModel_reflectsInSearchTextProperty() {
+        let users = [
+            SearchableUser(name: "Ana", email: "ana@test.com", role: "Admin"),
+            SearchableUser(name: "Bob", email: "bob@test.com", role: "User"),
+        ]
+
+        let viewModel = DynamicListViewModel(
+            items: users,
+            scheduler: .immediate,
+            ioScheduler: .immediate,
+        )
+
+        // Initial state
+        #expect(viewModel.searchText.isEmpty)
+
+        // Update search text
+        viewModel.updateSearchText("Ana")
+        #expect(viewModel.searchText == "Ana")
+
+        // Update again
+        viewModel.updateSearchText("Bob")
+        #expect(viewModel.searchText == "Bob")
+
+        // Clear search
+        viewModel.updateSearchText("")
+        #expect(viewModel.searchText.isEmpty)
+    }
+
+    @Test("when search text is updated in sectioned view model reflects in searchText property")
+    func whenSearchTextIsUpdatedInSectionedViewModel_reflectsInSearchTextProperty() {
+        let sections = [
+            ListSection(
+                title: "Admins",
+                items: [SearchableUser(name: "Ana", email: "ana@test.com", role: "Admin")],
+            ),
+            ListSection(
+                title: "Users",
+                items: [SearchableUser(name: "Bob", email: "bob@test.com", role: "User")],
+            ),
+        ]
+
+        let viewModel = SectionedDynamicListViewModel(
+            sections: sections,
+            scheduler: .immediate,
+            ioScheduler: .immediate,
+        )
+
+        // Initial state
+        #expect(viewModel.searchText.isEmpty)
+
+        // Update search text
+        viewModel.updateSearchText("Ana")
+        #expect(viewModel.searchText == "Ana")
+
+        // Update again
+        viewModel.updateSearchText("Bob")
+        #expect(viewModel.searchText == "Bob")
+
+        // Clear search
+        viewModel.updateSearchText("")
+        #expect(viewModel.searchText.isEmpty)
+    }
 }

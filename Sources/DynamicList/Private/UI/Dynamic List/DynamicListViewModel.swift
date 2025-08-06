@@ -32,7 +32,7 @@ final class DynamicListViewModel<Item: Identifiable & Hashable> {
     private var searchConfiguration: SearchConfiguration<Item>?
 
     /// Current search text
-    private var searchText: String = ""
+    var searchText: String = ""
 
     /// Current unfiltered items (for filtering operations)
     private var allItems: [Item] = []
