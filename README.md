@@ -1,37 +1,37 @@
 # 📱 DynamicList
 
-Una biblioteca SwiftUI moderna y modular para crear listas dinámicas con soporte completo para datos reactivos, estados de carga, búsqueda avanzada y múltiples tipos de listas.
+A modern and modular SwiftUI library for creating dynamic lists with complete support for reactive data, loading states, advanced search, and multiple list types.
 
-## ✨ Características Principales
+## ✨ Key Features
 
-### 🎯 **Listas Simples y con Secciones**
-- **DynamicList**: Listas tradicionales con items planos
-- **SectionedDynamicList**: Listas organizadas en secciones con headers/footers
+### 🎯 **Simple and Sectioned Lists**
+- **DynamicList**: Traditional lists with flat items
+- **SectionedDynamicList**: Lists organized in sections with headers/footers
 
-### 🔄 **Reactividad Completa**
-- Integración nativa con Combine Publishers
-- Soporte para datos estáticos y reactivos
-- Manejo automático de estados de carga
+### 🔄 **Complete Reactivity**
+- Native integration with Combine Publishers
+- Support for static and reactive data
+- Automatic loading state management
 
-### 🎨 **UI Personalizable**
-- Contenido de filas y detalles completamente configurable
-- Vistas de error personalizables
-- Skeleton loading configurables
-- Búsqueda avanzada con estrategias personalizables
+### 🎨 **Customizable UI**
+- Fully configurable row and detail content
+- Customizable error views
+- Configurable skeleton loading
+- Advanced search with customizable strategies
 
-### 🔍 **Sistema de Búsqueda Avanzado**
-- Múltiples estrategias de búsqueda (parcial, exacta, tokenizada)
-- Configuración de placement de barra de búsqueda
-- Protocolo `Searchable` para items buscables
-- Estrategias personalizables
+### 🔍 **Advanced Search System**
+- Multiple search strategies (partial, exact, tokenized)
+- Search bar placement configuration
+- `Searchable` protocol for searchable items
+- Customizable strategies
 
-### 🏗️ **Arquitectura Modular**
-- APIs públicas bien definidas
-- Implementación privada encapsulada
-- Separación clara de responsabilidades
-- Fácil extensión y personalización
+### 🏗️ **Modular Architecture**
+- Well-defined public APIs
+- Encapsulated private implementation
+- Clear separation of responsibilities
+- Easy extension and customization
 
-## 🚀 Instalación
+## 🚀 Installation
 
 ### Swift Package Manager
 
@@ -41,7 +41,7 @@ dependencies: [
 ]
 ```
 
-### Requisitos
+### Requirements
 
 - iOS 17.0+
 - macOS 14.0+
@@ -49,9 +49,9 @@ dependencies: [
 - tvOS 17.0+
 - Swift 5.9+
 
-## 📖 Uso Rápido
+## 📖 Quick Start
 
-### Lista Simple
+### Simple List
 
 ```swift
 import SwiftUI
@@ -84,27 +84,27 @@ struct ContentView: View {
                         .font(.title2)
                 }
             }
-            .title("Usuarios")
-            .searchable(prompt: "Buscar usuarios...")
+            .title("Users")
+            .searchable(prompt: "Search users...")
             .build()
     }
 }
 ```
 
-### Lista con Secciones
+### Sectioned List
 
 ```swift
 struct SectionedContentView: View {
     let sections = [
         ListSection(
-            title: "Administradores",
+            title: "Administrators",
             items: adminUsers,
-            footer: "\(adminUsers.count) administradores"
+            footer: "\(adminUsers.count) administrators"
         ),
         ListSection(
-            title: "Usuarios",
+            title: "Users",
             items: regularUsers,
-            footer: "\(regularUsers.count) usuarios"
+            footer: "\(regularUsers.count) users"
         )
     ]
     
@@ -124,36 +124,36 @@ struct SectionedContentView: View {
             .detailContent { user in
                 UserDetailView(user: user)
             }
-            .title("Usuarios por Rol")
-            .searchable(prompt: "Buscar usuarios...")
+            .title("Users by Role")
+            .searchable(prompt: "Search users...")
             .build()
     }
 }
 ```
 
-### Lista Reactiva
+### Reactive List
 
 ```swift
 struct ReactiveListView: View {
     var body: some View {
         DynamicListBuilder<User>()
-            .publisher(userService.fetchUsers())
+            .publisher { userService.fetchUsers() }
             .rowContent { user in UserRowView(user: user) }
             .detailContent { user in UserDetailView(user: user) }
             .errorContent { error in
                 VStack {
                     Text("Error: \(error.localizedDescription)")
-                    Button("Reintentar") { /* lógica de reintento */ }
+                    Button("Retry") { /* retry logic */ }
                 }
             }
             .skeletonContent {
-                // Skeleton personalizado
+                // Custom skeleton
                 List(0..<5, id: \.self) { _ in
                     UserSkeletonRow()
                 }
             }
             .searchable(
-                prompt: "Buscar usuarios...",
+                prompt: "Search users...",
                 strategy: TokenizedMatchStrategy()
             )
             .build()
@@ -161,78 +161,78 @@ struct ReactiveListView: View {
 }
 ```
 
-## 🏗️ Arquitectura Modular
+## 🏗️ Modular Architecture
 
-`DynamicList` está organizado en una arquitectura modular basada en MVVM que separa claramente las responsabilidades:
+`DynamicList` is organized in a modular MVVM-based architecture that clearly separates responsibilities:
 
 ```
 Sources/DynamicList/
-├── Public/                    # APIs públicas del paquete
-├── Private/                   # Implementaciones internas
-│   ├── UI/                    # Componentes de interfaz de usuario
-│   │   ├── Dynamic List/      # Listas simples
-│   │   ├── Sectioned Dynamic List/ # Listas con secciones
-│   │   ├── Default Views/     # Vistas por defecto
-│   │   └── Shared/            # Componentes compartidos
-│   ├── Domain/                # Lógica de dominio
-│   │   └── Strategies/        # Estrategias de búsqueda
-│   └── Presentation/          # Componentes de presentación
-│       └── ViewModels/        # ViewModels con lógica de búsqueda
-├── PreviewSupport/            # Soporte para SwiftUI Previews
-└── Documentation/             # Documentación del proyecto
+├── Public/                    # Package public APIs
+├── Private/                   # Internal implementations
+│   ├── UI/                    # User interface components
+│   │   ├── Dynamic List/      # Simple lists
+│   │   ├── Sectioned Dynamic List/ # Sectioned lists
+│   │   ├── Default Views/     # Default views
+│   │   └── Shared/            # Shared components
+│   ├── Domain/                # Domain logic
+│   │   └── Strategies/        # Search strategies
+│   └── Presentation/          # Presentation components
+│       └── ViewModels/        # ViewModels with search logic
+├── PreviewSupport/            # SwiftUI Previews support
+└── Documentation/             # Project documentation
 ```
 
 ### 🎯 **Dynamic List**
-- `DynamicList.swift` - Vista principal
+- `DynamicList.swift` - Main view
 - `DynamicListViewModel.swift` - ViewModel
 - `DynamicListBuilder.swift` - Builder pattern
-- `DynamicListViewState.swift` - Estados de vista
-- `SearchConfiguration.swift` - Configuración de búsqueda
+- `DynamicListViewState.swift` - View states
+- `SearchConfiguration.swift` - Search configuration
 
 ### 📋 **Sectioned Dynamic List**
-- `SectionedDynamicList.swift` - Vista principal
+- `SectionedDynamicList.swift` - Main view
 - `SectionedDynamicListViewModel.swift` - ViewModel
 - `SectionedDynamicListBuilder.swift` - Builder pattern
-- `SectionedListViewState.swift` - Estados de vista
-- `ListSection.swift` - Modelo de datos
+- `SectionedListViewState.swift` - View states
+- `ListSection.swift` - Data model
 
 ### 🔄 **Shared Components**
-- `LoadingState.swift` - Estados de carga compartidos
+- `LoadingState.swift` - Shared loading states
 
 ### 🔍 **Search Logic in ViewModels**
-- **Lógica centralizada**: La funcionalidad de búsqueda está implementada en los ViewModels
-- **Estado centralizado**: El texto de búsqueda se maneja en el ViewModel, no en las vistas
-- **Separación de responsabilidades**: Las vistas solo manejan la UI, los ViewModels manejan la lógica de filtrado
-- **Filtrado en background**: El filtrado se realiza en background threads para mantener la UI responsiva
-- **Testabilidad**: La lógica de búsqueda es fácilmente testeable de forma aislada
-- **Reutilización**: Misma lógica de búsqueda para listas simples y con secciones
-- **Performance optimizada**: Filtrado integrado en el flujo de datos del publisher
+- **Centralized logic**: Search functionality is implemented in ViewModels
+- **Centralized state**: Search text is managed in the ViewModel, not in views
+- **Separation of concerns**: Views only handle UI, ViewModels handle filtering logic
+- **Background filtering**: Filtering is performed on background threads to keep UI responsive
+- **Testability**: Search logic is easily testable in isolation
+- **Reusability**: Same search logic for simple and sectioned lists
+- **Optimized performance**: Filtering integrated into publisher data flow
 
 ### 🎨 **Default Views**
-- `DefaultRowView.swift` - Vista de fila por defecto
-- `DefaultDetailView.swift` - Vista de detalle por defecto
-- `DefaultErrorView.swift` - Vista de error por defecto
-- `DefaultSkeletonView.swift` - Skeleton loading por defecto
-- `DefaultSectionedSkeletonView.swift` - Skeleton para secciones
+- `DefaultRowView.swift` - Default row view
+- `DefaultDetailView.swift` - Default detail view
+- `DefaultErrorView.swift` - Default error view
+- `DefaultSkeletonView.swift` - Default skeleton loading
+- `DefaultSectionedSkeletonView.swift` - Skeleton for sections
 
-## 🎨 Características Avanzadas
+## 🎨 Advanced Features
 
-### Performance Optimizada
+### Optimized Performance
 
-DynamicList incluye optimizaciones de performance para manejar grandes volúmenes de datos:
+DynamicList includes performance optimizations to handle large volumes of data:
 
-#### Filtrado en Background
+#### Background Filtering
 ```swift
-// El filtrado se realiza automáticamente en background threads
+// Filtering is automatically performed on background threads
 DynamicListBuilder<User>()
-    .publisher(userService.fetchUsers()) // Datos cargados en background
-    .searchable(prompt: "Buscar usuarios...") // Filtrado en background
+    .publisher { userService.fetchUsers() } // Data loaded in background
+    .searchable(prompt: "Search users...") // Filtering in background
     .build()
 
-// También funciona para listas con secciones
+// Also works for sectioned lists
 SectionedDynamicListBuilder<User>()
-    .sections(userSections) // Datos cargados en background
-    .searchable(prompt: "Buscar usuarios...") // Filtrado en background
+    .sections(userSections) // Data loaded in background
+    .searchable(prompt: "Search users...") // Filtering in background
     .build()
 ```
 
@@ -297,36 +297,36 @@ var searchText: String = "" {
 
 **Beneficios de la centralización del estado:**
 - **Filtrado automático**: El filtrado se dispara automáticamente al cambiar `searchText`
-- **Testabilidad mejorada**: El estado de búsqueda es fácilmente testeable
-- **Consistencia**: Un solo punto de verdad para el estado de búsqueda
-- **Separación clara**: Las vistas solo manejan UI, el ViewModel maneja el estado
-- **Reutilización**: El mismo estado puede ser usado por múltiples vistas
-- **Simplicidad**: No es necesario llamar manualmente a métodos de filtrado
+- **Improved testability**: Search state is easily testable
+- **Consistency**: Single source of truth for search state
+- **Clear separation**: Views only handle UI, ViewModel handles state
+- **Reusability**: Same state can be used by multiple views
+- **Simplicity**: No need to manually call filtering methods
 
-#### Configuración de Schedulers
+#### Scheduler Configuration
 ```swift
-// En producción (por defecto):
+// In production (default):
 DynamicListViewModel(
     dataProvider: userService.fetchUsers,
-    scheduler: .main,                    // UI updates en main queue
+    scheduler: .main,                    // UI updates on main queue
     ioScheduler: .global(qos: .userInitiated)  // Background processing
 )
 
-// En testing:
+// In testing:
 DynamicListViewModel(
     dataProvider: testPublisher,
-    scheduler: .immediate,               // UI updates síncronos
-    ioScheduler: .immediate              // Background operations síncronos
+    scheduler: .immediate,               // Synchronous UI updates
+    ioScheduler: .immediate              // Synchronous background operations
 )
 ```
 
-### Estados de Carga Inteligentes
+### Smart Loading States
 
 ```swift
 DynamicListBuilder<User>()
-    .publisher(userService.fetchUsers())
+    .publisher { userService.fetchUsers() }
     .skeletonContent {
-        // Skeleton personalizado que coincide con tu diseño
+        // Custom skeleton that matches your design
         List(0..<8, id: \.self) { _ in
             HStack {
                 Circle()
@@ -354,38 +354,38 @@ DynamicListBuilder<User>()
     .build()
 ```
 
-### Búsqueda Avanzada
+### Advanced Search
 
-`DynamicList` incluye un sistema de búsqueda avanzado con múltiples estrategias:
+`DynamicList` includes an advanced search system with multiple strategies:
 
-#### Búsqueda Simple
+#### Simple Search
 
 ```swift
 DynamicListBuilder<User>()
     .items(users)
-    .searchable(prompt: "Buscar usuarios...")
+    .searchable(prompt: "Search users...")
     .build()
 ```
 
-#### Búsqueda con Estrategia Personalizada
+#### Search with Custom Strategy
 
 ```swift
 DynamicListBuilder<User>()
     .items(users)
     .searchable(
-        prompt: "Buscar usuarios (coincidencia exacta)...",
+        prompt: "Search users (exact match)...",
         strategy: ExactMatchStrategy()
     )
     .build()
 ```
 
-#### Búsqueda con Predicado Personalizado
+#### Search with Custom Predicate
 
 ```swift
 DynamicListBuilder<User>()
     .items(users)
     .searchable(
-        prompt: "Buscar por nombre o email...",
+        prompt: "Search by name or email...",
         predicate: { user, query in
             user.name.lowercased().contains(query.lowercased()) ||
             user.email.lowercased().contains(query.lowercased())
@@ -394,53 +394,53 @@ DynamicListBuilder<User>()
     .build()
 ```
 
-#### Búsqueda con Placement Personalizado
+#### Search with Custom Placement
 
 ```swift
 DynamicListBuilder<User>()
     .items(users)
     .searchable(
-        prompt: "Buscar usuarios...",
-        placement: .navigationBarDrawer // Siempre visible
+        prompt: "Search users...",
+        placement: .navigationBarDrawer // Always visible
     )
     .build()
 ```
 
-#### Búsqueda en Listas con Secciones
+#### Search in Sectioned Lists
 
 ```swift
 SectionedDynamicListBuilder<User>()
     .sections(sections)
     .searchable(
-        prompt: "Buscar usuarios...",
+        prompt: "Search users...",
         strategy: TokenizedMatchStrategy()
     )
     .build()
 ```
 
-La búsqueda en listas con secciones funciona de manera inteligente:
-- **Filtrado por sección**: Solo se muestran las secciones que contienen items que coinciden con la búsqueda
-- **Preservación de estructura**: Se mantienen los headers y footers de las secciones que tienen resultados
-- **Búsqueda global**: La búsqueda se aplica a todos los items de todas las secciones
-- **Performance optimizada**: Filtrado en background threads para UI responsiva
-- **Escalabilidad**: Manejo eficiente de grandes volúmenes de datos en secciones
+Search in sectioned lists works intelligently:
+- **Section filtering**: Only sections containing matching items are shown
+- **Structure preservation**: Headers and footers of sections with results are maintained
+- **Global search**: Search is applied to all items across all sections
+- **Optimized performance**: Background thread filtering for responsive UI
+- **Scalability**: Efficient handling of large data volumes in sections
 
-#### Estrategias de Búsqueda Disponibles
+#### Available Search Strategies
 
-- **`PartialMatchStrategy`** (por defecto): Búsqueda parcial insensible a mayúsculas
-- **`ExactMatchStrategy`**: Coincidencia exacta insensible a mayúsculas
-- **`TokenizedMatchStrategy`**: Búsqueda por tokens/palabras
+- **`PartialMatchStrategy`** (default): Case-insensitive partial search
+- **`ExactMatchStrategy`**: Case-insensitive exact match
+- **`TokenizedMatchStrategy`**: Token/word-based search
 
-#### Opciones de Placement Disponibles
+#### Available Placement Options
 
-- **`.automatic`** (por defecto): La barra de búsqueda aparece automáticamente
-- **`.navigationBarDrawer`**: La barra de búsqueda siempre está visible
-- **`.sidebar`**: La barra de búsqueda aparece en la barra lateral (macOS)
-- **`.toolbar`**: La barra de búsqueda aparece en la barra de herramientas
+- **`.automatic`** (default): Search bar appears automatically
+- **`.navigationBarDrawer`**: Search bar is always visible
+- **`.sidebar`**: Search bar appears in sidebar (macOS)
+- **`.toolbar`**: Search bar appears in toolbar
 
-#### Protocolo Searchable
+#### Searchable Protocol
 
-Para usar las estrategias de búsqueda, tus modelos deben conformar `Searchable`:
+To use search strategies, your models must conform to `Searchable`:
 
 ```swift
 struct User: Identifiable, Hashable, Searchable {
@@ -455,18 +455,18 @@ struct User: Identifiable, Hashable, Searchable {
 }
 ```
 
-### Vistas de Error Personalizadas
+### Custom Error Views
 
 ```swift
 DynamicListBuilder<User>()
-    .publisher(userService.fetchUsers())
+    .publisher { userService.fetchUsers() }
     .errorContent { error in
         VStack(spacing: 20) {
             Image(systemName: "wifi.slash")
                 .font(.system(size: 60))
                 .foregroundColor(.red)
             
-            Text("Error de Conexión")
+            Text("Connection Error")
                 .font(.largeTitle)
                 .fontWeight(.bold)
             
@@ -475,8 +475,8 @@ DynamicListBuilder<User>()
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
             
-            Button("Reintentar") {
-                // Lógica de reintento
+            Button("Retry") {
+                // Retry logic
             }
             .buttonStyle(.borderedProminent)
         }
@@ -487,9 +487,9 @@ DynamicListBuilder<User>()
 
 ## 🧪 Testing
 
-### Convención de Nombres de Tests
+### Test Naming Convention
 
-Usa la convención `test_whenCondition_expectedBehavior()` para todos los tests:
+Use the `test_whenCondition_expectedBehavior()` convention for all tests:
 
 ```swift
 @Test("when initialized with items displays correct items")
@@ -503,7 +503,7 @@ func test_whenDataProviderFails_showsErrorState() {
 }
 ```
 
-### Testing de ViewModels
+### ViewModel Testing
 
 ```swift
 import Testing
@@ -576,7 +576,7 @@ struct DynamicListViewModelTests {
     }
 }
 
-### Testing de Estrategias de Búsqueda
+### Search Strategy Testing
 
 ```swift
 import Testing
@@ -615,7 +615,7 @@ struct SearchStrategyTests {
 }
 ```
 
-### Testing de Lógica de Búsqueda en ViewModels
+### Search Logic Testing in ViewModels
 
 ```swift
 import Testing
@@ -633,12 +633,12 @@ struct SearchViewModelTests {
         
         let viewModel = DynamicListViewModel(items: users)
         let searchConfig = SearchConfiguration<SearchableUser>(
-            prompt: "Buscar usuarios...",
+            prompt: "Search users...",
             strategy: PartialMatchStrategy()
         )
         
         viewModel.setSearchConfiguration(searchConfig)
-        viewModel.updateSearchText("Ana")
+        viewModel.searchText = "Ana"
         
         #expect(viewModel.filteredItemsList.count == 1)
         #expect(viewModel.filteredItemsList.first?.name == "Ana")
@@ -659,12 +659,12 @@ struct SearchViewModelTests {
         
         let viewModel = SectionedDynamicListViewModel(sections: sections)
         let searchConfig = SearchConfiguration<SearchableUser>(
-            prompt: "Buscar usuarios...",
+            prompt: "Search users...",
             strategy: PartialMatchStrategy()
         )
         
         viewModel.setSearchConfiguration(searchConfig)
-        viewModel.updateSearchText("Ana")
+        viewModel.searchText = "Ana"
         
         #expect(viewModel.filteredSectionsList.count == 1)
         #expect(viewModel.filteredSectionsList[0].title == "Admins")
@@ -673,9 +673,9 @@ struct SearchViewModelTests {
 }
 ```
 
-## 🔧 Configuración Avanzada
+## 🔧 Advanced Configuration
 
-### Embedding en Navigation Existente
+### Embedding in Existing Navigation
 
 ```swift
 struct AppView: View {
@@ -684,8 +684,8 @@ struct AppView: View {
     var body: some View {
         NavigationStack(path: $navigationPath) {
             List {
-                NavigationLink("Usuarios", value: "users")
-                NavigationLink("Productos", value: "products")
+                NavigationLink("Users", value: "users")
+                NavigationLink("Products", value: "products")
             }
             .navigationDestination(for: String.self) { destination in
                 switch destination {
@@ -709,53 +709,53 @@ struct AppView: View {
 ### Factory Methods
 
 ```swift
-// Lista simple estática
+// Static simple list
 DynamicListBuilder.simple(
     items: users,
     rowContent: { user in Text(user.name) },
-    detailContent: { user in Text("Detalle de \(user.name)") }
+    detailContent: { user in Text("Detail of \(user.name)") }
 )
 
-// Lista reactiva
+// Reactive list
 DynamicListBuilder.reactive(
     publisher: userService.fetchUsers(),
     rowContent: { user in UserRowView(user: user) },
     detailContent: { user in UserDetailView(user: user) }
 )
 
-// Lista con simulación de carga
+// List with loading simulation
 DynamicListBuilder.simulated(
     items: users,
     delay: 2.0,
     rowContent: { user in Text(user.name) },
-    detailContent: { user in Text("Detalle de \(user.name)") }
+    detailContent: { user in Text("Detail of \(user.name)") }
 )
 ```
 
-## 🌍 Localización
+## 🌍 Localization
 
-`DynamicList` incluye soporte completo para localización:
+`DynamicList` includes complete localization support:
 
-- **Inglés** (en)
-- **Español Mexicano** (es-MX)
-- **Francés** (fr)
-- **Portugués** (pt)
+- **English** (en)
+- **Mexican Spanish** (es-MX)
+- **French** (fr)
+- **Portuguese** (pt)
 
-Los textos se localizan automáticamente según el idioma del dispositivo.
+Texts are automatically localized according to the device language.
 
-## 📚 Documentación
+## 📚 Documentation
 
-- **[🚀 Guía de Desarrollador](Sources/DynamicList/Documentation/DeveloperGuide.md)** - Guía completa para desarrolladores
-- **[📁 Estructura de Archivos](Sources/DynamicList/Documentation/FileStructure.md)** - Documentación de la arquitectura del proyecto
+- **[🚀 Developer Guide](Sources/DynamicList/Documentation/DeveloperGuide.md)** - Complete developer guide
+- **[📁 File Structure](Sources/DynamicList/Documentation/FileStructure.md)** - Project architecture documentation
 
-## 🤝 Contribución
+## 🤝 Contributing
 
-Las contribuciones son bienvenidas. Por favor, lee las guías de contribución antes de enviar un pull request.
+Contributions are welcome. Please read the contribution guidelines before submitting a pull request.
 
-## 📄 Licencia
+## 📄 License
 
-Este proyecto está licenciado bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
+This project is licensed under the MIT License. See the `LICENSE` file for details.
 
 ---
 
-**DynamicList** - Listas dinámicas modernas para SwiftUI 🚀 
+**DynamicList** - Modern dynamic lists for SwiftUI 🚀 

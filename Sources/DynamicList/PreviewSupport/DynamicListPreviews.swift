@@ -33,11 +33,11 @@ enum LoadError: Error, LocalizedError {
     var errorDescription: String? {
         switch self {
         case .networkError:
-            "Sin conexión a internet"
+            "No internet connection"
         case .unauthorized:
-            "No tienes permisos para acceder"
+            "You don't have permission to access"
         case .serverError:
-            "Error del servidor"
+            "Server error"
         }
     }
 }
@@ -47,7 +47,7 @@ enum SimpleError: Error, LocalizedError {
     case failed
 
     var errorDescription: String? {
-        "Algo salió mal"
+        "Something went wrong"
     }
 }
 
@@ -56,11 +56,11 @@ enum SimpleError: Error, LocalizedError {
 #Preview("Static Data") {
     DynamicListBuilder<Fruit>()
         .items([
-            Fruit(name: "Sandía", symbol: "🍉", color: .red),
-            Fruit(name: "Pera", symbol: "🍐", color: .green),
-            Fruit(name: "Manzana", symbol: "🍎", color: .red),
-            Fruit(name: "Naranja", symbol: "🍊", color: .orange),
-            Fruit(name: "Plátano", symbol: "🍌", color: .yellow),
+            Fruit(name: "Watermelon", symbol: "🍉", color: .red),
+            Fruit(name: "Pear", symbol: "🍐", color: .green),
+            Fruit(name: "Apple", symbol: "🍎", color: .red),
+            Fruit(name: "Orange", symbol: "🍊", color: .orange),
+            Fruit(name: "Banana", symbol: "🍌", color: .yellow),
         ])
         .rowContent { fruit in
             HStack {
@@ -83,7 +83,7 @@ enum SimpleError: Error, LocalizedError {
                     .font(.headline)
                     .foregroundColor(.secondary)
             }
-            .navigationTitle("Detalles")
+            .navigationTitle("Details")
             #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
             #endif
@@ -95,12 +95,12 @@ enum SimpleError: Error, LocalizedError {
     DynamicListBuilder<Fruit>()
         .publisher {
             Just([
-                Fruit(name: "Sandía", symbol: "🍉", color: .red),
-                Fruit(name: "Pera", symbol: "🍐", color: .green),
-                Fruit(name: "Manzana", symbol: "🍎", color: .red),
-                Fruit(name: "Naranja", symbol: "🍊", color: .orange),
-                Fruit(name: "Plátano", symbol: "🍌", color: .yellow),
-                Fruit(name: "Uva", symbol: "🍇", color: .purple),
+                Fruit(name: "Watermelon", symbol: "🍉", color: .red),
+                Fruit(name: "Pear", symbol: "🍐", color: .green),
+                Fruit(name: "Apple", symbol: "🍎", color: .red),
+                Fruit(name: "Orange", symbol: "🍊", color: .orange),
+                Fruit(name: "Banana", symbol: "🍌", color: .yellow),
+                Fruit(name: "Grape", symbol: "🍇", color: .purple),
             ])
             .delay(for: .seconds(2), scheduler: DispatchQueue.main)
             .setFailureType(to: Error.self)
@@ -123,11 +123,11 @@ enum SimpleError: Error, LocalizedError {
                 Text(fruit.name)
                     .font(.largeTitle)
                     .bold()
-                Text("Cargado desde Combine Publisher")
+                Text("Loaded from Combine Publisher")
                     .font(.headline)
                     .foregroundColor(.secondary)
             }
-            .navigationTitle("Detalles")
+            .navigationTitle("Details")
             #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
             #endif
@@ -169,7 +169,7 @@ enum SimpleError: Error, LocalizedError {
                 Image(systemName: "wifi.slash")
                     .font(.system(size: 60))
                     .foregroundColor(.red)
-                Text("¡Oops!")
+                Text("Oops!")
                     .font(.largeTitle)
                     .fontWeight(.bold)
                 Text(error.localizedDescription)
@@ -177,8 +177,8 @@ enum SimpleError: Error, LocalizedError {
                     .multilineTextAlignment(.center)
                     .foregroundColor(.secondary)
 
-                Button("Reintentar") {
-                    // Aquí se podría agregar lógica de reintento
+                Button("Retry") {
+                    // Retry logic could be added here
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
@@ -206,7 +206,7 @@ enum SimpleError: Error, LocalizedError {
             Text("Detail: \(fruit.name)")
         }
         .errorContent { error in
-            // Vista de error minimalista
+            // Minimalist error view
             HStack {
                 Image(systemName: "xmark.circle.fill")
                     .foregroundColor(.red)
@@ -228,9 +228,9 @@ enum SimpleError: Error, LocalizedError {
     DynamicListBuilder<Fruit>()
         .publisher {
             Just([
-                Fruit(name: "Sandía", symbol: "🍉", color: .red),
-                Fruit(name: "Pera", symbol: "🍐", color: .green),
-                Fruit(name: "Manzana", symbol: "🍎", color: .red),
+                Fruit(name: "Watermelon", symbol: "🍉", color: .red),
+                Fruit(name: "Pear", symbol: "🍐", color: .green),
+                Fruit(name: "Apple", symbol: "🍎", color: .red),
             ])
             .delay(for: .seconds(3), scheduler: DispatchQueue.main)
             .setFailureType(to: Error.self)
@@ -262,7 +262,7 @@ enum SimpleError: Error, LocalizedError {
                     .font(.headline)
                     .foregroundColor(.secondary)
             }
-            .navigationTitle("Detalles")
+            .navigationTitle("Details")
             #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
             #endif
@@ -277,9 +277,9 @@ enum SimpleError: Error, LocalizedError {
     DynamicListBuilder<Fruit>()
         .publisher {
             Just([
-                Fruit(name: "Sandía", symbol: "🍉", color: .red),
-                Fruit(name: "Pera", symbol: "🍐", color: .green),
-                Fruit(name: "Manzana", symbol: "🍎", color: .red),
+                Fruit(name: "Watermelon", symbol: "🍉", color: .red),
+                Fruit(name: "Pear", symbol: "🍐", color: .green),
+                Fruit(name: "Apple", symbol: "🍎", color: .red),
             ])
             .delay(for: .seconds(3), scheduler: DispatchQueue.main)
             .setFailureType(to: Error.self)
@@ -311,13 +311,13 @@ enum SimpleError: Error, LocalizedError {
                     .font(.headline)
                     .foregroundColor(.secondary)
             }
-            .navigationTitle("Detalles")
+            .navigationTitle("Details")
             #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
             #endif
         }
         .skeletonContent {
-            // Skeleton personalizado que coincide con el diseño real
+            // Custom skeleton that matches the real design
             List(0 ..< 8, id: \.self) { _ in
                 HStack {
                     // Skeleton para el emoji
@@ -352,30 +352,30 @@ enum SimpleError: Error, LocalizedError {
     SectionedDynamicListBuilder<Fruit>()
         .sections([
             ListSection(
-                title: "Frutas Rojas",
+                title: "Red Fruits",
                 items: [
-                    Fruit(name: "Manzana", symbol: "🍎", color: .red),
-                    Fruit(name: "Sandía", symbol: "🍉", color: .red),
-                    Fruit(name: "Fresa", symbol: "🍓", color: .red),
+                    Fruit(name: "Apple", symbol: "🍎", color: .red),
+                    Fruit(name: "Watermelon", symbol: "🍉", color: .red),
+                    Fruit(name: "Strawberry", symbol: "🍓", color: .red),
                 ],
-                footer: "3 frutas rojas disponibles",
+                footer: "3 red fruits available",
             ),
             ListSection(
-                title: "Frutas Verdes",
+                title: "Green Fruits",
                 items: [
-                    Fruit(name: "Pera", symbol: "🍐", color: .green),
-                    Fruit(name: "Uva Verde", symbol: "🍇", color: .green),
+                    Fruit(name: "Pear", symbol: "🍐", color: .green),
+                    Fruit(name: "Green Grape", symbol: "🍇", color: .green),
                 ],
-                footer: "2 frutas verdes disponibles",
+                footer: "2 green fruits available",
             ),
             ListSection(
-                title: "Frutas Amarillas",
+                title: "Yellow Fruits",
                 items: [
-                    Fruit(name: "Plátano", symbol: "🍌", color: .yellow),
-                    Fruit(name: "Piña", symbol: "🍍", color: .yellow),
-                    Fruit(name: "Limón", symbol: "🍋", color: .yellow),
+                    Fruit(name: "Banana", symbol: "🍌", color: .yellow),
+                    Fruit(name: "Pineapple", symbol: "🍍", color: .yellow),
+                    Fruit(name: "Lemon", symbol: "🍋", color: .yellow),
                 ],
-                footer: "3 frutas amarillas disponibles",
+                footer: "3 yellow fruits available",
             ),
         ])
         .rowContent { fruit in
@@ -404,12 +404,12 @@ enum SimpleError: Error, LocalizedError {
                     .font(.headline)
                     .foregroundColor(.secondary)
             }
-            .navigationTitle("Detalles")
+            .navigationTitle("Details")
             #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
             #endif
         }
-        .title("Frutas por Color")
+        .title("Fruits by Color")
         .build()
 }
 
@@ -418,19 +418,19 @@ enum SimpleError: Error, LocalizedError {
         .groupedItems(
             [
                 [
-                    Fruit(name: "Manzana", symbol: "🍎", color: .red),
-                    Fruit(name: "Sandía", symbol: "🍉", color: .red),
+                    Fruit(name: "Apple", symbol: "🍎", color: .red),
+                    Fruit(name: "Watermelon", symbol: "🍉", color: .red),
                 ],
                 [
-                    Fruit(name: "Pera", symbol: "🍐", color: .green),
+                    Fruit(name: "Pear", symbol: "🍐", color: .green),
                 ],
                 [
-                    Fruit(name: "Plátano", symbol: "🍌", color: .yellow),
-                    Fruit(name: "Piña", symbol: "🍍", color: .yellow),
-                    Fruit(name: "Limón", symbol: "🍋", color: .yellow),
+                    Fruit(name: "Banana", symbol: "🍌", color: .yellow),
+                    Fruit(name: "Pineapple", symbol: "🍍", color: .yellow),
+                    Fruit(name: "Lemon", symbol: "🍋", color: .yellow),
                 ],
             ],
-            titles: ["Rojas", "Verdes", "Amarillas"],
+            titles: ["Red", "Green", "Yellow"],
         )
         .rowContent { fruit in
             HStack {
@@ -453,12 +453,12 @@ enum SimpleError: Error, LocalizedError {
                     .font(.headline)
                     .foregroundColor(.secondary)
             }
-            .navigationTitle("Detalles")
+            .navigationTitle("Details")
             #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
             #endif
         }
-        .title("Frutas por Categoría")
+        .title("Fruits by Category")
         .build()
 }
 
@@ -467,18 +467,18 @@ enum SimpleError: Error, LocalizedError {
         .publisher {
             Just([
                 [
-                    Fruit(name: "Manzana", symbol: "🍎", color: .red),
-                    Fruit(name: "Sandía", symbol: "🍉", color: .red),
-                    Fruit(name: "Fresa", symbol: "🍓", color: .red),
+                    Fruit(name: "Apple", symbol: "🍎", color: .red),
+                    Fruit(name: "Watermelon", symbol: "🍉", color: .red),
+                    Fruit(name: "Strawberry", symbol: "🍓", color: .red),
                 ],
                 [
-                    Fruit(name: "Pera", symbol: "🍐", color: .green),
-                    Fruit(name: "Uva Verde", symbol: "🍇", color: .green),
+                    Fruit(name: "Pear", symbol: "🍐", color: .green),
+                    Fruit(name: "Green Grape", symbol: "🍇", color: .green),
                 ],
                 [
-                    Fruit(name: "Plátano", symbol: "🍌", color: .yellow),
-                    Fruit(name: "Piña", symbol: "🍍", color: .yellow),
-                    Fruit(name: "Limón", symbol: "🍋", color: .yellow),
+                    Fruit(name: "Banana", symbol: "🍌", color: .yellow),
+                    Fruit(name: "Pineapple", symbol: "🍍", color: .yellow),
+                    Fruit(name: "Lemon", symbol: "🍋", color: .yellow),
                 ],
             ])
             .delay(for: .seconds(2), scheduler: DispatchQueue.main)
@@ -511,7 +511,7 @@ enum SimpleError: Error, LocalizedError {
                     .font(.headline)
                     .foregroundColor(.secondary)
             }
-            .navigationTitle("Detalles")
+            .navigationTitle("Details")
             #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
             #endif
@@ -519,6 +519,6 @@ enum SimpleError: Error, LocalizedError {
         .skeletonContent {
             DefaultSectionedSkeletonView()
         }
-        .title("Frutas por Color (Reactivo)")
+        .title("Fruits by Color (Reactive)")
         .build()
 }
