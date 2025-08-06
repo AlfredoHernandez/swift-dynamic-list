@@ -39,9 +39,9 @@ struct SearchViewModelTests {
         viewModel.setSearchConfiguration(searchConfig)
         viewModel.searchText = ""
 
-        #expect(viewModel.filteredItemsList.count == 2)
-        #expect(viewModel.filteredItemsList.contains(where: { $0.name == "Ana" }))
-        #expect(viewModel.filteredItemsList.contains(where: { $0.name == "Bob" }))
+        #expect(viewModel.items.count == 2)
+        #expect(viewModel.items.contains(where: { $0.name == "Ana" }))
+        #expect(viewModel.items.contains(where: { $0.name == "Bob" }))
     }
 
     @Test("when search text matches name filters correctly")
@@ -64,8 +64,8 @@ struct SearchViewModelTests {
         viewModel.setSearchConfiguration(searchConfig)
         viewModel.searchText = "Ana"
 
-        #expect(viewModel.filteredItemsList.count == 1)
-        #expect(viewModel.filteredItemsList.first?.name == "Ana")
+        #expect(viewModel.items.count == 1)
+        #expect(viewModel.items.first?.name == "Ana")
     }
 
     @Test("when search text matches email filters correctly")
@@ -88,8 +88,8 @@ struct SearchViewModelTests {
         viewModel.setSearchConfiguration(searchConfig)
         viewModel.searchText = "bob@test.com"
 
-        #expect(viewModel.filteredItemsList.count == 1)
-        #expect(viewModel.filteredItemsList.first?.name == "Bob")
+        #expect(viewModel.items.count == 1)
+        #expect(viewModel.items.first?.name == "Bob")
     }
 
     @Test("when using custom predicate filters correctly")
@@ -114,8 +114,8 @@ struct SearchViewModelTests {
         viewModel.setSearchConfiguration(searchConfig)
         viewModel.searchText = "admin"
 
-        #expect(viewModel.filteredItemsList.count == 1)
-        #expect(viewModel.filteredItemsList.first?.role == "Admin")
+        #expect(viewModel.items.count == 1)
+        #expect(viewModel.items.first?.role == "Admin")
     }
 
     @Test("when no search configuration uses fallback filtering")
@@ -132,8 +132,8 @@ struct SearchViewModelTests {
         )
         viewModel.searchText = "Ana"
 
-        #expect(viewModel.filteredItemsList.count == 1)
-        #expect(viewModel.filteredItemsList.first?.name == "Ana")
+        #expect(viewModel.items.count == 1)
+        #expect(viewModel.items.first?.name == "Ana")
     }
 
     // MARK: - SectionedDynamicListViewModel Search Tests
@@ -164,9 +164,9 @@ struct SearchViewModelTests {
         viewModel.setSearchConfiguration(searchConfig)
         viewModel.searchText = ""
 
-        #expect(viewModel.filteredSectionsList.count == 2)
-        #expect(viewModel.filteredSectionsList[0].title == "Admins")
-        #expect(viewModel.filteredSectionsList[1].title == "Users")
+        #expect(viewModel.sections.count == 2)
+        #expect(viewModel.sections[0].title == "Admins")
+        #expect(viewModel.sections[1].title == "Users")
     }
 
     @Test("when search text matches items in one section filters correctly")
@@ -195,10 +195,10 @@ struct SearchViewModelTests {
         viewModel.setSearchConfiguration(searchConfig)
         viewModel.searchText = "Ana"
 
-        #expect(viewModel.filteredSectionsList.count == 1)
-        #expect(viewModel.filteredSectionsList[0].title == "Admins")
-        #expect(viewModel.filteredSectionsList[0].items.count == 1)
-        #expect(viewModel.filteredSectionsList[0].items.first?.name == "Ana")
+        #expect(viewModel.sections.count == 1)
+        #expect(viewModel.sections[0].title == "Admins")
+        #expect(viewModel.sections[0].items.count == 1)
+        #expect(viewModel.sections[0].items.first?.name == "Ana")
     }
 
     @Test("when search text matches items in multiple sections shows all matching sections")
@@ -227,11 +227,11 @@ struct SearchViewModelTests {
         viewModel.setSearchConfiguration(searchConfig)
         viewModel.searchText = "a"
 
-        #expect(viewModel.filteredSectionsList.count == 2)
-        #expect(viewModel.filteredSectionsList[0].title == "Admins")
-        #expect(viewModel.filteredSectionsList[1].title == "Users")
-        #expect(viewModel.filteredSectionsList[0].items.first?.name == "Ana")
-        #expect(viewModel.filteredSectionsList[1].items.first?.name == "Alice")
+        #expect(viewModel.sections.count == 2)
+        #expect(viewModel.sections[0].title == "Admins")
+        #expect(viewModel.sections[1].title == "Users")
+        #expect(viewModel.sections[0].items.first?.name == "Ana")
+        #expect(viewModel.sections[1].items.first?.name == "Alice")
     }
 
     @Test("when search text matches no items returns empty sections")
@@ -260,7 +260,7 @@ struct SearchViewModelTests {
         viewModel.setSearchConfiguration(searchConfig)
         viewModel.searchText = "xyz"
 
-        #expect(viewModel.filteredSectionsList.isEmpty)
+        #expect(viewModel.sections.isEmpty)
     }
 
     @Test("when using exact match strategy filters correctly")
@@ -289,11 +289,11 @@ struct SearchViewModelTests {
         viewModel.setSearchConfiguration(searchConfig)
         viewModel.searchText = "Ana"
 
-        #expect(viewModel.filteredSectionsList.count == 1)
-        #expect(viewModel.filteredSectionsList[0].items.first?.name == "Ana")
+        #expect(viewModel.sections.count == 1)
+        #expect(viewModel.sections[0].items.first?.name == "Ana")
 
         viewModel.searchText = "an"
-        #expect(viewModel.filteredSectionsList.isEmpty)
+        #expect(viewModel.sections.isEmpty)
     }
 
     // MARK: - Search State Tests
@@ -347,21 +347,21 @@ struct SearchViewModelTests {
         viewModel.setSearchConfiguration(searchConfig)
 
         // Verify all items are shown initially
-        #expect(viewModel.filteredItemsList.count == 2)
+        #expect(viewModel.items.count == 2)
 
         // Search for "Ana" - should filter to one item
         viewModel.searchText = "Ana"
-        #expect(viewModel.filteredItemsList.count == 1)
-        #expect(viewModel.filteredItemsList.first?.name == "Ana")
+        #expect(viewModel.items.count == 1)
+        #expect(viewModel.items.first?.name == "Ana")
 
         // Search for "Bob" - should filter to one item
         viewModel.searchText = "Bob"
-        #expect(viewModel.filteredItemsList.count == 1)
-        #expect(viewModel.filteredItemsList.first?.name == "Bob")
+        #expect(viewModel.items.count == 1)
+        #expect(viewModel.items.first?.name == "Bob")
 
         // Clear search - should show all items again
         viewModel.searchText = ""
-        #expect(viewModel.filteredItemsList.count == 2)
+        #expect(viewModel.items.count == 2)
     }
 
     @Test("when search text is updated directly in sectioned view model triggers automatic filtering")
@@ -390,23 +390,23 @@ struct SearchViewModelTests {
         viewModel.setSearchConfiguration(searchConfig)
 
         // Verify all sections are shown initially
-        #expect(viewModel.filteredSectionsList.count == 2)
+        #expect(viewModel.sections.count == 2)
 
         // Search for "Ana" - should filter to one section
         viewModel.searchText = "Ana"
-        #expect(viewModel.filteredSectionsList.count == 1)
-        #expect(viewModel.filteredSectionsList[0].title == "Admins")
-        #expect(viewModel.filteredSectionsList[0].items.first?.name == "Ana")
+        #expect(viewModel.sections.count == 1)
+        #expect(viewModel.sections[0].title == "Admins")
+        #expect(viewModel.sections[0].items.first?.name == "Ana")
 
         // Search for "Bob" - should filter to one section
         viewModel.searchText = "Bob"
-        #expect(viewModel.filteredSectionsList.count == 1)
-        #expect(viewModel.filteredSectionsList[0].title == "Users")
-        #expect(viewModel.filteredSectionsList[0].items.first?.name == "Bob")
+        #expect(viewModel.sections.count == 1)
+        #expect(viewModel.sections[0].title == "Users")
+        #expect(viewModel.sections[0].items.first?.name == "Bob")
 
         // Clear search - should show all sections again
         viewModel.searchText = ""
-        #expect(viewModel.filteredSectionsList.count == 2)
+        #expect(viewModel.sections.count == 2)
     }
 
     @Test("when search text is updated in sectioned view model reflects in searchText property")

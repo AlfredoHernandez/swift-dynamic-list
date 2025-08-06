@@ -212,9 +212,4 @@ extension DynamicListViewModel {
     var error: Error? {
         viewState.error
     }
-
-    /// The filtered collection of items based on current search text and configuration.
-    var filteredItemsList: [Item] {
-        viewState.items
-    }
 }

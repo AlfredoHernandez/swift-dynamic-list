@@ -594,7 +594,7 @@ struct DynamicListTests {
         let items = [TestItem(name: "Test")]
         let viewModel = DynamicListViewModel(items: items)
         
-        let sut = DynamicList(
+        let sut = DynamicListBuilder<TestItem>().build()
             viewModel: viewModel,
             rowContent: { item in Text(item.name) },
             detailContent: { item in Text(item.name) }

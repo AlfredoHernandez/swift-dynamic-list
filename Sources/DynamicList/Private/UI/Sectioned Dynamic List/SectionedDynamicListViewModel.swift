@@ -242,8 +242,18 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable> 
 
     // MARK: - Convenience Properties
 
-    /// The filtered sections based on current search text and configuration.
-    public var filteredSectionsList: [ListSection<Item>] {
+    /// The collection of sections to be displayed.
+    public var sections: [ListSection<Item>] {
         viewState.sections
+    }
+
+    /// Indicates whether data is currently being loaded.
+    public var isLoading: Bool {
+        viewState.isLoading
+    }
+
+    /// Contains any error that occurred during data loading.
+    public var error: Error? {
+        viewState.error
     }
 }

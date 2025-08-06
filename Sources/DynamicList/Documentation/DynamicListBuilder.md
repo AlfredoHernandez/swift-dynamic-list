@@ -192,7 +192,7 @@ var body: some View {
 let viewModel = DynamicListViewModel(publisher: usersPublisher)
 
 // Create DynamicList with all configuration
-DynamicList(
+DynamicListBuilder<Item>().build()
     viewModel: viewModel,
     rowContent: { user in
         Text(user.name)

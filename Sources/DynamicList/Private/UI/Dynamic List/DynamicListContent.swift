@@ -49,7 +49,7 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
             } else if viewModel.viewState.shouldShowError {
                 errorView
             } else {
-                List(viewModel.filteredItemsList) { item in
+                List(viewModel.items) { item in
                     NavigationLink(value: item) {
                         rowContent(item)
                             .redacted(reason: viewModel.viewState.isLoading ? .placeholder : [])

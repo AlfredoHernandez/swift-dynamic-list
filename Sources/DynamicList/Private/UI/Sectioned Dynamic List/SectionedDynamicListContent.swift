@@ -50,7 +50,7 @@ struct SectionedDynamicListContent<Item: Identifiable & Hashable>: View {
                 errorView
             } else {
                 List {
-                    ForEach(viewModel.filteredSectionsList) { section in
+                    ForEach(viewModel.sections) { section in
                         Section {
                             ForEach(section.items) { item in
                                 NavigationLink(value: item) {

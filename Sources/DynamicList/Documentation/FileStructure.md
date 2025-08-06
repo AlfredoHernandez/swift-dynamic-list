@@ -64,10 +64,8 @@ Components for simple dynamic lists (without sections).
 
 ```
 UI/Dynamic List/
-├── DynamicList.swift              # Main view for simple lists
 ├── DynamicListViewModel.swift     # ViewModel for simple lists
 ├── DynamicListViewState.swift     # View states for simple lists
-├── DynamicListBuilder.swift       # Builder pattern for simple lists
 ├── DynamicListContent.swift       # Internal list content
 ├── DynamicListWrapper.swift       # Wrapper with NavigationStack
 └── SearchConfiguration.swift      # Search configuration
@@ -86,10 +84,8 @@ Components for dynamic lists with sections and headers/footers.
 
 ```
 UI/Sectioned Dynamic List/
-├── SectionedDynamicList.swift              # Main view for sectioned lists
 ├── SectionedDynamicListViewModel.swift     # ViewModel for sectioned lists
 ├── SectionedListViewState.swift            # View states for sectioned lists
-├── SectionedDynamicListBuilder.swift       # Builder pattern for sectioned lists
 ├── SectionedDynamicListContent.swift       # Internal content for sectioned lists
 ├── SectionedDynamicListWrapper.swift       # Wrapper with NavigationStack
 └── ListSection.swift                       # Data model for sections
@@ -195,9 +191,7 @@ Support for SwiftUI Previews and examples.
 ```
 PreviewSupport/
 ├── DynamicListPreviews.swift      # Previews for simple lists
-├── BuilderExamples.swift          # Builder Pattern examples
-├── BuilderPreviews.swift          # Builder previews
-└── PreviewModels.swift            # Models for previews
+└── DefaultViewsPreviews.swift     # Previews for default views
 ```
 
 ## 🧪 Tests
