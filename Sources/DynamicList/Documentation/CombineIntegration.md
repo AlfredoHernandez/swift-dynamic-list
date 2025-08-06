@@ -1,54 +1,54 @@
-# Integración con Combine en DynamicList
+# Combine Integration in DynamicList
 
-## Descripción General
+## General Description
 
-`DynamicList` ahora soporta integración completa con Combine, permitiendo obtener datos de servicios externos de forma reactiva. Esto incluye soporte para:
+`DynamicList` now supports complete integration with Combine, allowing you to obtain data from external services reactively. This includes support for:
 
-- APIs REST
-- Bases de datos locales (Core Data, SQLite)
-- Servicios en tiempo real (Firebase, Firestore)
-- Archivos JSON locales
-- Cualquier fuente que produzca un `AnyPublisher<[Item], Error>`
+- REST APIs
+- Local databases (Core Data, SQLite)
+- Real-time services (Firebase, Firestore)
+- Local JSON files
+- Any source that produces an `AnyPublisher<[Item], Error>`
 
-## Características Nuevas
+## New Features
 
-### 1. Estados de Carga
-- **`isLoading`**: Indica si los datos se están cargando
-- **`error`**: Contiene cualquier error que haya ocurrido
-- **Estados visuales**: Spinner de carga y pantallas de error automáticas
+### 1. Loading States
+- **`isLoading`**: Indicates if data is being loaded
+- **`error`**: Contains any error that occurred
+- **Visual states**: Loading spinner and automatic error screens
 
-### 2. Reactividad
-- Actualizaciones automáticas cuando cambian los datos
-- Soporte para datos en tiempo real
-- Cancelación automática de suscripciones
+### 2. Reactivity
+- Automatic updates when data changes
+- Support for real-time data
+- Automatic subscription cancellation
 
-### 3. Flexibilidad
-- Compatible con datos estáticos y dinámicos
-- Cambio de fuente de datos en tiempo de ejecución
-- Manejo de errores integrado
-- **Refresh funcional**: Recarga real de datos con `refresh()`
+### 3. Flexibility
+- Compatible with static and dynamic data
+- Runtime data source changes
+- Integrated error handling
+- **Functional refresh**: Real data reload with `refresh()`
 
-## Uso Básico
+## Basic Usage
 
-### Con Datos Estáticos (Sin Cambios)
+### With Static Data (No Changes)
 ```swift
 let viewModel = DynamicListViewModel<Task>(
     items: [
-        Task(title: "Ejemplo", description: "Datos estáticos")
+        Task(title: "Example", description: "Static data")
     ]
 )
 ```
 
-### Con Data Provider (Nueva API)
+### With Data Provider (New API)
 ```swift
 let viewModel = DynamicListViewModel<Task> {
     dataService.loadTasks()
 }
 ```
 
-## Ejemplos de Implementación
+## Implementation Examples
 
-### 1. API REST con URLSession
+### 1. REST API with URLSession
 ```swift
 func loadUsers() -> AnyPublisher<[User], Error> {
     let url = URL(string: "https://api.example.com/users")!
@@ -60,13 +60,13 @@ func loadUsers() -> AnyPublisher<[User], Error> {
         .eraseToAnyPublisher()
 }
 
-// Uso
+// Usage
 let viewModel = DynamicListViewModel<User> {
     loadUsers()
 }
 ```
 
-### 2. JSON Local
+### 2. Local JSON
 ```swift
 func loadTasksFromBundle() -> AnyPublisher<[Task], Error> {
     guard let url = Bundle.main.url(forResource: "tasks", withExtension: "json") else {
@@ -81,13 +81,13 @@ func loadTasksFromBundle() -> AnyPublisher<[Task], Error> {
         .eraseToAnyPublisher()
 }
 
-// Uso
+// Usage
 let viewModel = DynamicListViewModel<Task> {
     loadTasksFromBundle()
 }
 ```
 
-### 3. Base de Datos Local Reactiva
+### 3. Reactive Local Database
 ```swift
 class DatabaseService {
     private let subject = PassthroughSubject<[Task], Error>()
@@ -97,24 +97,24 @@ class DatabaseService {
     }
     
     func addTask(_ task: Task) {
-        // Guardar en base de datos
-        // Emitir nueva lista
+        // Save to database
+        // Emit new list
         subject.send(updatedTasks)
     }
 }
 
-// Uso
+// Usage
 let viewModel = DynamicListViewModel<Task> {
     databaseService.tasksPublisher
 }
 ```
 
-### 4. Firebase/Firestore Simulado
+### 4. Simulated Firebase/Firestore
 ```swift
 func listenToTasks() -> AnyPublisher<[Task], Error> {
     let subject = PassthroughSubject<[Task], Error>()
     
-    // Configurar listener de Firestore
+    // Configure Firestore listener
     // db.collection("tasks").addSnapshotListener { snapshot, error in
     //     if let error = error {
     //         subject.send(completion: .failure(error))
@@ -128,49 +128,49 @@ func listenToTasks() -> AnyPublisher<[Task], Error> {
     return subject.eraseToAnyPublisher()
 }
 
-// Uso
+// Usage
 let viewModel = DynamicListViewModel<Task> {
     listenToTasks()
 }
 ```
 
-## API del ViewModel
+## ViewModel API
 
-### Inicializadores
+### Initializers
 ```swift
-// Con datos estáticos
+// With static data
 init(items: [Item] = [])
 
-// Con data provider (nueva API)
+// With data provider (new API)
 init(dataProvider: @escaping () -> AnyPublisher<[Item], Error>, initialItems: [Item] = [])
 ```
 
-### Métodos Públicos
+### Public Methods
 ```swift
-// Cambiar fuente de datos dinámicamente
+// Change data source dynamically
 func loadItems(from dataProvider: @escaping () -> AnyPublisher<[Item], Error>)
 
-// Recargar datos (ahora funcional)
+// Reload data (now functional)
 func refresh()
 ```
 
-### Propiedades Observables
+### Observable Properties
 ```swift
-var items: [Item]           // Los elementos a mostrar
-var isLoading: Bool         // Estado de carga
-var error: Error?           // Error si ocurrió
+var items: [Item]           // Items to display
+var isLoading: Bool         // Loading state
+var error: Error?           // Error if occurred
 ```
 
-## Estados Visuales Automáticos
+## Automatic Visual States
 
-La vista `DynamicList` maneja automáticamente:
+The `DynamicList` view automatically handles:
 
-1. **Carga Inicial**: Muestra `ProgressView` si `isLoading` es `true` y no hay elementos
-2. **Estado de Error**: Muestra pantalla de error si hay un error y no hay elementos
-3. **Lista con Datos**: Muestra la lista normal cuando hay elementos
-4. **Pull to Refresh**: Soporte completo para refrescar con datos reales
+1. **Initial Loading**: Shows `ProgressView` if `isLoading` is `true` and there are no items
+2. **Error State**: Shows error screen if there's an error and no items
+3. **List with Data**: Shows normal list when there are items
+4. **Pull to Refresh**: Complete support for refreshing with real data
 
-## Manejo de Errores
+## Error Handling
 
 ```swift
 enum ServiceError: Error, LocalizedError {
@@ -181,102 +181,102 @@ enum ServiceError: Error, LocalizedError {
     var errorDescription: String? {
         switch self {
         case .networkError:
-            return "Error de conexión"
+            return "Connection error"
         case .invalidURL:
-            return "URL inválida"
+            return "Invalid URL"
         case .decodingError:
-            return "Error al procesar los datos"
+            return "Error processing data"
         }
     }
 }
 ```
 
-## Casos de Uso Avanzados
+## Advanced Use Cases
 
-### Cambio Dinámico de Fuente
+### Dynamic Source Change
 ```swift
-// Inicializar con una fuente
+// Initialize with one source
 let viewModel = DynamicListViewModel<Task> {
     localService.loadTasks()
 }
 
-// Cambiar a otra fuente más tarde
+// Change to another source later
 viewModel.loadItems {
     firebaseService.loadTasks()
 }
 ```
 
-### Filtros Dinámicos con Parámetros
+### Dynamic Filters with Parameters
 ```swift
-// Cargar todas las tareas
+// Load all tasks
 viewModel.loadItems {
     service.loadAllTasks()
 }
 
-// Cambiar a solo completadas
+// Change to completed only
 viewModel.loadItems {
     service.loadCompletedTasks()
 }
 
-// Con parámetros dinámicos
+// With dynamic parameters
 let currentFilter = TaskFilter.completed
 viewModel.loadItems {
     service.loadTasks(filter: currentFilter)
 }
 ```
 
-### Datos en Tiempo Real
+### Real-time Data
 ```swift
-// El data provider se llama cada vez que se necesita refrescar
+// The data provider is called every time refresh is needed
 let viewModel = DynamicListViewModel<Task> {
     realtimeService.tasksStream
 }
 
-// La UI se actualiza automáticamente
-// Y refresh() obtiene datos frescos
+// UI updates automatically
+// And refresh() gets fresh data
 ```
 
-### Refresh Funcional
+### Functional Refresh
 ```swift
-// Ahora refresh() realmente recarga los datos
-viewModel.refresh() // Llama al data provider y obtiene datos frescos
+// Now refresh() really reloads data
+viewModel.refresh() // Calls the data provider and gets fresh data
 ```
 
-## Consideraciones de Rendimiento
+## Performance Considerations
 
-1. **Threading**: Todos los publishers se ejecutan en el hilo principal automáticamente
-2. **Cancelación**: Las suscripciones anteriores se cancelan al cambiar de fuente o refrescar
-3. **Memoria**: El ViewModel mantiene referencias débiles para evitar ciclos de retención
-4. **Actualizaciones**: Solo se actualiza la UI cuando realmente cambian los datos
-5. **Datos Frescos**: Cada `refresh()` obtiene datos actualizados del data provider
+1. **Threading**: All publishers run on the main thread automatically
+2. **Cancellation**: Previous subscriptions are cancelled when changing source or refreshing
+3. **Memory**: The ViewModel maintains weak references to avoid retention cycles
+4. **Updates**: UI is only updated when data actually changes
+5. **Fresh Data**: Each `refresh()` gets updated data from the data provider
 
-## Migración desde Versión Anterior
+## Migration from Previous Version
 
-El código existente sigue funcionando sin cambios:
+Existing code continues to work without changes:
 
 ```swift
-// Esto sigue funcionando igual
+// This still works the same
 let viewModel = DynamicListViewModel<Item>(items: staticItems)
 ```
 
-Para aprovechar las nuevas funcionalidades, cambia de publisher directo a data provider:
+To take advantage of new features, change from direct publisher to data provider:
 
 ```swift
-// Antes
+// Before
 let viewModel = DynamicListViewModel<Item>(
     publisher: yourDataService.loadItems()
 )
 
-// Ahora
+// Now
 let viewModel = DynamicListViewModel<Item> {
     yourDataService.loadItems()
 }
 ```
 
-## Ventajas de la Nueva API
+## Advantages of the New API
 
-- ✅ **Refresh funcional**: `refresh()` ahora realmente recarga datos
-- ✅ **Más flexible**: Puedes capturar parámetros en la closure
-- ✅ **Datos frescos**: Cada refresh obtiene datos actualizados
-- ✅ **Mejor testing**: Más fácil mockear una función que un publisher
-- ✅ **Parámetros dinámicos**: El data provider puede usar variables del contexto
+- ✅ **Functional refresh**: `refresh()` now really reloads data
+- ✅ **More flexible**: You can capture parameters in the closure
+- ✅ **Fresh data**: Each refresh gets updated data
+- ✅ **Better testing**: Easier to mock a function than a publisher
+- ✅ **Dynamic parameters**: The data provider can use context variables

@@ -1,14 +1,14 @@
-# Vistas de Error Personalizadas en DynamicList
+# Custom Error Views in DynamicList
 
-## Descripción General
+## General Description
 
-`DynamicList` permite personalizar completamente la vista que se muestra cuando ocurre un error al cargar los datos. Puedes usar la vista de error por defecto o crear tu propia vista personalizada.
+`DynamicList` allows you to completely customize the view that is displayed when an error occurs while loading data. You can use the default error view or create your own custom view.
 
-## Uso Básico
+## Basic Usage
 
-### Vista de Error Por Defecto
+### Default Error View
 
-Si no especificas una vista de error personalizada, `DynamicList` usará automáticamente la vista por defecto:
+If you don't specify a custom error view, `DynamicList` will automatically use the default view:
 
 ```swift
 let viewModel = DynamicListViewModel<Task>(
@@ -23,19 +23,19 @@ DynamicList(
     detailContent: { task in
         Text("Detail: \(task.title)")
     }
-    // No errorContent especificado = usa vista por defecto
+    // No errorContent specified = uses default view
 )
 ```
 
-La vista por defecto incluye:
-- ⚠️ Icono de advertencia naranja
-- Título "Error al cargar los datos"
-- Descripción del error
-- Diseño centrado y responsive
+The default view includes:
+- ⚠️ Orange warning icon
+- Title "Error loading data"
+- Error description
+- Centered and responsive design
 
-### Vista de Error Personalizada
+### Custom Error View
 
-Para usar una vista de error personalizada, proporciona el parámetro `errorContent`:
+To use a custom error view, provide the `errorContent` parameter:
 
 ```swift
 DynamicList(
@@ -47,7 +47,7 @@ DynamicList(
         Text("Detail: \(task.title)")
     },
     errorContent: { error in
-        // Tu vista personalizada aquí
+        // Your custom view here
         VStack {
             Image(systemName: "exclamationmark.triangle")
                 .foregroundColor(.red)
@@ -57,9 +57,9 @@ DynamicList(
 )
 ```
 
-## Ejemplos de Vistas de Error
+## Error View Examples
 
-### 1. Vista de Error con Botón de Reintento
+### 1. Error View with Retry Button
 
 ```swift
 errorContent: { error in
@@ -68,7 +68,7 @@ errorContent: { error in
             .font(.system(size: 60))
             .foregroundColor(.red)
         
-        Text("Sin Conexión")
+        Text("No Connection")
             .font(.largeTitle)
             .fontWeight(.bold)
         
@@ -77,7 +77,7 @@ errorContent: { error in
             .multilineTextAlignment(.center)
             .foregroundColor(.secondary)
         
-        Button("Reintentar") {
+        Button("Retry") {
             viewModel.refresh()
         }
         .buttonStyle(.borderedProminent)
@@ -87,7 +87,7 @@ errorContent: { error in
 }
 ```
 
-### 2. Vista de Error Minimalista
+### 2. Minimalist Error View
 
 ```swift
 errorContent: { error in
@@ -103,7 +103,7 @@ errorContent: { error in
 }
 ```
 
-### 3. Vista de Error con Diferentes Estados
+### 3. Error View with Different States
 
 ```swift
 errorContent: { error in
@@ -121,7 +121,7 @@ errorContent: { error in
             .font(.caption)
             .foregroundColor(.secondary)
         
-        Button("Reintentar") {
+        Button("Retry") {
             viewModel.refresh()
         }
         .buttonStyle(.bordered)
@@ -132,16 +132,16 @@ errorContent: { error in
 func errorInfo(for error: Error) -> (icon: String, color: Color, title: String) {
     switch error {
     case is URLError:
-        return ("wifi.slash", .orange, "Sin Conexión")
+        return ("wifi.slash", .orange, "No Connection")
     case let customError as CustomError where customError.isAuthError:
-        return ("person.slash", .red, "No Autorizado")
+        return ("person.slash", .red, "Not Authorized")
     default:
-        return ("exclamationmark.triangle", .yellow, "Error General")
+        return ("exclamationmark.triangle", .yellow, "General Error")
     }
 }
 ```
 
-### 4. Vista de Error con Animaciones
+### 4. Error View with Animations
 
 ```swift
 errorContent: { error in
@@ -153,7 +153,7 @@ errorContent: { error in
             .animation(.easeInOut(duration: 1).repeatForever(), value: animating)
             .onAppear { animating = true }
         
-        Text("¡Ups! Algo salió mal")
+        Text("Oops! Something went wrong")
             .font(.title2)
             .fontWeight(.semibold)
         
@@ -166,19 +166,19 @@ errorContent: { error in
 }
 ```
 
-## Mejores Prácticas
+## Best Practices
 
-### 1. Consistencia de Diseño
-Mantén el estilo consistente con tu aplicación:
+### 1. Design Consistency
+Keep the style consistent with your application:
 
 ```swift
 errorContent: { error in
-    ErrorCard(error: error) // Tu componente reutilizable
+    ErrorCard(error: error) // Your reusable component
 }
 ```
 
-### 2. Accesibilidad
-Asegúrate de que tu vista de error sea accesible:
+### 2. Accessibility
+Make sure your error view is accessible:
 
 ```swift
 errorContent: { error in
@@ -192,8 +192,8 @@ errorContent: { error in
 }
 ```
 
-### 3. Manejo de Errores Específicos
-Personaliza la vista según el tipo de error:
+### 3. Specific Error Handling
+Customize the view based on error type:
 
 ```swift
 errorContent: { error in
@@ -208,31 +208,31 @@ errorContent: { error in
 }
 ```
 
-### 4. Estados de Carga con Datos Previos
-Cuando hay datos previos disponibles, considera mostrar un overlay en lugar de reemplazar toda la vista:
+### 4. Loading States with Previous Data
+When previous data is available, consider showing an overlay instead of replacing the entire view:
 
 ```swift
-// El ViewState maneja esto automáticamente
-// Si hay items existentes, shouldShowError será false
-// y puedes mostrar un overlay o banner de error
+// ViewState handles this automatically
+// If there are existing items, shouldShowError will be false
+// and you can show an overlay or error banner
 ```
 
-## Integración con ViewState
+## Integration with ViewState
 
-Las vistas de error personalizadas se integran perfectamente con el sistema de estados:
+Custom error views integrate perfectly with the state system:
 
 ```swift
-// La vista de error solo se muestra cuando:
+// The error view is only shown when:
 viewModel.viewState.shouldShowError == true
 
-// Esto ocurre cuando:
+// This happens when:
 // - loadingState == .error(let error)
 // - items.isEmpty == true
 ```
 
-## Ejemplos Completos
+## Complete Examples
 
-### Vista de Error con Múltiples Acciones
+### Error View with Multiple Actions
 
 ```swift
 struct MultiActionErrorView: View {
@@ -247,7 +247,7 @@ struct MultiActionErrorView: View {
                 .foregroundColor(.orange)
             
             VStack(spacing: 8) {
-                Text("Error al Cargar")
+                Text("Error Loading")
                     .font(.title)
                     .fontWeight(.bold)
                 
@@ -258,12 +258,12 @@ struct MultiActionErrorView: View {
             }
             
             HStack(spacing: 16) {
-                Button("Cancelar") {
+                Button("Cancel") {
                     onCancel()
                 }
                 .buttonStyle(.bordered)
                 
-                Button("Reintentar") {
+                Button("Retry") {
                     onRetry()
                 }
                 .buttonStyle(.borderedProminent)
@@ -274,19 +274,19 @@ struct MultiActionErrorView: View {
     }
 }
 
-// Uso:
+// Usage:
 errorContent: { error in
     MultiActionErrorView(
         error: error,
         onRetry: { viewModel.refresh() },
-        onCancel: { /* acción de cancelar */ }
+        onCancel: { /* cancel action */ }
     )
 }
 ```
 
-## Compatibilidad
+## Compatibility
 
-- ✅ **Compatibilidad hacia atrás**: El código existente sigue funcionando sin cambios
-- ✅ **Tipo seguro**: El compilador verifica que los tipos sean correctos
-- ✅ **Flexible**: Puedes usar cualquier vista de SwiftUI
-- ✅ **Reutilizable**: Las vistas de error pueden ser componentes independientes
+- ✅ **Backward compatibility**: Existing code continues to work without changes
+- ✅ **Type safe**: The compiler verifies that types are correct
+- ✅ **Flexible**: You can use any SwiftUI view
+- ✅ **Reusable**: Error views can be independent components

@@ -1,18 +1,18 @@
 # DynamicList Builder
 
-El `DynamicListBuilder` es una clase que simplifica significativamente la creación de instancias de `DynamicList`, proporcionando una API fluida y fácil de usar.
+The `DynamicListBuilder` is a class that significantly simplifies the creation of `DynamicList` instances, providing a fluent and easy-to-use API.
 
-## 🎯 Características Principales
+## 🎯 Key Features
 
-- **API Fluida**: Patrón builder con métodos encadenables
-- **Configuración Flexible**: Soporte para diferentes fuentes de datos
-- **Vistas por Defecto**: Vistas automáticas cuando no se especifican
-- **Factory Methods**: Métodos de conveniencia para casos comunes
-- **Type Safety**: Completamente tipado y seguro
+- **Fluent API**: Builder pattern with chainable methods
+- **Flexible Configuration**: Support for different data sources
+- **Default Views**: Automatic views when not specified
+- **Factory Methods**: Convenience methods for common cases
+- **Type Safety**: Completely typed and safe
 
-## 🚀 Uso Básico
+## 🚀 Basic Usage
 
-### 1. Lista Simple con Datos Estáticos
+### 1. Simple List with Static Data
 
 ```swift
 struct User: Identifiable, Hashable {
@@ -29,7 +29,7 @@ let users = [
 var body: some View {
     DynamicListBuilder<User>()
         .items(users)
-        .title("Usuarios")
+        .title("Users")
         .rowContent { user in
             HStack {
                 Text(user.name)
@@ -45,17 +45,17 @@ var body: some View {
                 Text(user.email)
                     .font(.body)
             }
-            .navigationTitle("Perfil")
+            .navigationTitle("Profile")
         }
         .build()
 }
 ```
 
-### 2. Lista Reactiva con Publisher
+### 2. Reactive List with Publisher
 
 ```swift
 private var usersPublisher: AnyPublisher<[User], Error> {
-    // Tu publisher aquí (API, Firebase, etc.)
+    // Your publisher here (API, Firebase, etc.)
     return Just(users)
         .delay(for: .seconds(1.0), scheduler: DispatchQueue.main)
         .setFailureType(to: Error.self)
@@ -65,29 +65,29 @@ private var usersPublisher: AnyPublisher<[User], Error> {
 var body: some View {
     DynamicListBuilder<User>()
         .publisher(usersPublisher)
-        .title("Usuarios")
+        .title("Users")
         .rowContent { user in
             Text(user.name)
         }
         .detailContent { user in
-            Text("Detalle de \(user.name)")
+            Text("Detail of \(user.name)")
         }
         .build()
 }
 ```
 
-### 3. Lista con Carga Simulada
+### 3. List with Simulated Loading
 
 ```swift
 var body: some View {
     DynamicListBuilder<User>()
         .simulatedPublisher(users, delay: 2.0)
-        .title("Cargando Usuarios")
+        .title("Loading Users")
         .rowContent { user in
             Text(user.name)
         }
         .detailContent { user in
-            Text("Detalle de \(user.name)")
+            Text("Detail of \(user.name)")
         }
         .build()
 }
@@ -105,7 +105,7 @@ var body: some View {
             Text(user.name)
         },
         detailContent: { user in
-            Text("Detalle de \(user.name)")
+            Text("Detail of \(user.name)")
         }
     )
 }
@@ -121,7 +121,7 @@ var body: some View {
             Text(user.name)
         },
         detailContent: { user in
-            Text("Detalle de \(user.name)")
+            Text("Detail of \(user.name)")
         }
     )
 }
@@ -138,15 +138,15 @@ var body: some View {
             Text(user.name)
         },
         detailContent: { user in
-            Text("Detalle de \(user.name)")
+            Text("Detail of \(user.name)")
         }
     )
 }
 ```
 
-## ⚙️ Configuración Avanzada
+## ⚙️ Advanced Configuration
 
-### Vista de Error Personalizada
+### Custom Error View
 
 ```swift
 var body: some View {
@@ -156,13 +156,13 @@ var body: some View {
             VStack {
                 Text("😞")
                     .font(.system(size: 60))
-                Text("¡Ups! Algo salió mal")
+                Text("Oops! Something went wrong")
                     .font(.title2)
                 Text(error.localizedDescription)
                     .font(.body)
                     .foregroundColor(.secondary)
-                Button("Reintentar") {
-                    // Acción de reintento
+                Button("Retry") {
+                    // Retry action
                 }
                 .buttonStyle(.borderedProminent)
             }
@@ -172,7 +172,7 @@ var body: some View {
 }
 ```
 
-### Ocultar Barra de Navegación
+### Hide Navigation Bar
 
 ```swift
 var body: some View {
@@ -183,46 +183,46 @@ var body: some View {
 }
 ```
 
-## 📊 Comparación: Antes vs Después
+## 📊 Comparison: Before vs After
 
-### ❌ Antes (Complejo)
+### ❌ Before (Complex)
 
 ```swift
-// Crear ViewModel
+// Create ViewModel
 let viewModel = DynamicListViewModel(publisher: usersPublisher)
 
-// Crear DynamicList con toda la configuración
+// Create DynamicList with all configuration
 DynamicList(
     viewModel: viewModel,
     rowContent: { user in
         Text(user.name)
     },
     detailContent: { user in
-        Text("Detalle de \(user.name)")
+        Text("Detail of \(user.name)")
     }
 )
 ```
 
-### ✅ Después (Simple)
+### ✅ After (Simple)
 
 ```swift
-// Una sola línea con builder
+// Single line with builder
 DynamicListBuilder<User>()
     .publisher(usersPublisher)
     .rowContent { user in
         Text(user.name)
     }
     .detailContent { user in
-        Text("Detalle de \(user.name)")
+        Text("Detail of \(user.name)")
     }
     .build()
 ```
 
-## 🎨 Vistas por Defecto
+## 🎨 Default Views
 
-Si no especificas `rowContent` o `detailContent`, el builder proporciona vistas por defecto:
+If you don't specify `rowContent` or `detailContent`, the builder provides default views:
 
-### Vista de Fila por Defecto
+### Default Row View
 ```swift
 VStack(alignment: .leading) {
     Text("\(item)")
@@ -233,10 +233,10 @@ VStack(alignment: .leading) {
 }
 ```
 
-### Vista de Detalle por Defecto
+### Default Detail View
 ```swift
 VStack(spacing: 16) {
-    Text("Detalle del Item")
+    Text("Item Detail")
         .font(.largeTitle)
         .fontWeight(.bold)
     
@@ -249,41 +249,41 @@ VStack(spacing: 16) {
 }
 ```
 
-## 🔧 Métodos Disponibles
+## 🔧 Available Methods
 
-### Configuración de Datos
-- `items(_:)` - Datos estáticos
-- `publisher(_:)` - Publisher de Combine
-- `simplePublisher(_:)` - Publisher simple
-- `simulatedPublisher(_:delay:)` - Publisher con simulación de carga
+### Data Configuration
+- `items(_:)` - Static data
+- `publisher(_:)` - Combine publisher
+- `simplePublisher(_:)` - Simple publisher
+- `simulatedPublisher(_:delay:)` - Publisher with loading simulation
 
-### Configuración de UI
-- `rowContent(_:)` - Contenido de fila
-- `detailContent(_:)` - Contenido de detalle
-- `errorContent(_:)` - Vista de error personalizada
-- `title(_:)` - Título de navegación
-- `hideNavigationBar()` - Ocultar barra de navegación
+### UI Configuration
+- `rowContent(_:)` - Row content
+- `detailContent(_:)` - Detail content
+- `errorContent(_:)` - Custom error view
+- `title(_:)` - Navigation title
+- `hideNavigationBar()` - Hide navigation bar
 
 ### Factory Methods
-- `simple(items:rowContent:detailContent:)` - Lista simple
-- `reactive(publisher:rowContent:detailContent:)` - Lista reactiva
-- `simulated(items:delay:rowContent:detailContent:)` - Lista con simulación
+- `simple(items:rowContent:detailContent:)` - Simple list
+- `reactive(publisher:rowContent:detailContent:)` - Reactive list
+- `simulated(items:delay:rowContent:detailContent:)` - List with simulation
 
-## 🎯 Beneficios
+## 🎯 Benefits
 
-1. **Menos Código**: Reducción significativa de líneas de código
-2. **Más Legible**: API fluida y expresiva
-3. **Menos Errores**: Type safety y validaciones automáticas
-4. **Más Flexible**: Configuración opcional y por defecto
-5. **Más Rápido**: Desarrollo más rápido con menos boilerplate
+1. **Less Code**: Significant reduction in lines of code
+2. **More Readable**: Fluent and expressive API
+3. **Fewer Errors**: Type safety and automatic validations
+4. **More Flexible**: Optional configuration and defaults
+5. **Faster**: Faster development with less boilerplate
 
-## 🚀 Casos de Uso Comunes
+## 🚀 Common Use Cases
 
-### Lista de Productos con API
+### Product List with API
 ```swift
 DynamicListBuilder<Product>()
     .publisher(apiService.fetchProducts())
-    .title("Productos")
+    .title("Products")
     .rowContent { product in
         ProductRowView(product: product)
     }
@@ -293,11 +293,11 @@ DynamicListBuilder<Product>()
     .build()
 ```
 
-### Lista de Usuarios con Firebase
+### User List with Firebase
 ```swift
 DynamicListBuilder<User>()
     .publisher(firebaseService.usersPublisher())
-    .title("Usuarios")
+    .title("Users")
     .rowContent { user in
         UserRowView(user: user)
     }
@@ -307,7 +307,7 @@ DynamicListBuilder<User>()
     .build()
 ```
 
-### Lista Simple para Testing
+### Simple List for Testing
 ```swift
 DynamicListBuilder.simple(
     items: testData,
@@ -320,54 +320,54 @@ DynamicListBuilder.simple(
 )
 ```
 
-¡El `DynamicListBuilder` hace que crear listas dinámicas sea tan simple como encadenar métodos! 🎉
+The `DynamicListBuilder` makes creating dynamic lists as simple as chaining methods! 🎉
 
-## ⚠️ Nota Importante: Navegación
+## ⚠️ Important Note: Navigation
 
-### Problema de NavigationStack Anidados
+### Nested NavigationStack Problem
 
-Si experimentas problemas de navegación (como "pop" inesperado del stack), es probable que tengas `NavigationStack` anidados. Esto sucede cuando:
+If you experience navigation issues (such as unexpected "pop" from the stack), you likely have nested `NavigationStack`s. This happens when:
 
-1. Ya tienes un `NavigationStack` en el contexto padre
-2. El `DynamicListBuilder` crea su propio `NavigationStack` interno
+1. You already have a `NavigationStack` in the parent context
+2. The `DynamicListBuilder` creates its own internal `NavigationStack`
 
-### Solución
+### Solution
 
-Usa `buildWithoutNavigation()` cuando ya tienes navegación en el contexto padre:
+Use `buildWithoutNavigation()` when you already have navigation in the parent context:
 
 ```swift
-// ❌ Incorrecto - NavigationStack anidados
+// ❌ Incorrect - Nested NavigationStacks
 NavigationStack {
     DynamicListBuilder<User>()
         .items(users)
-        .build() // Esto crea otro NavigationStack
+        .build() // This creates another NavigationStack
 }
 
-// ✅ Correcto - Un solo NavigationStack
+// ✅ Correct - Single NavigationStack
 NavigationStack {
     DynamicListBuilder<User>()
         .items(users)
-        .buildWithoutNavigation() // No crea NavigationStack adicional
+        .buildWithoutNavigation() // Doesn't create additional NavigationStack
 }
 ```
 
-### Cuándo Usar Cada Método
+### When to Use Each Method
 
-- **`build()`**: Cuando el `DynamicListBuilder` es la vista raíz o no hay navegación existente
-- **`buildWithoutNavigation()`**: Cuando ya hay un `NavigationStack` en el contexto padre
+- **`build()`**: When the `DynamicListBuilder` is the root view or there's no existing navigation
+- **`buildWithoutNavigation()`**: When there's already a `NavigationStack` in the parent context
 
-## 🆕 Solución Moderna: NavigationStack(path:)
+## 🆕 Modern Solution: NavigationStack(path:)
 
-### Problema de Navegación Anidada
+### Nested Navigation Problem
 
-Cuando tienes una lista de ejemplos que navega a otras listas, cada una con su propio `NavigationStack`, puedes experimentar comportamientos extraños:
+When you have a list of examples that navigates to other lists, each with its own `NavigationStack`, you can experience strange behaviors:
 
 ```swift
-// ❌ Problema: NavigationStack anidados
+// ❌ Problem: Nested NavigationStacks
 NavigationStack {
     List {
         NavigationLink("Example") {
-            DynamicListBuilder<User>() // Tiene su propio NavigationStack
+            DynamicListBuilder<User>() // Has its own NavigationStack
                 .items(users)
                 .build()
         }
@@ -375,12 +375,12 @@ NavigationStack {
 }
 ```
 
-### Solución con NavigationStack(path:)
+### Solution with NavigationStack(path:)
 
-`NavigationStack(path:)` es la solución moderna que permite manejar múltiples niveles de navegación sin crear stacks anidados:
+`NavigationStack(path:)` is the modern solution that allows handling multiple navigation levels without creating nested stacks:
 
 ```swift
-// ✅ Solución moderna - NavigationStack(path:) con enum
+// ✅ Modern solution - NavigationStack(path:) with enum
 enum BuilderExample: Hashable {
     case simpleList
     case reactiveList
@@ -402,15 +402,15 @@ struct BuilderExamplesView: View {
                 case .simpleList:
                     DynamicListBuilder<User>()
                         .items(users)
-                        .buildWithoutNavigation() // Sin NavigationStack interno
+                        .buildWithoutNavigation() // No internal NavigationStack
                 case .reactiveList:
                     DynamicListBuilder<Product>()
                         .publisher(publisher)
-                        .buildWithoutNavigation() // Sin NavigationStack interno
+                        .buildWithoutNavigation() // No internal NavigationStack
                 case .customError:
                     DynamicListBuilder<User>()
                         .publisher(failingPublisher)
-                        .buildWithoutNavigation() // Sin NavigationStack interno
+                        .buildWithoutNavigation() // No internal NavigationStack
                 }
             }
         }
@@ -418,10 +418,10 @@ struct BuilderExamplesView: View {
 }
 ```
 
-### Ejemplo con Factory Methods
+### Example with Factory Methods
 
 ```swift
-// ✅ Factory Examples también usa NavigationStack(path:)
+// ✅ Factory Examples also uses NavigationStack(path:)
 enum FactoryExample: Hashable {
     case simpleFactory
     case reactiveFactory
@@ -453,25 +453,25 @@ struct FactoryExamplesView: View {
 }
 ```
 
-### Ventajas de NavigationStack(path:)
+### Advantages of NavigationStack(path:)
 
-- ✅ **Sin NavigationStack anidados** - Evita comportamientos extraños
-- ✅ **Navegación fluida** - Transiciones suaves entre vistas
-- ✅ **Control total** - Manejo programático del stack de navegación
-- ✅ **Compatibilidad** - Funciona perfectamente con DynamicListBuilder
-- ✅ **Escalabilidad** - Fácil agregar más niveles de navegación
+- ✅ **No nested NavigationStacks** - Avoids strange behaviors
+- ✅ **Smooth navigation** - Smooth transitions between views
+- ✅ **Total control** - Programmatic handling of navigation stack
+- ✅ **Compatibility** - Works perfectly with DynamicListBuilder
+- ✅ **Scalability** - Easy to add more navigation levels
 
-### Cuándo Usar NavigationStack(path:)
+### When to Use NavigationStack(path:)
 
-- **Listas de ejemplos** que navegan a otras listas
-- **Menús de navegación** con múltiples niveles
-- **Flujos complejos** que requieren control del stack
-- **Apps modernas** que usan iOS 16+ y SwiftUI NavigationStack
+- **Example lists** that navigate to other lists
+- **Navigation menus** with multiple levels
+- **Complex flows** that require stack control
+- **Modern apps** that use iOS 16+ and SwiftUI NavigationStack
 
-### Comparación de Soluciones
+### Solution Comparison
 
-| Método | Ventajas | Desventajas | Uso Recomendado |
-|--------|----------|-------------|-----------------|
-| `build()` | Simple, directo | Puede crear stacks anidados | Vistas principales |
-| `buildWithoutNavigation()` | Evita stacks anidados | Requiere navegación externa | Dentro de NavigationStack |
-| `NavigationStack(path:)` | Control total, sin problemas | Más código inicial | Listas de ejemplos, flujos complejos | 
+| Method | Advantages | Disadvantages | Recommended Use |
+|--------|------------|---------------|-----------------|
+| `build()` | Simple, direct | May create nested stacks | Main views |
+| `buildWithoutNavigation()` | Avoids nested stacks | Requires external navigation | Inside NavigationStack |
+| `NavigationStack(path:)` | Total control, no issues | More initial code | Example lists, complex flows | 
