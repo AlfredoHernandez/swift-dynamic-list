@@ -23,19 +23,6 @@ import SwiftUI
 ///     .build()
 /// ```
 ///
-/// ## Custom Row Actions
-/// ```swift
-/// DynamicListBuilder<User>()
-///     .items(users)
-///     .rowContent { user in
-///         Text(user.name)
-///     }
-///     .onTapRow { user in
-///         print("Selected user: \(user.name)")
-///         // Perform custom action instead of navigation
-///     }
-///     .build()
-/// ```
 ///
 /// ## Reactive Data Source
 /// ```swift
@@ -60,33 +47,19 @@ import SwiftUI
 ///     detailContent: { user in Text("Detalle de \(user.name)") }
 /// )
 ///
-/// // Simple static list with custom action
-/// DynamicListBuilder.simpleWithAction(
-///     items: users,
-///     rowContent: { user in Text(user.name) },
-///     onTapRow: { user in print("Selected: \(user.name)") }
-/// )
-///
 /// // Reactive list
 /// DynamicListBuilder.reactive(
 ///     publisher: apiService.fetchProducts(),
 ///     rowContent: { product in ProductRowView(product: product) },
 ///     detailContent: { product in ProductDetailView(product: product) }
 /// )
-///
-/// // Reactive list with custom action
-/// DynamicListBuilder.reactiveWithAction(
-///     publisher: apiService.fetchProducts(),
-///     rowContent: { product in ProductRowView(product: product) },
-///     onTapRow: { product in print("Selected: \(product.name)") }
-/// )
 /// ```
 ///
 /// - Note: The `Item` type must conform to `Identifiable` and `Hashable` protocols.
 /// - Important: Use `build()` for standalone lists or `buildWithoutNavigation()` when embedding
 ///   within existing navigation contexts to avoid NavigationStack conflicts.
-/// - Note: When using `onTapRow`, the list will not navigate to a detail view. The custom action
-///   will be executed instead of the default navigation behavior.
+/// - Note: When `detailContent` is not specified, the list will not provide navigation to detail views.
+///   Users can handle custom actions directly in `rowContent` using `Button` or `onTapGesture`.
 public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     // MARK: - Private Properties
 
@@ -107,9 +80,6 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
 
     /// Custom skeleton content builder
     private var skeletonContent: (() -> AnyView)?
-
-    /// Custom action to execute when a row is tapped
-    private var onTapRow: ((Item) -> Void)?
 
     /// Navigation title for the list
     private var title: String?
@@ -406,45 +376,41 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
         return self
     }
 
-    /// Sets a custom action to execute when a row is tapped.
+    /// Sets the navigation title for the list.
     ///
-    /// Use this method to define a closure that will be called when a user taps on a list item.
-    /// This allows you to perform custom actions instead of navigating to a detail view.
-    ///
-    /// - Parameter action: A closure that takes the tapped item as an argument.
+    /// - Parameter title: The title to display in the navigation bar.
     /// - Returns: The builder instance for method chaining.
     ///
     /// ## Example
     /// ```swift
     /// DynamicListBuilder<User>()
     ///     .items(users)
-    ///     .rowContent { user in
-    ///         HStack {
-    ///             AsyncImage(url: user.avatarURL) { image in
-    ///                 image.resizable()
-    ///             } placeholder: {
-    ///                 Circle().fill(.gray)
-    ///             }
-    ///             .frame(width: 40, height: 40)
-    ///             .clipShape(Circle())
-    ///
-    ///             VStack(alignment: .leading) {
-    ///                 Text(user.name)
-    ///                     .font(.headline)
-    ///                 Text(user.email)
-    ///                     .font(.caption)
-    ///                     .foregroundColor(.secondary)
-    ///             }
-    ///         }
-    ///     }
-    ///     .onTapRow { user in
-    ///         print("Tapped user: \(user.name)")
-    ///     }
+    ///     .title("Usuarios")
     ///     .build()
     /// ```
     @discardableResult
-    public func onTapRow(_ action: @escaping (Item) -> Void) -> Self {
-        onTapRow = action
+    public func title(_ title: String) -> Self {
+        self.title = title
+        return self
+    }
+
+    /// Hides the navigation bar.
+    ///
+    /// Use this method when you want to hide the navigation bar entirely.
+    /// Useful for full-screen experiences or when embedding in custom navigation.
+    ///
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// DynamicListBuilder<User>()
+    ///     .items(users)
+    ///     .hideNavigationBar()
+    ///     .build()
+    /// ```
+    @discardableResult
+    public func hideNavigationBar() -> Self {
+        navigationBarHidden = true
         return self
     }
 
@@ -700,44 +666,6 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
         return self
     }
 
-    /// Sets the navigation title for the list.
-    ///
-    /// - Parameter title: The title to display in the navigation bar.
-    /// - Returns: The builder instance for method chaining.
-    ///
-    /// ## Example
-    /// ```swift
-    /// DynamicListBuilder<User>()
-    ///     .items(users)
-    ///     .title("Usuarios")
-    ///     .build()
-    /// ```
-    @discardableResult
-    public func title(_ title: String) -> Self {
-        self.title = title
-        return self
-    }
-
-    /// Hides the navigation bar.
-    ///
-    /// Use this method when you want to hide the navigation bar entirely.
-    /// Useful for full-screen experiences or when embedding in custom navigation.
-    ///
-    /// - Returns: The builder instance for method chaining.
-    ///
-    /// ## Example
-    /// ```swift
-    /// DynamicListBuilder<User>()
-    ///     .items(users)
-    ///     .hideNavigationBar()
-    ///     .build()
-    /// ```
-    @discardableResult
-    public func hideNavigationBar() -> Self {
-        navigationBarHidden = true
-        return self
-    }
-
     // MARK: - Build Methods
 
     /// Builds a complete DynamicList with NavigationStack.
@@ -774,15 +702,12 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
             rowContent: rowContent ?? { item in
                 AnyView(DefaultRowView(item: item))
             },
-            detailContent: detailContent ?? { item in
-                AnyView(DefaultDetailView(item: item))
-            },
+            detailContent: detailContent,
             errorContent: errorContent,
             skeletonContent: skeletonContent,
             title: title,
             navigationBarHidden: navigationBarHidden,
             searchConfiguration: searchConfiguration,
-            onTapRow: onTapRow,
         )
     }
 
@@ -839,15 +764,12 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
             rowContent: rowContent ?? { item in
                 AnyView(DefaultRowView(item: item))
             },
-            detailContent: detailContent ?? { item in
-                AnyView(DefaultDetailView(item: item))
-            },
+            detailContent: detailContent,
             errorContent: errorContent,
             skeletonContent: skeletonContent,
             title: title,
             navigationBarHidden: navigationBarHidden,
             searchConfiguration: searchConfiguration,
-            onTapRow: onTapRow,
         )
     }
 }
@@ -889,54 +811,16 @@ public extension DynamicListBuilder {
     /// ```
     @MainActor
     static func simple(
+        title: String = "",
         items: [Item],
         @ViewBuilder rowContent: @escaping (Item) -> some View,
         @ViewBuilder detailContent: @escaping (Item) -> some View,
     ) -> some View {
         DynamicListBuilder<Item>()
+            .title(title)
             .items(items)
             .rowContent(rowContent)
             .detailContent(detailContent)
-            .buildWithoutNavigation()
-    }
-
-    /// Creates a simple list with static items and custom tap action using a minimal API.
-    ///
-    /// This factory method is perfect for quick prototypes or when you have static data
-    /// and want to perform custom actions on tap instead of navigation.
-    ///
-    /// - Parameters:
-    ///   - items: The array of items to display in the list.
-    ///   - rowContent: A view builder that creates the row view for each item.
-    ///   - onTapRow: A closure that defines the action to perform when a row is tapped.
-    /// - Returns: A configured dynamic list view without navigation wrapper.
-    ///
-    /// ## Example
-    /// ```swift
-    /// struct SimpleListView: View {
-    ///     var body: some View {
-    ///         DynamicListBuilder.simpleWithAction(
-    ///             items: User.sampleUsers,
-    ///             rowContent: { user in
-    ///                 Text(user.name)
-    ///             },
-    ///             onTapRow: { user in
-    ///                 print("Selected user: \(user.name)")
-    ///             }
-    ///         )
-    ///     }
-    /// }
-    /// ```
-    @MainActor
-    static func simpleWithAction(
-        items: [Item],
-        @ViewBuilder rowContent: @escaping (Item) -> some View,
-        onTapRow: @escaping (Item) -> Void,
-    ) -> some View {
-        DynamicListBuilder<Item>()
-            .items(items)
-            .rowContent(rowContent)
-            .onTapRow(onTapRow)
             .buildWithoutNavigation()
     }
 
@@ -980,46 +864,6 @@ public extension DynamicListBuilder {
             .buildWithoutNavigation()
     }
 
-    /// Creates a reactive list with a publisher data source and custom tap action using a minimal API.
-    ///
-    /// This factory method is perfect for lists that need to load data from external
-    /// sources and perform custom actions on tap instead of navigation.
-    ///
-    /// - Parameters:
-    ///   - publisher: A Combine publisher that emits arrays of items.
-    ///   - rowContent: A view builder that creates the row view for each item.
-    ///   - onTapRow: A closure that defines the action to perform when a row is tapped.
-    /// - Returns: A configured dynamic list view without navigation wrapper.
-    ///
-    /// ## Example
-    /// ```swift
-    /// struct ReactiveListView: View {
-    ///     var body: some View {
-    ///         DynamicListBuilder.reactiveWithAction(
-    ///             publisher: apiService.fetchProducts(),
-    ///             rowContent: { product in
-    ///                 ProductRowView(product: product)
-    ///             },
-    ///             onTapRow: { product in
-    ///                 print("Selected product: \(product.name)")
-    ///             }
-    ///         )
-    ///     }
-    /// }
-    /// ```
-    @MainActor
-    static func reactiveWithAction(
-        publisher: AnyPublisher<[Item], Error>,
-        @ViewBuilder rowContent: @escaping (Item) -> some View,
-        onTapRow: @escaping (Item) -> Void,
-    ) -> some View {
-        DynamicListBuilder<Item>()
-            .publisher { publisher }
-            .rowContent(rowContent)
-            .onTapRow(onTapRow)
-            .buildWithoutNavigation()
-    }
-
     /// Creates a list with simulated loading for testing and demos.
     ///
     /// This factory method is perfect for testing loading states, creating demos,
@@ -1060,49 +904,6 @@ public extension DynamicListBuilder {
             .simulatedPublisher(items, delay: delay)
             .rowContent(rowContent)
             .detailContent(detailContent)
-            .buildWithoutNavigation()
-    }
-
-    /// Creates a list with simulated loading and custom tap action for testing and demos.
-    ///
-    /// This factory method is perfect for testing loading states, creating demos,
-    /// or when you want to simulate network delays and perform custom actions on tap.
-    ///
-    /// - Parameters:
-    ///   - items: The array of items to display after the loading delay.
-    ///   - delay: The delay in seconds before showing the items. Defaults to 1.0 second.
-    ///   - rowContent: A view builder that creates the row view for each item.
-    ///   - onTapRow: A closure that defines the action to perform when a row is tapped.
-    /// - Returns: A configured dynamic list view without navigation wrapper.
-    ///
-    /// ## Example
-    /// ```swift
-    /// struct DemoListView: View {
-    ///     var body: some View {
-    ///         DynamicListBuilder.simulatedWithAction(
-    ///             items: User.sampleUsers,
-    ///             delay: 2.0,
-    ///             rowContent: { user in
-    ///                 Text(user.name)
-    ///             },
-    ///             onTapRow: { user in
-    ///                 print("Selected user: \(user.name)")
-    ///             }
-    ///         )
-    ///     }
-    /// }
-    /// ```
-    @MainActor
-    static func simulatedWithAction(
-        items: [Item],
-        delay: TimeInterval = 1.0,
-        @ViewBuilder rowContent: @escaping (Item) -> some View,
-        onTapRow: @escaping (Item) -> Void,
-    ) -> some View {
-        DynamicListBuilder<Item>()
-            .simulatedPublisher(items, delay: delay)
-            .rowContent(rowContent)
-            .onTapRow(onTapRow)
             .buildWithoutNavigation()
     }
 }

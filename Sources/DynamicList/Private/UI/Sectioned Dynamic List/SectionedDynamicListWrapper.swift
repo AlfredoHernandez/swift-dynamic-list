@@ -13,24 +13,22 @@ import SwiftUI
 struct SectionedDynamicListWrapper<Item: Identifiable & Hashable>: View {
     @State private var viewModel: SectionedDynamicListViewModel<Item>
     private let rowContent: (Item) -> AnyView
-    private let detailContent: (Item) -> AnyView
+    private let detailContent: ((Item) -> AnyView)?
     private let errorContent: ((Error) -> AnyView)?
     private let skeletonContent: (() -> AnyView)?
     private let title: String?
     private let navigationBarHidden: Bool
     private let searchConfiguration: SearchConfiguration<Item>?
-    private let onTapRow: ((Item) -> Void)?
 
     init(
         viewModel: SectionedDynamicListViewModel<Item>,
         rowContent: @escaping (Item) -> AnyView,
-        detailContent: @escaping (Item) -> AnyView,
+        detailContent: ((Item) -> AnyView)?,
         errorContent: ((Error) -> AnyView)?,
         skeletonContent: (() -> AnyView)?,
         title: String?,
         navigationBarHidden: Bool,
         searchConfiguration: SearchConfiguration<Item>?,
-        onTapRow: ((Item) -> Void)?,
     ) {
         _viewModel = State(initialValue: viewModel)
         self.rowContent = rowContent
@@ -40,7 +38,6 @@ struct SectionedDynamicListWrapper<Item: Identifiable & Hashable>: View {
         self.title = title
         self.navigationBarHidden = navigationBarHidden
         self.searchConfiguration = searchConfiguration
-        self.onTapRow = onTapRow
     }
 
     var body: some View {
@@ -54,7 +51,6 @@ struct SectionedDynamicListWrapper<Item: Identifiable & Hashable>: View {
                 title: title,
                 navigationBarHidden: navigationBarHidden,
                 searchConfiguration: searchConfiguration,
-                onTapRow: onTapRow,
             )
         }
     }
