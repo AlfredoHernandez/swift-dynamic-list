@@ -10,13 +10,16 @@ public struct TokenizedMatchStrategy: SearchStrategy {
     public init() {}
 
     public func matches(query: String, in item: Searchable) -> Bool {
-        let queryTokens = query.lowercased().split(separator: " ").map(String.init)
+        matches(query: query, searchKeys: item.searchKeys)
+    }
+
+    private func matches(query: String, searchKeys: [String]) -> Bool {
+        let queryTokens = tokenizeString(query)
         guard !queryTokens.isEmpty else { return true }
 
-        // Check if all query tokens are present in any of the search keys
         return queryTokens.allSatisfy { queryToken in
-            item.searchKeys.contains { key in
-                key.lowercased().contains(queryToken)
+            searchKeys.contains { searchKey in
+                normalizeString(searchKey).contains(queryToken)
             }
         }
     }

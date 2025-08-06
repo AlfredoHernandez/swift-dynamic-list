@@ -229,6 +229,42 @@ struct SearchStrategyTests {
         #expect(result == true)
     }
 
+    @Test("when query contains only whitespace returns true")
+    func whenQueryContainsOnlyWhitespace_returnsTrue() throws {
+        let strategy = ExactMatchStrategy()
+        let item = TestSearchableItem(
+            name: "iPhone 15 Pro",
+            description: "Latest smartphone",
+            tags: ["mobile", "apple"],
+        )
+
+        let result1 = strategy.matches(query: "   ", in: item)
+        let result2 = strategy.matches(query: "\t\n", in: item)
+        let result3 = strategy.matches(query: "  \t  \n  ", in: item)
+
+        #expect(result1 == true)
+        #expect(result2 == true)
+        #expect(result3 == true)
+    }
+
+    @Test("when search keys contain whitespace handles correctly")
+    func whenSearchKeysContainWhitespace_handlesCorrectly() throws {
+        let strategy = ExactMatchStrategy()
+        let item = TestSearchableItem(
+            name: "  iPhone 15 Pro  ",
+            description: "  Latest smartphone  ",
+            tags: ["  mobile  ", "  apple  "],
+        )
+
+        let result1 = strategy.matches(query: "iPhone 15 Pro", in: item)
+        let result2 = strategy.matches(query: "Latest smartphone", in: item)
+        let result3 = strategy.matches(query: "mobile", in: item)
+
+        #expect(result1 == true)
+        #expect(result2 == true)
+        #expect(result3 == true)
+    }
+
     // MARK: - TokenizedMatchStrategy Tests
 
     @Test("when query is empty returns true")

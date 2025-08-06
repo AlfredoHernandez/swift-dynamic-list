@@ -10,11 +10,15 @@ public struct PartialMatchStrategy: SearchStrategy {
     public init() {}
 
     public func matches(query: String, in item: Searchable) -> Bool {
-        let queryLower = query.lowercased()
-        guard !queryLower.isEmpty else { return true }
+        matches(query: query, searchKeys: item.searchKeys)
+    }
 
-        return item.searchKeys.contains { key in
-            key.lowercased().contains(queryLower)
+    func matches(query: String, searchKeys: [String]) -> Bool {
+        let normalizedQuery = normalizeString(query)
+        guard !normalizedQuery.isEmpty else { return true }
+
+        return searchKeys.contains { searchKey in
+            normalizeString(searchKey).contains(normalizedQuery)
         }
     }
 }
