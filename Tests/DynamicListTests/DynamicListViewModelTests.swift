@@ -77,6 +77,7 @@ struct DynamicListViewModelTests {
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
+        viewModel.loadData()
         #expect(viewModel.viewState.loadingState == .loading)
 
         pts.send(expectedItems)
@@ -93,6 +94,7 @@ struct DynamicListViewModelTests {
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
+        viewModel.loadData()
         #expect(viewModel.viewState.loadingState == .loading)
 
         pts.send(completion: .failure(testError))
@@ -113,6 +115,7 @@ struct DynamicListViewModelTests {
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
+        viewModel.loadData()
 
         // Verify initial load was called
         #expect(callCount == 1)
@@ -144,6 +147,7 @@ struct DynamicListViewModelTests {
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
+        viewModel.loadData()
 
         #expect(viewModel.viewState.loadingState == .loading)
 
@@ -178,6 +182,7 @@ struct DynamicListViewModelTests {
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
+        viewModel.loadData()
 
         // Verify initial load
         #expect(callCount == 1)
@@ -232,6 +237,7 @@ struct DynamicListViewModelTests {
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
+        viewModel.loadData()
 
         // Send initial data with "all" filter
         pts.send(allItems)
