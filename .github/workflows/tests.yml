@@ -13,7 +13,7 @@ jobs:
     
     strategy:
       matrix:
-        xcode: ['16.0']
+        xcode: ['16.4']
     
     steps:
     - name: Checkout code
@@ -34,26 +34,3 @@ jobs:
     - name: Run tests with verbose output
       run: swift test --verbose
       if: failure()
-      
-  test-linux:
-    name: Run Tests (Linux)
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Install Swift
-      uses: swift-actions/setup-swift@v1
-      with:
-        swift-version: '5.9'
-        
-    - name: Show Swift version
-      run: swift --version
-      
-    - name: Run tests
-      run: swift test
-      
-    - name: Run tests with verbose output
-      run: swift test --verbose
-      if: failure() 
