@@ -15,6 +15,13 @@ public final class DynamicListPresenter {
         comment: "Loading content text shown while fetching data",
     )
 
+    /// Loading text
+    public static let loading = NSLocalizedString(
+        "loading",
+        bundle: Bundle.module,
+        comment: "Loading text for navigation titles",
+    )
+
     // MARK: - Error Messages
 
     /// Network error message
@@ -63,6 +70,13 @@ public final class DynamicListPresenter {
         comment: "Product detail navigation title",
     )
 
+    /// Error navigation title
+    public static let error = NSLocalizedString(
+        "error",
+        bundle: Bundle.module,
+        comment: "Error navigation title",
+    )
+
     // MARK: - Content Labels
 
     /// Item ID label
@@ -70,6 +84,20 @@ public final class DynamicListPresenter {
         "item_id",
         bundle: Bundle.module,
         comment: "Item ID label",
+    )
+
+    /// ID label with colon
+    public static let idLabel = NSLocalizedString(
+        "id_label",
+        bundle: Bundle.module,
+        comment: "ID label with colon for item display",
+    )
+
+    /// Details text
+    public static let details = NSLocalizedString(
+        "details",
+        bundle: Bundle.module,
+        comment: "Details text for detail views",
     )
 
     // MARK: - Default Views
