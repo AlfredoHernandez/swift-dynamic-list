@@ -82,7 +82,6 @@ final class DynamicListViewModel<Item: Identifiable & Hashable> {
         self.scheduler = scheduler
         self.ioScheduler = ioScheduler
         allItems = initialItems
-        loadData()
     }
 
     /// Updates the items by subscribing to a new data provider.
@@ -98,7 +97,7 @@ final class DynamicListViewModel<Item: Identifiable & Hashable> {
     /// Loads data using the current data provider.
     ///
     /// This method is called internally to load data and can be used to refresh the current data.
-    private func loadData() {
+    func loadData() {
         guard let provider = dataProvider else { return }
 
         cancelPreviousSubscriptions()
@@ -211,10 +210,5 @@ extension DynamicListViewModel {
     /// Contains any error that occurred during data loading.
     var error: Error? {
         viewState.error
-    }
-
-    /// The filtered collection of items based on current search text and configuration.
-    var filteredItemsList: [Item] {
-        viewState.items
     }
 }

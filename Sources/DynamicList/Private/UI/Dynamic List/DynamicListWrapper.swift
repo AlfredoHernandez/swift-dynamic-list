@@ -11,21 +11,19 @@ import SwiftUI
 struct DynamicListWrapper<Item: Identifiable & Hashable>: View {
     @State private var viewModel: DynamicListViewModel<Item>
     private let rowContent: (Item) -> AnyView
-    private let detailContent: (Item) -> AnyView
+    private let detailContent: ((Item) -> AnyView?)?
     private let errorContent: ((Error) -> AnyView)?
     private let skeletonContent: (() -> AnyView)?
-    private let title: String?
-    private let navigationBarHidden: Bool
+    private let listConfiguration: ListConfiguration
     private let searchConfiguration: SearchConfiguration<Item>?
 
     init(
         viewModel: DynamicListViewModel<Item>,
         rowContent: @escaping (Item) -> AnyView,
-        detailContent: @escaping (Item) -> AnyView,
+        detailContent: ((Item) -> AnyView?)?,
         errorContent: ((Error) -> AnyView)?,
         skeletonContent: (() -> AnyView)?,
-        title: String?,
-        navigationBarHidden: Bool,
+        listConfiguration: ListConfiguration,
         searchConfiguration: SearchConfiguration<Item>?,
     ) {
         _viewModel = State(initialValue: viewModel)
@@ -33,8 +31,7 @@ struct DynamicListWrapper<Item: Identifiable & Hashable>: View {
         self.detailContent = detailContent
         self.errorContent = errorContent
         self.skeletonContent = skeletonContent
-        self.title = title
-        self.navigationBarHidden = navigationBarHidden
+        self.listConfiguration = listConfiguration
         self.searchConfiguration = searchConfiguration
     }
 
@@ -46,8 +43,7 @@ struct DynamicListWrapper<Item: Identifiable & Hashable>: View {
                 detailContent: detailContent,
                 errorContent: errorContent,
                 skeletonContent: skeletonContent,
-                title: title,
-                navigationBarHidden: navigationBarHidden,
+                listConfiguration: listConfiguration,
                 searchConfiguration: searchConfiguration,
             )
         }

@@ -17,14 +17,14 @@ public struct DefaultDetailView<Item: Identifiable & Hashable>: View {
 
     public var body: some View {
         VStack(spacing: 16) {
-            Text("Detalles")
+            Text(DynamicListPresenter.details)
                 .font(.largeTitle)
                 .fontWeight(.bold)
 
             Text("\(String(describing: item))")
                 .font(.body)
 
-            Text("ID: \(String(describing: item.id))")
+            Text("\(DynamicListPresenter.idLabel)\(String(describing: item.id))")
                 .font(.caption)
                 .foregroundColor(.secondary)
         }

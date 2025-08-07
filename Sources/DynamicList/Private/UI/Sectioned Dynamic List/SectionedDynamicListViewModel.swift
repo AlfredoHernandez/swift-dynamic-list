@@ -30,7 +30,7 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable> 
     private var cancellables = Set<AnyCancellable>()
 
     /// Search configuration for filtering items
-    private var searchConfiguration: SearchConfiguration<Item>?
+    private(set) var searchConfiguration: SearchConfiguration<Item>?
 
     /// Current search text
     var searchText: String = "" {
@@ -94,7 +94,6 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable> 
         self.ioScheduler = ioScheduler
         allSections = initialSections
         self.dataProvider = dataProvider
-        loadData()
     }
 
     // MARK: - Public Methods
@@ -109,13 +108,13 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable> 
         viewState = .loading(sections: viewState.sections)
 
         dataProvider()
-            .subscribe(on: ioScheduler)
             .map { [weak self] arrays -> [ListSection<Item>] in
                 let sections = arrays.map { ListSection(title: nil, items: $0) }
 
                 self?.storeUnfilteredSections(sections)
                 return self?.applySearchFilter(to: sections) ?? sections
             }
+            .subscribe(on: ioScheduler)
             .receive(on: scheduler)
             .sink(
                 receiveCompletion: { [weak self] completion in
@@ -135,11 +134,7 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable> 
     ///
     /// - Parameters:
     ///   - dataProvider: A closure that returns a publisher emitting arrays of arrays
-    ///   - scheduler: The scheduler to use for receiving data
-    public func loadItems(
-        from dataProvider: @escaping () -> AnyPublisher<[[Item]], Error>,
-        scheduler _: AnySchedulerOf<DispatchQueue> = .main,
-    ) {
+    public func loadItems(from dataProvider: @escaping () -> AnyPublisher<[[Item]], Error>) {
         self.dataProvider = dataProvider
         loadData()
     }
@@ -242,8 +237,18 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable> 
 
     // MARK: - Convenience Properties
 
-    /// The filtered sections based on current search text and configuration.
-    public var filteredSectionsList: [ListSection<Item>] {
+    /// The collection of sections to be displayed.
+    public var sections: [ListSection<Item>] {
         viewState.sections
+    }
+
+    /// Indicates whether data is currently being loaded.
+    public var isLoading: Bool {
+        viewState.isLoading
+    }
+
+    /// Contains any error that occurred during data loading.
+    public var error: Error? {
+        viewState.error
     }
 }

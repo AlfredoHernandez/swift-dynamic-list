@@ -1,9 +1,11 @@
-# 📱 DynamicList
+# 📱 Dynamic List
 
 ![GitHub last commit](https://img.shields.io/github/last-commit/AlfredoHernandez/swift-dynamic-list?style=for-the-badge)
 ![issues](https://img.shields.io/github/issues/AlfredoHernandez/swift-dynamic-list?color=blue&style=for-the-badge)
 [![GitHub license](https://img.shields.io/github/license/AlfredoHernandez/swift-dynamic-list?color=brigthgreen&style=for-the-badge)](https://github.com/AlfredoHernandez/swift-dynamic-list)
 ![GitHub forks](https://img.shields.io/github/forks/AlfredoHernandez/swift-dynamic-list?style=for-the-badge&color=blueviolet)
+
+[![Run Tests](https://github.com/AlfredoHernandez/swift-dynamic-list/actions/workflows/tests.yml/badge.svg)](https://github.com/AlfredoHernandez/swift-dynamic-list/actions/workflows/tests.yml)
 
 A modern SwiftUI library for creating dynamic lists with reactive data, loading states, and advanced search capabilities.
 

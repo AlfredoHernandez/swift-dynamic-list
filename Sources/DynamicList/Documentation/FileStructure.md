@@ -13,12 +13,10 @@ DynamicList/
 │       │   ├── UI/                    # User interface components
 │       │   │   ├── Dynamic List/      # Components for simple lists
 │       │   │   ├── Sectioned Dynamic List/ # Components for sectioned lists
-│       │   │   ├── Default Views/     # Default views
 │       │   │   └── Shared/            # Shared components
 │       │   ├── Domain/                # Domain logic
-│       │   │   └── Strategies/        # Search strategies
 │       │   └── Presentation/          # Presentation components
-│       ├── PreviewSupport/            # SwiftUI Previews support
+│       ├── Examples/                  # SwiftUI Examples and Previews
 │       └── Documentation/             # Project documentation
 └── Tests/
     └── DynamicListTests/              # Unit and UI tests
@@ -55,6 +53,64 @@ Public/
 - Headers and footers per section
 - Same functionality as simple lists
 
+### 🔍 SearchConfiguration
+Public API for configuring search functionality.
+
+```
+Public/
+└── SearchConfiguration.swift          # Search configuration builder
+```
+
+**Features:**
+- Configurable search strategies
+- Customizable search behavior
+- Integration with both list types
+
+### 🎨 ListStyleType
+Public API for list styling options.
+
+```
+Public/
+└── ListStyleType.swift                # List style configuration
+```
+
+**Features:**
+- Predefined list styles
+- Customizable appearance options
+
+### 🔍 Search Strategies
+Public search strategy implementations.
+
+```
+Public/Search Strategies/
+├── PartialMatchStrategy.swift         # Partial search (default)
+├── ExactMatchStrategy.swift           # Exact match search
+└── TokenizedMatchStrategy.swift       # Token-based search
+```
+
+**Features:**
+- Multiple search algorithms
+- Customizable search behavior
+- Easy integration with lists
+
+### 🎨 Default Views
+Public default view implementations.
+
+```
+Public/Default Views/
+├── DefaultRowView.swift               # Default row view
+├── DefaultDetailView.swift            # Default detail view
+├── DefaultErrorView.swift             # Default error view
+├── DefaultSkeletonView.swift          # Default skeleton loading
+└── DefaultSectionedSkeletonView.swift # Skeleton for sections
+```
+
+**Features:**
+- Configurable default views
+- Customizable skeleton loading
+- Consistent error handling
+- Reusable UI across components
+
 ## 🔒 Private Implementation
 
 ### 🎨 UI Components
@@ -64,13 +120,11 @@ Components for simple dynamic lists (without sections).
 
 ```
 UI/Dynamic List/
-├── DynamicList.swift              # Main view for simple lists
-├── DynamicListViewModel.swift     # ViewModel for simple lists
-├── DynamicListViewState.swift     # View states for simple lists
-├── DynamicListBuilder.swift       # Builder pattern for simple lists
-├── DynamicListContent.swift       # Internal list content
-├── DynamicListWrapper.swift       # Wrapper with NavigationStack
-└── SearchConfiguration.swift      # Search configuration
+├── DynamicListViewModel.swift         # ViewModel for simple lists
+├── DynamicListViewState.swift         # View states for simple lists
+├── DynamicListContent.swift           # Internal list content
+├── DynamicListWrapper.swift           # Wrapper with NavigationStack
+└── ListConfiguration.swift            # List configuration
 ```
 
 **Features:**
@@ -86,10 +140,8 @@ Components for dynamic lists with sections and headers/footers.
 
 ```
 UI/Sectioned Dynamic List/
-├── SectionedDynamicList.swift              # Main view for sectioned lists
 ├── SectionedDynamicListViewModel.swift     # ViewModel for sectioned lists
 ├── SectionedListViewState.swift            # View states for sectioned lists
-├── SectionedDynamicListBuilder.swift       # Builder pattern for sectioned lists
 ├── SectionedDynamicListContent.swift       # Internal content for sectioned lists
 ├── SectionedDynamicListWrapper.swift       # Wrapper with NavigationStack
 └── ListSection.swift                       # Data model for sections
@@ -104,30 +156,12 @@ UI/Sectioned Dynamic List/
 - Same functionality as simple lists
 - Section-specific skeleton loading
 
-#### **Default Views**
-Default views and reusable UI components.
-
-```
-UI/Default Views/
-├── DefaultRowView.swift           # Default row view
-├── DefaultDetailView.swift        # Default detail view
-├── DefaultErrorView.swift         # Default error view
-├── DefaultSkeletonView.swift      # Default skeleton loading
-└── DefaultSectionedSkeletonView.swift # Skeleton for sections
-```
-
-**Features:**
-- Configurable default views
-- Customizable skeleton loading
-- Consistent error handling
-- Reusable UI across components
-
 #### **Shared Components**
 Components shared between both types of lists.
 
 ```
 UI/Shared/
-└── LoadingState.swift             # Shared loading states
+└── LoadingState.swift                 # Shared loading states
 ```
 
 **Features:**
@@ -142,18 +176,15 @@ Advanced search system with customizable strategies.
 
 ```
 Domain/
-├── Searchable.swift               # Protocol for searchable items
-├── SearchStrategy.swift           # Protocol for search strategies
-└── Strategies/                    # Strategy implementations
-    ├── PartialMatchStrategy.swift # Partial search (default)
-    ├── ExactMatchStrategy.swift   # Exact match
-    └── TokenizedMatchStrategy.swift # Token-based search
+├── Searchable.swift                   # Protocol for searchable items
+├── SearchStrategy.swift               # Protocol for search strategies
+└── Functional.swift                   # Functional utilities
 ```
 
 **Features:**
 - `Searchable` protocol for searchable items
 - `SearchStrategy` protocol for customizable strategies
-- Predefined strategies: partial, exact, and tokenized
+- Functional utilities for data processing
 - Clear separation between data and search logic
 - Extensible for custom strategies
 
@@ -164,11 +195,11 @@ Support for multiple languages.
 
 ```
 Presentation/
-├── DynamicListPresenter.swift     # Presenter for localization
-├── en.lproj/                      # English resources
-├── es-MX.lproj/                   # Mexican Spanish resources
-├── fr.lproj/                      # French resources
-└── pt.lproj/                      # Portuguese resources
+├── DynamicListPresenter.swift         # Presenter for localization
+├── en.lproj/                          # English resources
+├── es-MX.lproj/                       # Mexican Spanish resources
+├── fr.lproj/                          # French resources
+└── pt.lproj/                          # Portuguese resources
 ```
 
 **Features:**
@@ -177,28 +208,26 @@ Presentation/
 - Localized texts for errors and UI
 - Easy extension to new languages
 
-## 📚 Documentation
+## 📚 Examples and Previews
 
-Complete project documentation.
-
-```
-Documentation/
-├── README.md                      # Main documentation
-├── DeveloperGuide.md              # Developer guide
-└── FileStructure.md               # This documentation
-```
-
-## 👀 PreviewSupport
-
-Support for SwiftUI Previews and examples.
+SwiftUI examples and previews for development and testing.
 
 ```
-PreviewSupport/
-├── DynamicListPreviews.swift      # Previews for simple lists
-├── BuilderExamples.swift          # Builder Pattern examples
-├── BuilderPreviews.swift          # Builder previews
-└── PreviewModels.swift            # Models for previews
+Examples/
+├── DynamicListPreviews.swift          # Previews for simple lists
+├── DefaultViewsPreviews.swift         # Previews for default views
+├── SearchEnabledExample.swift         # Search functionality example
+├── ListConfigurationExample.swift     # List configuration example
+├── ListStyleExample.swift             # List styling example
+├── OptionalDetailContentExample.swift # Optional detail content example
+└── CustomActionsExample.swift         # Custom actions example
 ```
+
+**Features:**
+- Comprehensive examples for all features
+- SwiftUI previews for development
+- Real-world usage patterns
+- Testing scenarios
 
 ## 🧪 Tests
 
@@ -206,12 +235,21 @@ Unit and UI tests.
 
 ```
 Tests/DynamicListTests/
-├── DynamicListTests.swift         # UI tests for simple lists
-├── DynamicListViewModelTests.swift # Unit tests for ViewModels
-├── SearchStrategyTests.swift      # Tests for search strategies
+├── DynamicListViewModelTests.swift    # Unit tests for simple list ViewModels
+├── SectionedDynamicListViewModelTests.swift # Unit tests for sectioned list ViewModels
+├── SearchViewModelTests.swift         # Tests for search functionality
+├── SearchStrategyTests.swift          # Tests for search strategies
+├── FunctionalTests.swift              # Functional integration tests
+├── DynamicListPresenterTests.swift    # Tests for presentation layer
 └── Helpers/
-    └── TestItem.swift             # Test model
+    └── TestItem.swift                 # Test model
 ```
+
+**Features:**
+- Comprehensive test coverage
+- Tests organized by functionality
+- Helper utilities for testing
+- Integration and unit tests
 
 ## 🔗 Component Relationships
 
@@ -221,9 +259,9 @@ DynamicListBuilder (Public)
 ├── DynamicList (Private)
 ├── DynamicListViewModel (Private)
 ├── DynamicListViewState (Private)
-├── SearchConfiguration (Private)
+├── ListConfiguration (Private)
 ├── LoadingState (Private/Shared)
-└── Default Views (Private)
+└── Default Views (Public)
 ```
 
 ### Sectioned Dynamic List Dependencies
@@ -233,17 +271,16 @@ SectionedDynamicListBuilder (Public)
 ├── SectionedDynamicListViewModel (Private)
 ├── SectionedListViewState (Private)
 ├── ListSection (Private)
-├── SearchConfiguration (Private)
 ├── LoadingState (Private/Shared)
-└── Default Views (Private)
+└── Default Views (Public)
 ```
 
 ### Search System Dependencies
 ```
-SearchConfiguration (Private)
+SearchConfiguration (Public)
 ├── Searchable (Private/Domain)
 ├── SearchStrategy (Private/Domain)
-└── Strategies (Private/Domain)
+└── Search Strategies (Public)
 ```
 
 ### Shared Components
@@ -253,7 +290,7 @@ Shared/
     ├── DynamicList (uses)
     └── SectionedDynamicList (uses)
 
-Default Views/
+Default Views (Public)/
 ├── DynamicList (uses)
 └── SectionedDynamicList (uses)
 
@@ -268,7 +305,7 @@ Domain/
 ## 🎯 Organization Principles
 
 ### 1. **Separation of Responsibilities**
-- **Public APIs**: Only builders are publicly exposed
+- **Public APIs**: Builders, configurations, and default views are publicly exposed
 - **Private Implementation**: All internal logic is encapsulated
 - **Domain Layer**: Business logic separated from UI
 - **UI Components**: Specific components per list type
@@ -296,6 +333,7 @@ Domain/
 - **Maintenance**: Isolated changes per component and layer
 - **Reusability**: Well-defined shared components
 - **Testing**: Tests organized by functionality
+- **Examples**: Comprehensive examples for all features
 
 ### For the Project
 - **Scalability**: Easy to add new list types and features
@@ -323,19 +361,32 @@ Domain/
 - `[ComponentName]ViewModelTests.swift` - ViewModel tests
 - `[Feature]Tests.swift` - Specific functionality tests
 
+### Example Files
+- `[Feature]Example.swift` - Feature-specific examples
+- `[Component]Previews.swift` - SwiftUI previews
+
 ## 🔒 Access Control
 
 ### Public APIs
 - `DynamicListBuilder<Item>` - Main builder for simple lists
 - `SectionedDynamicListBuilder<Item>` - Builder for sectioned lists
 - `SearchConfiguration<Item>` - Search configuration
+- `ListStyleType` - List styling options
 - `Searchable` - Protocol for searchable items
 - `SearchStrategy` - Protocol for search strategies
+- `PartialMatchStrategy` - Partial search implementation
+- `ExactMatchStrategy` - Exact match search implementation
+- `TokenizedMatchStrategy` - Token-based search implementation
+- `DefaultRowView` - Default row view
+- `DefaultDetailView` - Default detail view
+- `DefaultErrorView` - Default error view
+- `DefaultSkeletonView` - Default skeleton loading
+- `DefaultSectionedSkeletonView` - Sectioned skeleton loading
 
 ### Private Implementation
 - All UI components are marked as `internal`
 - ViewModels and ViewStates are `internal`
 - Domain components are `internal`
-- Search strategies are `internal`
+- ListConfiguration is `internal`
 
 This structure provides a solid and scalable foundation for the `DynamicList` package, with clear separation of responsibilities and well-defined public APIs.

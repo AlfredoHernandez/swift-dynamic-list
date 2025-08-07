@@ -26,6 +26,7 @@ import SwiftUI
 ///     .build()
 /// ```
 ///
+///
 /// ## Reactive Data Source
 /// ```swift
 /// SectionedDynamicListBuilder<Fruit>()
@@ -43,6 +44,8 @@ import SwiftUI
 /// - Note: The `Item` type must conform to `Identifiable` and `Hashable` protocols.
 /// - Important: Use `build()` for standalone lists or `buildWithoutNavigation()` when embedding
 ///   within existing navigation contexts to avoid NavigationStack conflicts.
+/// - Note: When `detailContent` is not specified, the list will not provide navigation to detail views.
+///   Users can handle custom actions directly in `rowContent` using `Button` or `onTapGesture`.
 public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
     // MARK: - Private Properties
 
@@ -56,7 +59,7 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
     private var rowContent: ((Item) -> AnyView)?
 
     /// Custom detail content builder
-    private var detailContent: ((Item) -> AnyView)?
+    private var detailContent: ((Item) -> AnyView?)?
 
     /// Custom error content builder
     private var errorContent: ((Error) -> AnyView)?
@@ -64,14 +67,11 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
     /// Custom skeleton content builder
     private var skeletonContent: (() -> AnyView)?
 
-    /// Navigation title for the list
-    private var title: String?
-
-    /// Whether to hide the navigation bar
-    private var navigationBarHidden: Bool = false
-
     /// Search configuration for the list
     private var searchConfiguration: SearchConfiguration<Item>?
+
+    /// List configuration for appearance and behavior
+    private var listConfiguration: ListConfiguration = .default
 
     // MARK: - Initialization
 
@@ -181,6 +181,7 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
     ///
     /// This method allows you to define the detail view that will be displayed when
     /// a user taps on an item in the list. The content builder receives the selected item.
+    /// You can return `nil` to disable navigation for specific items.
     ///
     /// - Parameter content: A view builder that creates the detail view for an item.
     /// - Returns: The builder instance for method chaining.
@@ -189,6 +190,33 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
         detailContent = { item in
             AnyView(content(item))
         }
+        return self
+    }
+
+    /// Sets custom detail content with optional navigation.
+    ///
+    /// Use this method when you want to conditionally enable navigation for specific items.
+    /// Return `nil` to disable navigation for items that shouldn't have a detail view.
+    ///
+    /// - Parameter content: A view builder closure that creates the detail view for each item or returns nil.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// SectionedDynamicListBuilder<User>()
+    ///     .sections(sections)
+    ///     .optionalDetailContent { user in
+    ///         if user.name == "A" {
+    ///             Text("ITEM A")
+    ///         } else {
+    ///             nil // No navigation for other users
+    ///         }
+    ///     }
+    ///     .build()
+    /// ```
+    @discardableResult
+    public func optionalDetailContent(_ content: @escaping (Item) -> AnyView?) -> Self {
+        detailContent = content
         return self
     }
 
@@ -229,7 +257,11 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
     /// - Returns: The builder instance for method chaining.
     @discardableResult
     public func title(_ title: String) -> Self {
-        self.title = title
+        listConfiguration = ListConfiguration(
+            style: listConfiguration.style,
+            navigationBarHidden: listConfiguration.navigationBarHidden,
+            title: title,
+        )
         return self
     }
 
@@ -241,147 +273,172 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
     /// - Returns: The builder instance for method chaining.
     @discardableResult
     public func hideNavigationBar() -> Self {
-        navigationBarHidden = true
+        listConfiguration = ListConfiguration(
+            style: listConfiguration.style,
+            navigationBarHidden: true,
+            title: listConfiguration.title,
+        )
+        return self
+    }
+
+    /// Sets the list style for the list.
+    ///
+    /// Use this method to customize the appearance of the list with different styles
+    /// like `.plain`, `.inset`, `.grouped`, etc.
+    ///
+    /// - Parameter style: The list style type to apply to the list.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// SectionedDynamicListBuilder<User>()
+    ///     .sections(sections)
+    ///     .listStyle(.grouped)
+    ///     .build()
+    /// ```
+    ///
+    /// ## Available Styles
+    /// - `.automatic` - Default system style
+    /// - `.plain` - Simple list without background
+    /// - `.inset` - List with inset appearance
+    /// - `.grouped` - Grouped list style (iOS only)
+    /// - `.insetGrouped` - Inset grouped style (iOS only)
+    @discardableResult
+    public func listStyle(_ style: ListStyleType) -> Self {
+        listConfiguration = ListConfiguration(
+            style: style,
+            navigationBarHidden: listConfiguration.navigationBarHidden,
+            title: listConfiguration.title,
+        )
+        return self
+    }
+
+    /// Sets the complete list configuration.
+    ///
+    /// Use this method when you want to set multiple list properties at once.
+    ///
+    /// - Parameter configuration: The list configuration to apply.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// SectionedDynamicListBuilder<User>()
+    ///     .sections(sections)
+    ///     .listConfiguration(ListConfiguration(
+    ///         style: .grouped,
+    ///         navigationBarHidden: false,
+    ///         title: "Users"
+    ///     ))
+    ///     .build()
+    /// ```
+    @discardableResult
+    public func listConfiguration(_ configuration: ListConfiguration) -> Self {
+        listConfiguration = configuration
         return self
     }
 
     // MARK: - Search Configuration
 
-    /// Enables search functionality with a simple prompt.
+    /// Enables search functionality with configurable parameters.
     ///
-    /// This method enables search functionality using the default partial match strategy.
-    /// The search will work with items that conform to `Searchable` protocol.
+    /// This method provides a unified interface for enabling search functionality with various
+    /// configurations. All parameters are optional with sensible defaults.
     ///
-    /// - Parameter prompt: The prompt text for the search field.
+    /// - Parameters:
+    ///   - prompt: The placeholder text for the search field. Defaults to "Buscar...".
+    ///   - predicate: A closure that determines if an item matches the search text.
+    ///                If provided, this overrides the default Searchable protocol behavior.
+    ///   - strategy: The search strategy to use for matching when using Searchable items.
+    ///               Defaults to PartialMatchStrategy().
+    ///   - placement: The placement configuration for the search field.
+    ///                Defaults to .automatic.
     /// - Returns: The builder instance for method chaining.
     ///
-    /// ## Example
+    /// ## Examples
+    ///
+    /// **Basic search with default settings:**
+    /// ```swift
+    /// SectionedDynamicListBuilder<User>()
+    ///     .sections(sections)
+    ///     .searchable()
+    ///     .build()
+    /// ```
+    ///
+    /// **Search with custom prompt:**
     /// ```swift
     /// SectionedDynamicListBuilder<User>()
     ///     .sections(sections)
     ///     .searchable(prompt: "Buscar usuarios...")
     ///     .build()
     /// ```
-    @discardableResult
-    public func searchable(prompt: String) -> Self {
-        searchConfiguration = SearchConfiguration.prompt(prompt)
-        return self
-    }
-
-    /// Enables search functionality with prompt and placement configuration.
     ///
-    /// - Parameters:
-    ///   - prompt: The prompt text for the search field.
-    ///   - placement: The placement configuration for the search field.
-    /// - Returns: The builder instance for method chaining.
-    @discardableResult
-    public func searchable(
-        prompt: String,
-        placement: SearchFieldPlacement,
-    ) -> Self {
-        searchConfiguration = SearchConfiguration.prompt(prompt, placement: placement)
-        return self
-    }
-
-    /// Enables search functionality with a custom predicate.
-    ///
-    /// Use this method when you want to implement custom search logic that doesn't rely
-    /// on the `Searchable` protocol or when you need more control over the search behavior.
-    ///
-    /// - Parameters:
-    ///   - prompt: The prompt text for the search field.
-    ///   - predicate: A closure that determines if an item matches the search query.
-    /// - Returns: The builder instance for method chaining.
-    ///
-    /// ## Example
+    /// **Search with custom predicate:**
     /// ```swift
     /// SectionedDynamicListBuilder<User>()
     ///     .sections(sections)
     ///     .searchable(
     ///         prompt: "Buscar por nombre o email...",
-    ///         predicate: { user, query in
-    ///             user.name.lowercased().contains(query.lowercased()) ||
-    ///             user.email.lowercased().contains(query.lowercased())
+    ///         predicate: { user, searchText in
+    ///             user.name.lowercased().contains(searchText.lowercased()) ||
+    ///             user.email.lowercased().contains(searchText.lowercased())
     ///         }
     ///     )
     ///     .build()
     /// ```
-    @discardableResult
-    public func searchable(
-        prompt: String,
-        predicate: @escaping (Item, String) -> Bool,
-    ) -> Self {
-        searchConfiguration = SearchConfiguration(
-            prompt: prompt,
-            predicate: predicate,
-        )
-        return self
-    }
-
-    /// Enables search functionality with a custom predicate and placement.
     ///
-    /// - Parameters:
-    ///   - prompt: The prompt text for the search field.
-    ///   - predicate: A closure that determines if an item matches the search query.
-    ///   - placement: The placement configuration for the search field.
-    /// - Returns: The builder instance for method chaining.
-    @discardableResult
-    public func searchable(
-        prompt: String,
-        predicate: @escaping (Item, String) -> Bool,
-        placement: SearchFieldPlacement,
-    ) -> Self {
-        searchConfiguration = SearchConfiguration(
-            prompt: prompt,
-            predicate: predicate,
-            placement: placement,
-        )
-        return self
-    }
-
-    /// Enables search functionality with a custom strategy.
-    ///
-    /// Use this method when you want to use a specific search strategy with items that
-    /// conform to the `Searchable` protocol.
-    ///
-    /// - Parameters:
-    ///   - prompt: The prompt text for the search field.
-    ///   - strategy: The search strategy to use for matching items.
-    /// - Returns: The builder instance for method chaining.
-    ///
-    /// ## Example
+    /// **Search with custom strategy:**
     /// ```swift
     /// SectionedDynamicListBuilder<User>()
     ///     .sections(sections)
     ///     .searchable(
-    ///         prompt: "Buscar usuarios (coincidencia exacta)...",
-    ///         strategy: ExactMatchStrategy()
+    ///         prompt: "Buscar usuarios...",
+    ///         strategy: TokenizedMatchStrategy()
     ///     )
     ///     .build()
     /// ```
-    @discardableResult
-    public func searchable(
-        prompt: String,
-        strategy: SearchStrategy,
-    ) -> Self {
-        searchConfiguration = SearchConfiguration.prompt(prompt, strategy: strategy)
-        return self
-    }
-
-    /// Enables search functionality with a custom strategy and placement.
     ///
-    /// - Parameters:
-    ///   - prompt: The prompt text for the search field.
-    ///   - strategy: The search strategy to use for matching items.
-    ///   - placement: The placement configuration for the search field.
-    /// - Returns: The builder instance for method chaining.
+    /// **Search with custom placement:**
+    /// ```swift
+    /// SectionedDynamicListBuilder<User>()
+    ///     .sections(sections)
+    ///     .searchable(
+    ///         prompt: "Buscar usuarios...",
+    ///         placement: .navigationBarDrawer
+    ///     )
+    ///     .build()
+    /// ```
+    ///
+    /// **Complete custom configuration:**
+    /// ```swift
+    /// SectionedDynamicListBuilder<User>()
+    ///     .sections(sections)
+    ///     .searchable(
+    ///         prompt: "Buscar por nombre o email...",
+    ///         predicate: { user, searchText in
+    ///             user.name.lowercased().contains(searchText.lowercased()) ||
+    ///             user.email.lowercased().contains(searchText.lowercased())
+    ///         },
+    ///         placement: .navigationBarDrawer
+    ///     )
+    ///     .build()
+    /// ```
+    ///
+    /// ## Requirements
+    /// - Items should conform to `Searchable` protocol for automatic filtering when no predicate is provided
+    /// - If predicate is provided, it takes precedence over the Searchable protocol behavior
     @discardableResult
     public func searchable(
-        prompt: String,
-        strategy: SearchStrategy,
-        placement: SearchFieldPlacement,
+        prompt: String = DynamicListPresenter.searchPrompt,
+        predicate: ((Item, String) -> Bool)? = nil,
+        strategy: SearchStrategy? = nil,
+        placement: SearchFieldPlacement = .automatic,
     ) -> Self {
-        searchConfiguration = SearchConfiguration.prompt(prompt, strategy: strategy, placement: placement)
+        searchConfiguration = SearchConfiguration.enabled(
+            prompt: prompt,
+            predicate: predicate,
+            strategy: strategy,
+            placement: placement,
+        )
         return self
     }
 
@@ -396,14 +453,14 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
     @discardableResult
     public func searchPlacement(_ placement: SearchFieldPlacement) -> Self {
         if let existingConfig = searchConfiguration {
-            searchConfiguration = SearchConfiguration(
+            searchConfiguration = SearchConfiguration.enabled(
                 prompt: existingConfig.prompt,
                 predicate: existingConfig.predicate,
                 strategy: existingConfig.strategy,
                 placement: placement,
             )
         } else {
-            searchConfiguration = SearchConfiguration(placement: placement)
+            searchConfiguration = SearchConfiguration.enabled(placement: placement)
         }
         return self
     }
@@ -456,13 +513,10 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
             rowContent: rowContent ?? { item in
                 AnyView(DefaultRowView(item: item))
             },
-            detailContent: detailContent ?? { item in
-                AnyView(DefaultDetailView(item: item))
-            },
+            detailContent: detailContent,
             errorContent: errorContent,
             skeletonContent: skeletonContent,
-            title: title,
-            navigationBarHidden: navigationBarHidden,
+            listConfiguration: listConfiguration,
             searchConfiguration: searchConfiguration,
         )
     }
@@ -487,13 +541,10 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
             rowContent: rowContent ?? { item in
                 AnyView(DefaultRowView(item: item))
             },
-            detailContent: detailContent ?? { item in
-                AnyView(DefaultDetailView(item: item))
-            },
+            detailContent: detailContent,
             errorContent: errorContent,
             skeletonContent: skeletonContent,
-            title: title,
-            navigationBarHidden: navigationBarHidden,
+            listConfiguration: listConfiguration,
             searchConfiguration: searchConfiguration,
         )
     }

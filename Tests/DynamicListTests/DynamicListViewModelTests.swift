@@ -10,7 +10,7 @@ import Testing
 
 @Suite("DynamicListViewModel Tests")
 struct DynamicListViewModelTests {
-    @Test("when initialized with items displays correct items")
+    @Test("When initialized with items displays correct items")
     func whenInitializedWithItems_displaysCorrectItems() {
         let items = [TestItem(name: "Item 1")]
         let viewModel = DynamicListViewModel(
@@ -31,7 +31,7 @@ struct DynamicListViewModelTests {
         #expect(viewModel.viewState.error == nil)
     }
 
-    @Test("when initialized without items displays empty state")
+    @Test("When initialized without items displays empty state")
     func whenInitializedWithoutItems_displaysEmptyState() {
         let viewModel = DynamicListViewModel<TestItem>(
             scheduler: .immediate,
@@ -50,7 +50,7 @@ struct DynamicListViewModelTests {
         #expect(!viewModel.viewState.shouldShowError)
     }
 
-    @Test("when view state is idle provides correct convenience properties")
+    @Test("When view state is idle provides correct convenience properties")
     func whenViewStateIsIdle_providesCorrectConvenienceProperties() {
         let items = [TestItem(name: "Item 1"), TestItem(name: "Item 2")]
         let viewModel = DynamicListViewModel(
@@ -67,7 +67,7 @@ struct DynamicListViewModelTests {
         #expect(viewModel.viewState.isLoaded == false) // idle state is not loaded
     }
 
-    @Test("when initialized with data provider starts loading and displays data when received")
+    @Test("When initialized with data provider starts loading and displays data when received")
     func whenInitializedWithDataProvider_startsLoadingAndDisplaysDataWhenReceived() {
         let expectedItems = [TestItem(name: "Item 1"), TestItem(name: "Item 2")]
         let pts = PassthroughSubject<[TestItem], Error>()
@@ -77,13 +77,14 @@ struct DynamicListViewModelTests {
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
+        viewModel.loadData()
         #expect(viewModel.viewState.loadingState == .loading)
 
         pts.send(expectedItems)
         #expect(viewModel.viewState.loadingState == .loaded)
     }
 
-    @Test("when data provider fails displays error state")
+    @Test("When data provider fails displays error state")
     func whenDataProviderFails_displaysErrorState() {
         let testError = NSError(domain: "Test", code: 1, userInfo: nil)
         let pts = PassthroughSubject<[TestItem], Error>()
@@ -93,13 +94,14 @@ struct DynamicListViewModelTests {
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
+        viewModel.loadData()
         #expect(viewModel.viewState.loadingState == .loading)
 
         pts.send(completion: .failure(testError))
         #expect(viewModel.viewState.loadingState == .error(testError))
     }
 
-    @Test("when refresh is called loads data from provider")
+    @Test("When refresh is called loads data from provider")
     func whenRefreshIsCalled_loadsDataFromProvider() {
         var callCount = 0
         let expectedItems = [TestItem(name: "Refreshed Item")]
@@ -113,6 +115,7 @@ struct DynamicListViewModelTests {
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
+        viewModel.loadData()
 
         // Verify initial load was called
         #expect(callCount == 1)
@@ -132,7 +135,7 @@ struct DynamicListViewModelTests {
         #expect(viewModel.viewState.loadingState == .loaded)
     }
 
-    @Test("when loadItems is called changes data provider")
+    @Test("When loadItems is called changes data provider")
     func whenLoadItemsIsCalled_changesDataProvider() {
         let initialItems = [TestItem(name: "Initial")]
         let newItems = [TestItem(name: "New")]
@@ -144,6 +147,7 @@ struct DynamicListViewModelTests {
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
+        viewModel.loadData()
 
         #expect(viewModel.viewState.loadingState == .loading)
 
@@ -162,7 +166,7 @@ struct DynamicListViewModelTests {
         #expect(viewModel.items == newItems)
     }
 
-    @Test("when refresh is called after loadItems uses new provider")
+    @Test("When refresh is called after loadItems uses new provider")
     func whenRefreshIsCalledAfterLoadItems_usesNewProvider() {
         var callCount = 0
         let initialItems = [TestItem(name: "Initial")]
@@ -178,6 +182,7 @@ struct DynamicListViewModelTests {
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
+        viewModel.loadData()
 
         // Verify initial load
         #expect(callCount == 1)
@@ -214,7 +219,7 @@ struct DynamicListViewModelTests {
         #expect(viewModel.items == newItems)
     }
 
-    @Test("when data provider captures context uses updated context on refresh")
+    @Test("When data provider captures context uses updated context on refresh")
     func whenDataProviderCapturesContext_usesUpdatedContextOnRefresh() {
         var filter = "all"
         let allItems = [TestItem(name: "All 1"), TestItem(name: "All 2")]
@@ -232,6 +237,7 @@ struct DynamicListViewModelTests {
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
+        viewModel.loadData()
 
         // Send initial data with "all" filter
         pts.send(allItems)

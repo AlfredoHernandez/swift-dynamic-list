@@ -2,6 +2,7 @@
 
 /* Loading States */
 "loading_content" = "Cargando...";
+"loading" = "Cargando...";
 
 /* Error Messages */
 "network_error" = "Error de conexión de red. Verifica tu conexión a internet.";
@@ -14,10 +15,16 @@
 "detail" = "Detalle";
 "user_detail" = "Detalle del Usuario";
 "product_detail" = "Detalle del Producto";
+"error" = "Error";
 
 /* Content Labels */
 "item_id" = "ID";
+"id_label" = "ID: ";
+"details" = "Detalles";
+
+/* Search */
+"search_prompt" = "Buscar...";
 
 /* Default Views */
 "item_detail" = "Detalle del Item";
-"error_loading_data" = "Error al cargar los datos"; 
+"error_loading_data" = "Error al cargar los datos";

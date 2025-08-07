@@ -19,7 +19,7 @@ public struct DefaultRowView<Item: Identifiable & Hashable>: View {
         VStack(alignment: .leading) {
             Text(String(describing: item))
                 .font(.body)
-            Text("ID: \(String(describing: item.id))")
+            Text("\(DynamicListPresenter.idLabel)\(String(describing: item.id))")
                 .font(.caption)
                 .foregroundColor(.secondary)
         }

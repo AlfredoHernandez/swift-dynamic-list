@@ -12,21 +12,19 @@ import SwiftUI
 struct SectionedDynamicListContent<Item: Identifiable & Hashable>: View {
     @State private var viewModel: SectionedDynamicListViewModel<Item>
     private let rowContent: (Item) -> AnyView
-    private let detailContent: (Item) -> AnyView
+    private let detailContent: ((Item) -> AnyView?)?
     private let errorContent: ((Error) -> AnyView)?
     private let skeletonContent: (() -> AnyView)?
-    private let title: String?
-    private let navigationBarHidden: Bool
+    private let listConfiguration: ListConfiguration
     private let searchConfiguration: SearchConfiguration<Item>?
 
     init(
         viewModel: SectionedDynamicListViewModel<Item>,
         rowContent: @escaping (Item) -> AnyView,
-        detailContent: @escaping (Item) -> AnyView,
+        detailContent: ((Item) -> AnyView?)?,
         errorContent: ((Error) -> AnyView)?,
         skeletonContent: (() -> AnyView)?,
-        title: String?,
-        navigationBarHidden: Bool,
+        listConfiguration: ListConfiguration,
         searchConfiguration: SearchConfiguration<Item>?,
     ) {
         _viewModel = State(initialValue: viewModel)
@@ -34,8 +32,7 @@ struct SectionedDynamicListContent<Item: Identifiable & Hashable>: View {
         self.detailContent = detailContent
         self.errorContent = errorContent
         self.skeletonContent = skeletonContent
-        self.title = title
-        self.navigationBarHidden = navigationBarHidden
+        self.listConfiguration = listConfiguration
         self.searchConfiguration = searchConfiguration
 
         // Configure search in the view model
@@ -50,10 +47,17 @@ struct SectionedDynamicListContent<Item: Identifiable & Hashable>: View {
                 errorView
             } else {
                 List {
-                    ForEach(viewModel.filteredSectionsList) { section in
+                    ForEach(viewModel.sections) { section in
                         Section {
                             ForEach(section.items) { item in
-                                NavigationLink(value: item) {
+                                if let detailContent,
+                                   let _ = detailContent(item)
+                                {
+                                    NavigationLink(value: item) {
+                                        rowContent(item)
+                                            .redacted(reason: viewModel.viewState.isLoading ? .placeholder : [])
+                                    }
+                                } else {
                                     rowContent(item)
                                         .redacted(reason: viewModel.viewState.isLoading ? .placeholder : [])
                                 }
@@ -69,25 +73,30 @@ struct SectionedDynamicListContent<Item: Identifiable & Hashable>: View {
                         }
                     }
                 }
+                .modifier(ListStyleModifier(style: listConfiguration.style))
                 .refreshable {
                     viewModel.refresh()
                 }
-                .searchable(
+                .conditionalSearchable(
+                    searchConfiguration,
                     text: Binding(
                         get: { viewModel.searchText },
                         set: { viewModel.searchText = $0 },
                     ),
-                    placement: searchConfiguration?.placement ?? .automatic,
-                    prompt: searchConfiguration?.prompt ?? "Buscar...",
                 )
             }
         }
+        .onAppear(perform: viewModel.loadData)
         .navigationDestination(for: Item.self) { item in
-            detailContent(item)
+            if let detailContent,
+               let detailView = detailContent(item)
+            {
+                detailView
+            }
         }
-        .navigationTitle(title ?? "")
+        .navigationTitle(listConfiguration.title ?? "")
         #if os(iOS)
-            .navigationBarHidden(navigationBarHidden)
+            .navigationBarHidden(listConfiguration.navigationBarHidden)
         #endif
     }
 
@@ -108,6 +117,28 @@ struct SectionedDynamicListContent<Item: Identifiable & Hashable>: View {
             errorContent(error)
         } else if let error = viewModel.viewState.error {
             DefaultErrorView(error: error)
+        }
+    }
+
+    /// ViewModifier to apply list styles
+    private struct ListStyleModifier: ViewModifier {
+        let style: ListStyleType
+
+        func body(content: Content) -> some View {
+            switch style {
+            case .automatic:
+                content.listStyle(.automatic)
+            case .plain:
+                content.listStyle(.plain)
+            case .inset:
+                content.listStyle(.inset)
+            #if os(iOS)
+            case .grouped:
+                content.listStyle(.grouped)
+            case .insetGrouped:
+                content.listStyle(.insetGrouped)
+            #endif
+            }
         }
     }
 }

@@ -60,7 +60,7 @@ public final class DynamicListPresenter {
 ```
 Sources/DynamicList/
 ├── Core Components/
-│   ├── DynamicList.swift
+│   ├── DynamicListContent.swift
 │   ├── DynamicListViewModel.swift
 │   ├── DynamicListBuilder.swift
 │   ├── ViewState.swift

@@ -20,7 +20,7 @@ struct SectionedDynamicListViewModelTests {
 
     // MARK: - Initialization Tests
 
-    @Test("when initialized with sections displays correct sections")
+    @Test("When initialized with sections displays correct sections")
     func whenInitializedWithSections_displaysCorrectSections() {
         let sections = [
             ListSection(title: "Category 1", items: [TestItem(name: "Item 1", category: "Cat1")]),
@@ -39,7 +39,7 @@ struct SectionedDynamicListViewModelTests {
         #expect(viewModel.viewState.error == nil)
     }
 
-    @Test("when initialized without sections displays empty state")
+    @Test("When initialized without sections displays empty state")
     func whenInitializedWithoutSections_displaysEmptyState() {
         let viewModel = SectionedDynamicListViewModel<TestItem>(
             scheduler: .immediate,
@@ -52,7 +52,7 @@ struct SectionedDynamicListViewModelTests {
         #expect(!viewModel.viewState.shouldShowError)
     }
 
-    @Test("when view state is idle provides correct convenience properties")
+    @Test("When view state is idle provides correct convenience properties")
     func whenViewStateIsIdle_providesCorrectConvenienceProperties() {
         let sections = [
             ListSection(title: "Category 1", items: [TestItem(name: "Item 1", category: "Cat1")]),
@@ -74,7 +74,7 @@ struct SectionedDynamicListViewModelTests {
 
     // MARK: - Data Provider Tests
 
-    @Test("when initialized with data provider starts loading and displays data when received")
+    @Test("When initialized with data provider starts loading and displays data when received")
     func whenInitializedWithDataProvider_startsLoadingAndDisplaysDataWhenReceived() {
         let expectedArrays = [
             [TestItem(name: "Item 1", category: "Cat1")],
@@ -87,6 +87,7 @@ struct SectionedDynamicListViewModelTests {
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
+        viewModel.loadData()
         #expect(viewModel.viewState.loadingState == .loading)
 
         pts.send(expectedArrays)
@@ -96,7 +97,7 @@ struct SectionedDynamicListViewModelTests {
         #expect(viewModel.viewState.sections[1].items.count == 1)
     }
 
-    @Test("when data provider fails displays error state")
+    @Test("When data provider fails displays error state")
     func whenDataProviderFails_displaysErrorState() {
         let testError = NSError(domain: "Test", code: 1, userInfo: nil)
         let pts = PassthroughSubject<[[TestItem]], Error>()
@@ -106,6 +107,7 @@ struct SectionedDynamicListViewModelTests {
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
+        viewModel.loadData()
         #expect(viewModel.viewState.loadingState == .loading)
 
         pts.send(completion: .failure(testError))
@@ -114,7 +116,7 @@ struct SectionedDynamicListViewModelTests {
 
     // MARK: - Data Loading Tests
 
-    @Test("when loadItems is called changes data provider")
+    @Test("When loadItems is called changes data provider")
     func whenLoadItemsIsCalled_changesDataProvider() {
         let initialSections = [
             ListSection(title: "Initial", items: [TestItem(name: "Initial", category: "Init")]),
@@ -138,7 +140,7 @@ struct SectionedDynamicListViewModelTests {
         #expect(viewModel.viewState.sections[0].items.first?.name == "New")
     }
 
-    @Test("when refresh is called loads data from provider")
+    @Test("When refresh is called loads data from provider")
     func whenRefreshIsCalled_loadsDataFromProvider() {
         let initialSections = [
             ListSection(title: "Initial", items: [TestItem(name: "Initial", category: "Init")]),
@@ -166,7 +168,7 @@ struct SectionedDynamicListViewModelTests {
         #expect(viewModel.viewState.sections[0].items.first?.name == "Refreshed")
     }
 
-    @Test("when refresh is called after loadItems uses new provider")
+    @Test("When refresh is called after loadItems uses new provider")
     func whenRefreshIsCalledAfterLoadItems_usesNewProvider() {
         let initialSections = [
             ListSection(title: "Initial", items: [TestItem(name: "Initial", category: "Init")]),
@@ -193,7 +195,7 @@ struct SectionedDynamicListViewModelTests {
 
     // MARK: - Section Update Tests
 
-    @Test("when updateSections is called updates sections directly")
+    @Test("When updateSections is called updates sections directly")
     func whenUpdateSectionsIsCalled_updatesSectionsDirectly() {
         let initialSections = [
             ListSection(title: "Initial", items: [TestItem(name: "Initial", category: "Init")]),
@@ -215,7 +217,7 @@ struct SectionedDynamicListViewModelTests {
         #expect(viewModel.viewState.sections[0].items.first?.name == "Updated")
     }
 
-    @Test("when updateSections with arrays creates sections correctly")
+    @Test("When updateSections with arrays creates sections correctly")
     func whenUpdateSectionsWithArrays_createsSectionsCorrectly() {
         let viewModel = SectionedDynamicListViewModel<TestItem>(
             scheduler: .immediate,
@@ -236,7 +238,7 @@ struct SectionedDynamicListViewModelTests {
         #expect(viewModel.viewState.sections[1].items.first?.name == "Item 2")
     }
 
-    @Test("when updateSections with arrays and nil titles creates sections with nil titles")
+    @Test("When updateSections with arrays and nil titles creates sections with nil titles")
     func whenUpdateSectionsWithArraysAndNilTitles_createsSectionsWithNilTitles() {
         let viewModel = SectionedDynamicListViewModel<TestItem>(
             scheduler: .immediate,
@@ -257,7 +259,7 @@ struct SectionedDynamicListViewModelTests {
         #expect(viewModel.viewState.sections[1].items.first?.name == "Item 2")
     }
 
-    @Test("when updateSections with arrays without titles creates sections with nil titles")
+    @Test("When updateSections with arrays without titles creates sections with nil titles")
     func whenUpdateSectionsWithArraysWithoutTitles_createsSectionsWithNilTitles() {
         let viewModel = SectionedDynamicListViewModel<TestItem>(
             scheduler: .immediate,
@@ -276,44 +278,44 @@ struct SectionedDynamicListViewModelTests {
 
     // MARK: - Search Configuration Tests
 
-    @Test("when search configuration is set stores configuration correctly")
+    @Test("When search configuration is set stores configuration correctly")
     func whenSearchConfigurationIsSet_storesConfigurationCorrectly() {
         let viewModel = SectionedDynamicListViewModel<TestItem>(
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
 
-        let searchConfig = SearchConfiguration<TestItem>(
+        let searchConfig = SearchConfiguration<TestItem>.enabled(
             prompt: "Search items...",
             strategy: PartialMatchStrategy(),
         )
 
         viewModel.setSearchConfiguration(searchConfig)
-        // Note: We can't directly test the private property, but we can test its effects
-        // through search functionality tests
+        #expect(viewModel.searchConfiguration != nil)
     }
 
-    @Test("when search configuration is set to nil clears configuration")
+    @Test("When search configuration is set to nil clears configuration")
     func whenSearchConfigurationIsSetToNil_clearsConfiguration() {
         let viewModel = SectionedDynamicListViewModel<TestItem>(
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
 
-        let searchConfig = SearchConfiguration<TestItem>(
+        let searchConfig = SearchConfiguration<TestItem>.enabled(
             prompt: "Search items...",
             strategy: PartialMatchStrategy(),
         )
 
         viewModel.setSearchConfiguration(searchConfig)
+        #expect(viewModel.searchConfiguration != nil)
+
         viewModel.setSearchConfiguration(nil)
-        // Note: We can't directly test the private property, but we can test its effects
-        // through search functionality tests
+        #expect(viewModel.searchConfiguration == nil)
     }
 
     // MARK: - Loading State Tests
 
-    @Test("when loading state is loading provides correct convenience properties")
+    @Test("When loading state is loading provides correct convenience properties")
     func whenLoadingStateIsLoading_providesCorrectConvenienceProperties() {
         let pts = PassthroughSubject<[[TestItem]], Error>()
 
@@ -322,6 +324,7 @@ struct SectionedDynamicListViewModelTests {
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
+        viewModel.loadData()
 
         #expect(viewModel.viewState.loadingState == .loading)
         #expect(viewModel.viewState.isLoading)
@@ -330,7 +333,7 @@ struct SectionedDynamicListViewModelTests {
         #expect(!viewModel.viewState.shouldShowError)
     }
 
-    @Test("when loading state is loaded provides correct convenience properties")
+    @Test("When loading state is loaded provides correct convenience properties")
     func whenLoadingStateIsLoaded_providesCorrectConvenienceProperties() {
         let sections = [
             ListSection(title: "Category 1", items: [TestItem(name: "Item 1", category: "Cat1")]),
@@ -350,7 +353,7 @@ struct SectionedDynamicListViewModelTests {
         #expect(viewModel.viewState.isLoaded == false) // idle state is not loaded
     }
 
-    @Test("when loading state is error provides correct convenience properties")
+    @Test("When loading state is error provides correct convenience properties")
     func whenLoadingStateIsError_providesCorrectConvenienceProperties() {
         let testError = NSError(domain: "Test", code: 1, userInfo: nil)
         let pts = PassthroughSubject<[[TestItem]], Error>()
@@ -360,6 +363,7 @@ struct SectionedDynamicListViewModelTests {
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
+        viewModel.loadData()
 
         pts.send(completion: .failure(testError))
 
@@ -372,7 +376,7 @@ struct SectionedDynamicListViewModelTests {
 
     // MARK: - Data Provider Context Tests
 
-    @Test("when data provider captures context uses updated context on refresh")
+    @Test("When data provider captures context uses updated context on refresh")
     func whenDataProviderCapturesContext_usesUpdatedContextOnRefresh() {
         var context = "initial"
         let dataProvider = {
@@ -386,6 +390,7 @@ struct SectionedDynamicListViewModelTests {
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
+        viewModel.loadData()
 
         // Initial load
         #expect(viewModel.viewState.sections[0].items.first?.name == "initial")
