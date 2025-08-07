@@ -40,36 +40,36 @@ private struct ShowcaseProduct: Identifiable, Hashable {
             }
 
             Section("Default Detail Views") {
-                NavigationLink("Ver Detalle de Usuario") {
+                NavigationLink("View User Detail") {
                     DefaultDetailView(item: ShowcaseUser(name: "Ana García", email: "ana@example.com", role: "Admin"))
-                        .navigationTitle("Detalle de Usuario")
+                        .navigationTitle("User Detail")
                 }
 
-                NavigationLink("Ver Detalle de Producto") {
+                NavigationLink("View Product Detail") {
                     DefaultDetailView(item: ShowcaseProduct(name: "iPhone 15", category: "Electronics", price: 999.99))
-                        .navigationTitle("Detalle de Producto")
+                        .navigationTitle("Product Detail")
                 }
             }
 
             Section("Skeleton Views") {
-                NavigationLink("Skeleton Simple") {
+                NavigationLink("Simple Skeleton") {
                     DefaultSkeletonView()
-                        .navigationTitle("Cargando...")
+                        .navigationTitle("Loading...")
                 }
 
-                NavigationLink("Skeleton con Secciones") {
+                NavigationLink("Sectioned Skeleton") {
                     DefaultSectionedSkeletonView()
-                        .navigationTitle("Cargando...")
+                        .navigationTitle("Loading...")
                 }
             }
 
             Section("Error Views") {
-                NavigationLink("Error de Red") {
+                NavigationLink("Network Error") {
                     DefaultErrorView(error: ShowcaseNetworkError.timeout)
                         .navigationTitle("Error")
                 }
 
-                NavigationLink("Error del Servidor") {
+                NavigationLink("Server Error") {
                     DefaultErrorView(error: ShowcaseNetworkError.serverError)
                         .navigationTitle("Error")
                 }
@@ -89,7 +89,7 @@ private struct ShowcaseProduct: Identifiable, Hashable {
     List(users) { user in
         DefaultRowView(item: user)
     }
-    .navigationTitle("Usuarios")
+    .navigationTitle("Users")
 }
 
 #Preview("Default Detail Views") {
@@ -102,27 +102,27 @@ private struct ShowcaseProduct: Identifiable, Hashable {
             DefaultDetailView(item: ShowcaseProduct(name: "iPhone 15", category: "Electronics", price: 999.99))
         }
         .padding()
-        .navigationTitle("Detalles")
+        .navigationTitle("Details")
     }
 }
 
 #Preview("Skeleton Loading States") {
     NavigationStack {
         VStack(spacing: 20) {
-            Text("Skeleton Simple")
+            Text("Simple Skeleton")
                 .font(.headline)
             DefaultSkeletonView()
                 .frame(height: 300)
 
             Divider()
 
-            Text("Skeleton con Secciones")
+            Text("Sectioned Skeleton")
                 .font(.headline)
             DefaultSectionedSkeletonView()
                 .frame(height: 300)
         }
         .padding()
-        .navigationTitle("Estados de Carga")
+        .navigationTitle("Loading States")
     }
 }
 
@@ -138,7 +138,7 @@ private struct ShowcaseProduct: Identifiable, Hashable {
                 .frame(height: 200)
         }
         .padding()
-        .navigationTitle("Estados de Error")
+        .navigationTitle("Error States")
     }
 }
 
@@ -152,11 +152,11 @@ private enum ShowcaseNetworkError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .timeout:
-            "La conexión tardó demasiado tiempo. Verifica tu conexión a internet."
+            "Connection timed out. Please check your internet connection."
         case .serverError:
-            "Error del servidor. Por favor, intenta más tarde."
+            "Server error. Please try again later."
         case .noConnection:
-            "No hay conexión a internet. Verifica tu conexión y vuelve a intentar."
+            "No internet connection. Please check your connection and try again."
         }
     }
 }

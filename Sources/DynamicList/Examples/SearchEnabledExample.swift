@@ -20,29 +20,29 @@ struct SearchEnabledExample: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("Sin búsqueda (comportamiento por defecto)") {
-                    NavigationLink("Lista sin búsqueda") {
+                Section("Without search (default behavior)") {
+                    NavigationLink("List without search") {
                         buildListWithoutSearch()
                     }
                 }
 
-                Section("Con búsqueda habilitada") {
-                    NavigationLink("Lista con búsqueda básica") {
+                Section("With search enabled") {
+                    NavigationLink("List with basic search") {
                         buildListWithBasicSearch()
                     }
 
-                    NavigationLink("Lista con búsqueda personalizada") {
+                    NavigationLink("List with custom search") {
                         buildListWithCustomSearch()
                     }
                 }
 
-                Section("Lista seccionada con búsqueda") {
-                    NavigationLink("Lista seccionada con búsqueda") {
+                Section("Sectioned list with search") {
+                    NavigationLink("Sectioned list with search") {
                         buildSectionedListWithSearch()
                     }
                 }
             }
-            .navigationTitle("Ejemplos de Búsqueda")
+            .navigationTitle("Search Examples")
         }
     }
 
@@ -68,7 +68,7 @@ struct SearchEnabledExample: View {
     private func buildListWithBasicSearch() -> some View {
         DynamicListBuilder<SearchableUser>()
             .items(users)
-            .searchable(prompt: "Buscar usuarios...")
+            .searchable(prompt: "Search users...")
             .rowContent { user in
                 AnyView(
                     VStack(alignment: .leading) {
@@ -88,7 +88,7 @@ struct SearchEnabledExample: View {
         DynamicListBuilder<SearchableUser>()
             .items(users)
             .searchable(
-                prompt: "Buscar por nombre o rol...",
+                prompt: "Search by name or role...",
                 predicate: { user, query in
                     user.name.lowercased().contains(query.lowercased()) ||
                         user.role.lowercased().contains(query.lowercased())
@@ -112,22 +112,22 @@ struct SearchEnabledExample: View {
     private func buildSectionedListWithSearch() -> some View {
         let sections = [
             ListSection(
-                title: "Administradores",
+                title: "Administrators",
                 items: users.filter { $0.role == "Admin" },
             ),
             ListSection(
-                title: "Usuarios",
+                title: "Users",
                 items: users.filter { $0.role == "User" },
             ),
             ListSection(
-                title: "Gerentes",
+                title: "Managers",
                 items: users.filter { $0.role == "Manager" },
             ),
         ]
 
         SectionedDynamicListBuilder<SearchableUser>()
             .sections(sections)
-            .searchable(prompt: "Buscar en todas las secciones...")
+            .searchable(prompt: "Search across all sections...")
             .rowContent { user in
                 AnyView(
                     VStack(alignment: .leading) {

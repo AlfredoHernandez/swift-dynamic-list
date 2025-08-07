@@ -30,7 +30,7 @@ struct OptionalDetailContentExample: View {
 
     var body: some View {
         SectionedDynamicListBuilder<User>()
-            .title("Usuarios")
+            .title("Users")
             .groupedItems(users, titles: ["First Section", "Second Section"])
             .rowContent { user in
                 HStack {
@@ -67,7 +67,7 @@ struct OptionalDetailContentExample: View {
                                 .foregroundColor(.secondary)
 
                             if user.role == "Admin" {
-                                Text("Este usuario tiene permisos de administrador")
+                                Text("This user has administrator permissions")
                                     .font(.body)
                                     .foregroundColor(.blue)
                                     .padding()
@@ -78,7 +78,7 @@ struct OptionalDetailContentExample: View {
                             Spacer()
                         }
                         .padding()
-                        .navigationTitle("Detalle de Usuario"),
+                        .navigationTitle("User Detail"),
                     )
                 } else {
                     // Return nil for inactive users - no navigation will be shown
