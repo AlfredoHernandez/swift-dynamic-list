@@ -100,6 +100,13 @@ public final class DynamicListPresenter {
         comment: "Details text for detail views",
     )
 
+    /// Default search prompt
+    public static let searchPrompt = NSLocalizedString(
+        "search_prompt",
+        bundle: Bundle.module,
+        comment: "Default search prompt text",
+    )
+
     // MARK: - Default Views
 
     /// Default item detail title

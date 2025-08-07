@@ -22,6 +22,9 @@
 "id_label" = "ID: ";
 "details" = "Details";
 
+/* Search */
+"search_prompt" = "Search...";
+
 /* Default Views */
 "item_detail" = "Item Detail";
 "error_loading_data" = "Error loading data";

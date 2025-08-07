@@ -124,7 +124,7 @@ extension View {
                 searchable(
                     text: text,
                     placement: searchConfiguration.placement,
-                    prompt: searchConfiguration.prompt ?? "Buscar...",
+                    prompt: searchConfiguration.prompt ?? DynamicListPresenter.searchPrompt,
                 ),
             )
         } else {
