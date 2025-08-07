@@ -509,15 +509,32 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
 
     // MARK: - Search Configuration
 
-    /// Enables search functionality with a custom prompt.
+    /// Enables search functionality with configurable parameters.
     ///
-    /// Use this method to add search capability to the list. The search field will appear
-    /// in the navigation bar and filter items based on the Searchable protocol or custom predicate.
+    /// This method provides a unified interface for enabling search functionality with various
+    /// configurations. All parameters are optional with sensible defaults.
     ///
-    /// - Parameter prompt: The placeholder text for the search field.
+    /// - Parameters:
+    ///   - prompt: The placeholder text for the search field. Defaults to "Buscar...".
+    ///   - predicate: A closure that determines if an item matches the search text.
+    ///                If provided, this overrides the default Searchable protocol behavior.
+    ///   - strategy: The search strategy to use for matching when using Searchable items.
+    ///               Defaults to PartialMatchStrategy().
+    ///   - placement: The placement configuration for the search field.
+    ///                Defaults to .automatic.
     /// - Returns: The builder instance for method chaining.
     ///
-    /// ## Example
+    /// ## Examples
+    ///
+    /// **Basic search with default settings:**
+    /// ```swift
+    /// DynamicListBuilder<User>()
+    ///     .items(users)
+    ///     .searchable()
+    ///     .build()
+    /// ```
+    ///
+    /// **Search with custom prompt:**
     /// ```swift
     /// DynamicListBuilder<User>()
     ///     .items(users)
@@ -525,59 +542,7 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     ///     .build()
     /// ```
     ///
-    /// ## Requirements
-    /// - Items should conform to `Searchable` protocol for automatic filtering
-    /// - Or use `searchable(prompt:predicate:)` for custom search logic
-    @discardableResult
-    public func searchable(prompt: String) -> Self {
-        searchConfiguration = SearchConfiguration.enabled(prompt: prompt)
-        return self
-    }
-
-    /// Enables search functionality with a prompt and placement.
-    ///
-    /// Use this method to enable search functionality with Searchable items using the default
-    /// PartialMatchStrategy and control the search field placement.
-    ///
-    /// - Parameters:
-    ///   - prompt: The placeholder text for the search field.
-    ///   - placement: The placement configuration for the search field.
-    /// - Returns: The builder instance for method chaining.
-    ///
-    /// ## Example
-    /// ```swift
-    /// DynamicListBuilder<User>()
-    ///     .items(users)
-    ///     .searchable(
-    ///         prompt: "Buscar usuarios...",
-    ///         placement: .navigationBarDrawer
-    ///     )
-    ///     .build()
-    /// ```
-    ///
-    /// ## Requirements
-    /// - Items should conform to `Searchable` protocol for automatic filtering
-    /// - Or use `searchable(prompt:predicate:placement:)` for custom search logic
-    @discardableResult
-    public func searchable(
-        prompt: String,
-        placement: SearchFieldPlacement,
-    ) -> Self {
-        searchConfiguration = SearchConfiguration.enabled(prompt: prompt, placement: placement)
-        return self
-    }
-
-    /// Enables search functionality with custom search logic.
-    ///
-    /// Use this method when you need custom search behavior that goes beyond the Searchable protocol.
-    /// The predicate receives the item and search text, and should return true if the item matches.
-    ///
-    /// - Parameters:
-    ///   - prompt: The placeholder text for the search field.
-    ///   - predicate: A closure that determines if an item matches the search text.
-    /// - Returns: The builder instance for method chaining.
-    ///
-    /// ## Example
+    /// **Search with custom predicate:**
     /// ```swift
     /// DynamicListBuilder<User>()
     ///     .items(users)
@@ -590,30 +555,30 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     ///     )
     ///     .build()
     /// ```
-    @discardableResult
-    public func searchable(
-        prompt: String,
-        predicate: @escaping (Item, String) -> Bool,
-    ) -> Self {
-        searchConfiguration = SearchConfiguration.enabled(
-            prompt: prompt,
-            predicate: predicate,
-        )
-        return self
-    }
-
-    /// Enables search functionality with custom search logic and placement.
     ///
-    /// Use this method when you need custom search behavior that goes beyond the Searchable protocol
-    /// and want to control the search field placement.
+    /// **Search with custom strategy:**
+    /// ```swift
+    /// DynamicListBuilder<User>()
+    ///     .items(users)
+    ///     .searchable(
+    ///         prompt: "Buscar usuarios...",
+    ///         strategy: TokenizedMatchStrategy()
+    ///     )
+    ///     .build()
+    /// ```
     ///
-    /// - Parameters:
-    ///   - prompt: The placeholder text for the search field.
-    ///   - predicate: A closure that determines if an item matches the search text.
-    ///   - placement: The placement configuration for the search field.
-    /// - Returns: The builder instance for method chaining.
+    /// **Search with custom placement:**
+    /// ```swift
+    /// DynamicListBuilder<User>()
+    ///     .items(users)
+    ///     .searchable(
+    ///         prompt: "Buscar usuarios...",
+    ///         placement: .navigationBarDrawer
+    ///     )
+    ///     .build()
+    /// ```
     ///
-    /// ## Example
+    /// **Complete custom configuration:**
     /// ```swift
     /// DynamicListBuilder<User>()
     ///     .items(users)
@@ -627,78 +592,23 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     ///     )
     ///     .build()
     /// ```
+    ///
+    /// ## Requirements
+    /// - Items should conform to `Searchable` protocol for automatic filtering when no predicate is provided
+    /// - If predicate is provided, it takes precedence over the Searchable protocol behavior
     @discardableResult
     public func searchable(
-        prompt: String,
-        predicate: @escaping (Item, String) -> Bool,
-        placement: SearchFieldPlacement,
+        prompt: String = "Buscar...",
+        predicate: ((Item, String) -> Bool)? = nil,
+        strategy: SearchStrategy? = nil,
+        placement: SearchFieldPlacement = .automatic,
     ) -> Self {
         searchConfiguration = SearchConfiguration.enabled(
             prompt: prompt,
             predicate: predicate,
+            strategy: strategy,
             placement: placement,
         )
-        return self
-    }
-
-    /// Enables search functionality with a custom search strategy.
-    ///
-    /// Use this method when you want to use a specific search strategy with Searchable items.
-    /// The strategy determines how the search query is matched against the item's search keys.
-    ///
-    /// - Parameters:
-    ///   - prompt: The placeholder text for the search field.
-    ///   - strategy: The search strategy to use for matching.
-    /// - Returns: The builder instance for method chaining.
-    ///
-    /// ## Example
-    /// ```swift
-    /// DynamicListBuilder<User>()
-    ///     .items(users)
-    ///     .searchable(
-    ///         prompt: "Buscar usuarios...",
-    ///         strategy: TokenizedMatchStrategy()
-    ///     )
-    ///     .build()
-    /// ```
-    @discardableResult
-    public func searchable(
-        prompt: String,
-        strategy: SearchStrategy,
-    ) -> Self {
-        searchConfiguration = SearchConfiguration.enabled(prompt: prompt, strategy: strategy)
-        return self
-    }
-
-    /// Enables search functionality with a custom search strategy and placement.
-    ///
-    /// Use this method when you want to use a specific search strategy with Searchable items
-    /// and control the search field placement.
-    ///
-    /// - Parameters:
-    ///   - prompt: The placeholder text for the search field.
-    ///   - strategy: The search strategy to use for matching.
-    ///   - placement: The placement configuration for the search field.
-    /// - Returns: The builder instance for method chaining.
-    ///
-    /// ## Example
-    /// ```swift
-    /// DynamicListBuilder<User>()
-    ///     .items(users)
-    ///     .searchable(
-    ///         prompt: "Buscar usuarios...",
-    ///         strategy: TokenizedMatchStrategy(),
-    ///         placement: .navigationBarDrawer
-    ///     )
-    ///     .build()
-    /// ```
-    @discardableResult
-    public func searchable(
-        prompt: String,
-        strategy: SearchStrategy,
-        placement: SearchFieldPlacement,
-    ) -> Self {
-        searchConfiguration = SearchConfiguration.enabled(prompt: prompt, strategy: strategy, placement: placement)
         return self
     }
 

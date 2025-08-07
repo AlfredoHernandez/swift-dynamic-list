@@ -22,104 +22,124 @@ struct SearchEnabledExample: View {
             List {
                 Section("Sin búsqueda (comportamiento por defecto)") {
                     NavigationLink("Lista sin búsqueda") {
-                        DynamicListBuilder<SearchableUser>()
-                            .items(users)
-                            .rowContent { user in
-                                AnyView(
-                                    VStack(alignment: .leading) {
-                                        Text(user.name)
-                                            .font(.headline)
-                                        Text(user.email)
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                    },
-                                )
-                            }
-                            .build()
+                        buildListWithoutSearch()
                     }
                 }
 
                 Section("Con búsqueda habilitada") {
-                    NavigationLink("Lista con búsqueda") {
-                        DynamicListBuilder<SearchableUser>()
-                            .items(users)
-                            .searchable(prompt: "Buscar usuarios...", placement: .navigationBarDrawer(displayMode: .automatic))
-                            .rowContent { user in
-                                AnyView(
-                                    VStack(alignment: .leading) {
-                                        Text(user.name)
-                                            .font(.headline)
-                                        Text(user.email)
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                    },
-                                )
-                            }
-                            .build()
+                    NavigationLink("Lista con búsqueda básica") {
+                        buildListWithBasicSearch()
                     }
 
                     NavigationLink("Lista con búsqueda personalizada") {
-                        DynamicListBuilder<SearchableUser>()
-                            .items(users)
-                            .searchable(
-                                prompt: "Buscar por nombre o rol...",
-                                predicate: { user, query in
-                                    user.name.lowercased().contains(query.lowercased()) ||
-                                        user.role.lowercased().contains(query.lowercased())
-                                },
-                            )
-                            .rowContent { user in
-                                AnyView(
-                                    VStack(alignment: .leading) {
-                                        Text(user.name)
-                                            .font(.headline)
-                                        Text(user.role)
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                    },
-                                )
-                            }
-                            .build()
+                        buildListWithCustomSearch()
                     }
                 }
 
                 Section("Lista seccionada con búsqueda") {
                     NavigationLink("Lista seccionada con búsqueda") {
-                        let sections = [
-                            ListSection(
-                                title: "Administradores",
-                                items: users.filter { $0.role == "Admin" },
-                            ),
-                            ListSection(
-                                title: "Usuarios",
-                                items: users.filter { $0.role == "User" },
-                            ),
-                            ListSection(
-                                title: "Gerentes",
-                                items: users.filter { $0.role == "Manager" },
-                            ),
-                        ]
-
-                        return SectionedDynamicListBuilder<SearchableUser>()
-                            .sections(sections)
-                            .searchable(prompt: "Buscar en todas las secciones...")
-                            .rowContent { user in
-                                AnyView(
-                                    VStack(alignment: .leading) {
-                                        Text(user.name)
-                                            .font(.headline)
-                                        Text("\(user.role) • \(user.email)")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                    },
-                                )
-                            }
-                            .build()
+                        buildSectionedListWithSearch()
                     }
                 }
             }
             .navigationTitle("Ejemplos de Búsqueda")
         }
+    }
+
+    @ViewBuilder
+    private func buildListWithoutSearch() -> some View {
+        DynamicListBuilder<SearchableUser>()
+            .items(users)
+            .rowContent { user in
+                AnyView(
+                    VStack(alignment: .leading) {
+                        Text(user.name)
+                            .font(.headline)
+                        Text(user.email)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    },
+                )
+            }
+            .build()
+    }
+
+    @ViewBuilder
+    private func buildListWithBasicSearch() -> some View {
+        DynamicListBuilder<SearchableUser>()
+            .items(users)
+            .searchable(prompt: "Buscar usuarios...")
+            .rowContent { user in
+                AnyView(
+                    VStack(alignment: .leading) {
+                        Text(user.name)
+                            .font(.headline)
+                        Text(user.email)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    },
+                )
+            }
+            .build()
+    }
+
+    @ViewBuilder
+    private func buildListWithCustomSearch() -> some View {
+        DynamicListBuilder<SearchableUser>()
+            .items(users)
+            .searchable(
+                prompt: "Buscar por nombre o rol...",
+                predicate: { user, query in
+                    user.name.lowercased().contains(query.lowercased()) ||
+                        user.role.lowercased().contains(query.lowercased())
+                },
+            )
+            .rowContent { user in
+                AnyView(
+                    VStack(alignment: .leading) {
+                        Text(user.name)
+                            .font(.headline)
+                        Text(user.role)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    },
+                )
+            }
+            .build()
+    }
+
+    @ViewBuilder
+    private func buildSectionedListWithSearch() -> some View {
+        let sections = [
+            ListSection(
+                title: "Administradores",
+                items: users.filter { $0.role == "Admin" },
+            ),
+            ListSection(
+                title: "Usuarios",
+                items: users.filter { $0.role == "User" },
+            ),
+            ListSection(
+                title: "Gerentes",
+                items: users.filter { $0.role == "Manager" },
+            ),
+        ]
+
+        SectionedDynamicListBuilder<SearchableUser>()
+            .sections(sections)
+            .searchable(prompt: "Buscar en todas las secciones...")
+            .rowContent { user in
+                AnyView(
+                    VStack(alignment: .leading) {
+                        Text(user.name)
+                            .font(.headline)
+                        Text("\(user.role) • \(user.email)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    },
+                )
+            }
+            .build()
     }
 }
 

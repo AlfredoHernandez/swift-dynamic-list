@@ -339,141 +339,106 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
 
     // MARK: - Search Configuration
 
-    /// Enables search functionality with a simple prompt.
+    /// Enables search functionality with configurable parameters.
     ///
-    /// This method enables search functionality using the default partial match strategy.
-    /// The search will work with items that conform to `Searchable` protocol.
+    /// This method provides a unified interface for enabling search functionality with various
+    /// configurations. All parameters are optional with sensible defaults.
     ///
-    /// - Parameter prompt: The prompt text for the search field.
+    /// - Parameters:
+    ///   - prompt: The placeholder text for the search field. Defaults to "Buscar...".
+    ///   - predicate: A closure that determines if an item matches the search text.
+    ///                If provided, this overrides the default Searchable protocol behavior.
+    ///   - strategy: The search strategy to use for matching when using Searchable items.
+    ///               Defaults to PartialMatchStrategy().
+    ///   - placement: The placement configuration for the search field.
+    ///                Defaults to .automatic.
     /// - Returns: The builder instance for method chaining.
     ///
-    /// ## Example
+    /// ## Examples
+    ///
+    /// **Basic search with default settings:**
+    /// ```swift
+    /// SectionedDynamicListBuilder<User>()
+    ///     .sections(sections)
+    ///     .searchable()
+    ///     .build()
+    /// ```
+    ///
+    /// **Search with custom prompt:**
     /// ```swift
     /// SectionedDynamicListBuilder<User>()
     ///     .sections(sections)
     ///     .searchable(prompt: "Buscar usuarios...")
     ///     .build()
     /// ```
-    @discardableResult
-    public func searchable(prompt: String) -> Self {
-        searchConfiguration = SearchConfiguration.enabled(prompt: prompt)
-        return self
-    }
-
-    /// Enables search functionality with prompt and placement configuration.
     ///
-    /// - Parameters:
-    ///   - prompt: The prompt text for the search field.
-    ///   - placement: The placement configuration for the search field.
-    /// - Returns: The builder instance for method chaining.
-    @discardableResult
-    public func searchable(
-        prompt: String,
-        placement: SearchFieldPlacement,
-    ) -> Self {
-        searchConfiguration = SearchConfiguration.enabled(prompt: prompt, placement: placement)
-        return self
-    }
-
-    /// Enables search functionality with a custom predicate.
-    ///
-    /// Use this method when you want to implement custom search logic that doesn't rely
-    /// on the `Searchable` protocol or when you need more control over the search behavior.
-    ///
-    /// - Parameters:
-    ///   - prompt: The prompt text for the search field.
-    ///   - predicate: A closure that determines if an item matches the search query.
-    /// - Returns: The builder instance for method chaining.
-    ///
-    /// ## Example
+    /// **Search with custom predicate:**
     /// ```swift
     /// SectionedDynamicListBuilder<User>()
     ///     .sections(sections)
     ///     .searchable(
     ///         prompt: "Buscar por nombre o email...",
-    ///         predicate: { user, query in
-    ///             user.name.lowercased().contains(query.lowercased()) ||
-    ///             user.email.lowercased().contains(query.lowercased())
+    ///         predicate: { user, searchText in
+    ///             user.name.lowercased().contains(searchText.lowercased()) ||
+    ///             user.email.lowercased().contains(searchText.lowercased())
     ///         }
     ///     )
     ///     .build()
     /// ```
-    @discardableResult
-    public func searchable(
-        prompt: String,
-        predicate: @escaping (Item, String) -> Bool,
-    ) -> Self {
-        searchConfiguration = SearchConfiguration.enabled(
-            prompt: prompt,
-            predicate: predicate,
-        )
-        return self
-    }
-
-    /// Enables search functionality with a custom predicate and placement.
     ///
-    /// - Parameters:
-    ///   - prompt: The prompt text for the search field.
-    ///   - predicate: A closure that determines if an item matches the search query.
-    ///   - placement: The placement configuration for the search field.
-    /// - Returns: The builder instance for method chaining.
-    @discardableResult
-    public func searchable(
-        prompt: String,
-        predicate: @escaping (Item, String) -> Bool,
-        placement: SearchFieldPlacement,
-    ) -> Self {
-        searchConfiguration = SearchConfiguration.enabled(
-            prompt: prompt,
-            predicate: predicate,
-            placement: placement,
-        )
-        return self
-    }
-
-    /// Enables search functionality with a custom strategy.
-    ///
-    /// Use this method when you want to use a specific search strategy with items that
-    /// conform to the `Searchable` protocol.
-    ///
-    /// - Parameters:
-    ///   - prompt: The prompt text for the search field.
-    ///   - strategy: The search strategy to use for matching items.
-    /// - Returns: The builder instance for method chaining.
-    ///
-    /// ## Example
+    /// **Search with custom strategy:**
     /// ```swift
     /// SectionedDynamicListBuilder<User>()
     ///     .sections(sections)
     ///     .searchable(
-    ///         prompt: "Buscar usuarios (coincidencia exacta)...",
-    ///         strategy: ExactMatchStrategy()
+    ///         prompt: "Buscar usuarios...",
+    ///         strategy: TokenizedMatchStrategy()
     ///     )
     ///     .build()
     /// ```
-    @discardableResult
-    public func searchable(
-        prompt: String,
-        strategy: SearchStrategy,
-    ) -> Self {
-        searchConfiguration = SearchConfiguration.enabled(prompt: prompt, strategy: strategy)
-        return self
-    }
-
-    /// Enables search functionality with a custom strategy and placement.
     ///
-    /// - Parameters:
-    ///   - prompt: The prompt text for the search field.
-    ///   - strategy: The search strategy to use for matching items.
-    ///   - placement: The placement configuration for the search field.
-    /// - Returns: The builder instance for method chaining.
+    /// **Search with custom placement:**
+    /// ```swift
+    /// SectionedDynamicListBuilder<User>()
+    ///     .sections(sections)
+    ///     .searchable(
+    ///         prompt: "Buscar usuarios...",
+    ///         placement: .navigationBarDrawer
+    ///     )
+    ///     .build()
+    /// ```
+    ///
+    /// **Complete custom configuration:**
+    /// ```swift
+    /// SectionedDynamicListBuilder<User>()
+    ///     .sections(sections)
+    ///     .searchable(
+    ///         prompt: "Buscar por nombre o email...",
+    ///         predicate: { user, searchText in
+    ///             user.name.lowercased().contains(searchText.lowercased()) ||
+    ///             user.email.lowercased().contains(searchText.lowercased())
+    ///         },
+    ///         placement: .navigationBarDrawer
+    ///     )
+    ///     .build()
+    /// ```
+    ///
+    /// ## Requirements
+    /// - Items should conform to `Searchable` protocol for automatic filtering when no predicate is provided
+    /// - If predicate is provided, it takes precedence over the Searchable protocol behavior
     @discardableResult
     public func searchable(
-        prompt: String,
-        strategy: SearchStrategy,
-        placement: SearchFieldPlacement,
+        prompt: String = "Buscar...",
+        predicate: ((Item, String) -> Bool)? = nil,
+        strategy: SearchStrategy? = nil,
+        placement: SearchFieldPlacement = .automatic,
     ) -> Self {
-        searchConfiguration = SearchConfiguration.enabled(prompt: prompt, strategy: strategy, placement: placement)
+        searchConfiguration = SearchConfiguration.enabled(
+            prompt: prompt,
+            predicate: predicate,
+            strategy: strategy,
+            placement: placement,
+        )
         return self
     }
 
