@@ -598,7 +598,7 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     /// - If predicate is provided, it takes precedence over the Searchable protocol behavior
     @discardableResult
     public func searchable(
-        prompt: String = "Buscar...",
+        prompt: String = DynamicListPresenter.searchPrompt,
         predicate: ((Item, String) -> Bool)? = nil,
         strategy: SearchStrategy? = nil,
         placement: SearchFieldPlacement = .automatic,
