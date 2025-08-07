@@ -21,6 +21,9 @@ public struct SearchConfiguration<Item: Identifiable & Hashable> {
     /// Placement configuration for the search field.
     public let placement: SearchFieldPlacement
 
+    /// Whether the search bar should be displayed.
+    public let isEnabled: Bool
+
     /// Creates a new SearchConfiguration instance.
     ///
     /// - Parameters:
@@ -28,16 +31,19 @@ public struct SearchConfiguration<Item: Identifiable & Hashable> {
     ///   - predicate: Optional custom search predicate for filtering items.
     ///   - strategy: Optional search strategy for Searchable items.
     ///   - placement: Placement configuration for the search field.
+    ///   - isEnabled: Whether the search bar should be displayed.
     public init(
         prompt: String? = nil,
         predicate: ((Item, String) -> Bool)? = nil,
         strategy: SearchStrategy? = nil,
         placement: SearchFieldPlacement = .automatic,
+        isEnabled: Bool = false,
     ) {
         self.prompt = prompt
         self.predicate = predicate
         self.strategy = strategy
         self.placement = placement
+        self.isEnabled = isEnabled
     }
 
     /// Creates a SearchConfiguration with only a prompt.
@@ -77,5 +83,52 @@ public struct SearchConfiguration<Item: Identifiable & Hashable> {
     /// - Returns: A SearchConfiguration instance with the specified parameters.
     public static func prompt(_ prompt: String, strategy: SearchStrategy, placement: SearchFieldPlacement) -> SearchConfiguration<Item> {
         SearchConfiguration(prompt: prompt, strategy: strategy, placement: placement)
+    }
+
+    /// Creates a SearchConfiguration with enabled search.
+    ///
+    /// - Parameters:
+    ///   - prompt: Optional prompt text for the search field.
+    ///   - predicate: Optional custom search predicate for filtering items.
+    ///   - strategy: Optional search strategy for Searchable items.
+    ///   - placement: Placement configuration for the search field.
+    /// - Returns: A SearchConfiguration instance with search enabled.
+    public static func enabled(
+        prompt: String? = nil,
+        predicate: ((Item, String) -> Bool)? = nil,
+        strategy: SearchStrategy? = nil,
+        placement: SearchFieldPlacement = .automatic,
+    ) -> SearchConfiguration<Item> {
+        SearchConfiguration(
+            prompt: prompt,
+            predicate: predicate,
+            strategy: strategy,
+            placement: placement,
+            isEnabled: true,
+        )
+    }
+}
+
+// MARK: - View Extension for Conditional Search
+
+extension View {
+    /// Applies searchable modifier conditionally based on SearchConfiguration.
+    ///
+    /// - Parameters:
+    ///   - searchConfiguration: The search configuration to apply.
+    ///   - text: Binding to the search text.
+    /// - Returns: A view with conditional search functionality.
+    func conditionalSearchable(_ searchConfiguration: SearchConfiguration<some Identifiable & Hashable>?, text: Binding<String>) -> some View {
+        if let searchConfiguration, searchConfiguration.isEnabled {
+            return AnyView(
+                searchable(
+                    text: text,
+                    placement: searchConfiguration.placement,
+                    prompt: searchConfiguration.prompt ?? "Buscar...",
+                ),
+            )
+        } else {
+            return AnyView(self)
+        }
     }
 }

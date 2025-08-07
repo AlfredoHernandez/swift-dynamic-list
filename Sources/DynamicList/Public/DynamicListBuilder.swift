@@ -530,7 +530,7 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     /// - Or use `searchable(prompt:predicate:)` for custom search logic
     @discardableResult
     public func searchable(prompt: String) -> Self {
-        searchConfiguration = SearchConfiguration.prompt(prompt)
+        searchConfiguration = SearchConfiguration.enabled(prompt: prompt)
         return self
     }
 
@@ -563,7 +563,7 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
         prompt: String,
         placement: SearchFieldPlacement,
     ) -> Self {
-        searchConfiguration = SearchConfiguration.prompt(prompt, placement: placement)
+        searchConfiguration = SearchConfiguration.enabled(prompt: prompt, placement: placement)
         return self
     }
 
@@ -595,7 +595,7 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
         prompt: String,
         predicate: @escaping (Item, String) -> Bool,
     ) -> Self {
-        searchConfiguration = SearchConfiguration(
+        searchConfiguration = SearchConfiguration.enabled(
             prompt: prompt,
             predicate: predicate,
         )
@@ -633,7 +633,7 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
         predicate: @escaping (Item, String) -> Bool,
         placement: SearchFieldPlacement,
     ) -> Self {
-        searchConfiguration = SearchConfiguration(
+        searchConfiguration = SearchConfiguration.enabled(
             prompt: prompt,
             predicate: predicate,
             placement: placement,
@@ -666,7 +666,7 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
         prompt: String,
         strategy: SearchStrategy,
     ) -> Self {
-        searchConfiguration = SearchConfiguration.prompt(prompt, strategy: strategy)
+        searchConfiguration = SearchConfiguration.enabled(prompt: prompt, strategy: strategy)
         return self
     }
 
@@ -698,7 +698,7 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
         strategy: SearchStrategy,
         placement: SearchFieldPlacement,
     ) -> Self {
-        searchConfiguration = SearchConfiguration.prompt(prompt, strategy: strategy, placement: placement)
+        searchConfiguration = SearchConfiguration.enabled(prompt: prompt, strategy: strategy, placement: placement)
         return self
     }
 
@@ -720,14 +720,14 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     @discardableResult
     public func searchPlacement(_ placement: SearchFieldPlacement) -> Self {
         if let existingConfig = searchConfiguration {
-            searchConfiguration = SearchConfiguration(
+            searchConfiguration = SearchConfiguration.enabled(
                 prompt: existingConfig.prompt,
                 predicate: existingConfig.predicate,
                 strategy: existingConfig.strategy,
                 placement: placement,
             )
         } else {
-            searchConfiguration = SearchConfiguration(placement: placement)
+            searchConfiguration = SearchConfiguration.enabled(placement: placement)
         }
         return self
     }

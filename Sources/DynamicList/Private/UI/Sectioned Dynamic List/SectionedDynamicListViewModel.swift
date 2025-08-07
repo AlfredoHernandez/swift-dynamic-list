@@ -30,7 +30,7 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable> 
     private var cancellables = Set<AnyCancellable>()
 
     /// Search configuration for filtering items
-    private var searchConfiguration: SearchConfiguration<Item>?
+    private(set) var searchConfiguration: SearchConfiguration<Item>?
 
     /// Current search text
     var searchText: String = "" {

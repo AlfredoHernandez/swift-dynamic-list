@@ -77,13 +77,12 @@ struct SectionedDynamicListContent<Item: Identifiable & Hashable>: View {
                 .refreshable {
                     viewModel.refresh()
                 }
-                .searchable(
+                .conditionalSearchable(
+                    searchConfiguration,
                     text: Binding(
                         get: { viewModel.searchText },
                         set: { viewModel.searchText = $0 },
                     ),
-                    placement: searchConfiguration?.placement ?? .automatic,
-                    prompt: searchConfiguration?.prompt ?? "Buscar...",
                 )
             }
         }

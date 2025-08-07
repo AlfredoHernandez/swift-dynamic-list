@@ -285,14 +285,13 @@ struct SectionedDynamicListViewModelTests {
             ioScheduler: .immediate,
         )
 
-        let searchConfig = SearchConfiguration<TestItem>(
+        let searchConfig = SearchConfiguration<TestItem>.enabled(
             prompt: "Search items...",
             strategy: PartialMatchStrategy(),
         )
 
         viewModel.setSearchConfiguration(searchConfig)
-        // Note: We can't directly test the private property, but we can test its effects
-        // through search functionality tests
+        #expect(viewModel.searchConfiguration != nil)
     }
 
     @Test("When search configuration is set to nil clears configuration")
@@ -302,15 +301,16 @@ struct SectionedDynamicListViewModelTests {
             ioScheduler: .immediate,
         )
 
-        let searchConfig = SearchConfiguration<TestItem>(
+        let searchConfig = SearchConfiguration<TestItem>.enabled(
             prompt: "Search items...",
             strategy: PartialMatchStrategy(),
         )
 
         viewModel.setSearchConfiguration(searchConfig)
+        #expect(viewModel.searchConfiguration != nil)
+
         viewModel.setSearchConfiguration(nil)
-        // Note: We can't directly test the private property, but we can test its effects
-        // through search functionality tests
+        #expect(viewModel.searchConfiguration == nil)
     }
 
     // MARK: - Loading State Tests

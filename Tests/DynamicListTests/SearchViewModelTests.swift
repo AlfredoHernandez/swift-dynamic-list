@@ -31,8 +31,8 @@ struct SearchViewModelTests {
         ]
 
         let viewModel = DynamicListViewModel(items: users)
-        let searchConfig = SearchConfiguration<SearchableUser>(
-            prompt: "Buscar usuarios...",
+        let searchConfig = SearchConfiguration<SearchableUser>.enabled(
+            prompt: "Search...",
             strategy: PartialMatchStrategy(),
         )
 
@@ -56,8 +56,8 @@ struct SearchViewModelTests {
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
-        let searchConfig = SearchConfiguration<SearchableUser>(
-            prompt: "Buscar usuarios...",
+        let searchConfig = SearchConfiguration<SearchableUser>.enabled(
+            prompt: "Search...",
             strategy: PartialMatchStrategy(),
         )
 
@@ -80,8 +80,8 @@ struct SearchViewModelTests {
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
-        let searchConfig = SearchConfiguration<SearchableUser>(
-            prompt: "Buscar usuarios...",
+        let searchConfig = SearchConfiguration<SearchableUser>.enabled(
+            prompt: "Search...",
             strategy: PartialMatchStrategy(),
         )
 
@@ -104,8 +104,8 @@ struct SearchViewModelTests {
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
-        let searchConfig = SearchConfiguration<SearchableUser>(
-            prompt: "Buscar usuarios...",
+        let searchConfig = SearchConfiguration<SearchableUser>.enabled(
+            prompt: "Search...",
             predicate: { user, query in
                 user.role.lowercased().contains(query.lowercased())
             },
@@ -156,8 +156,8 @@ struct SearchViewModelTests {
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
-        let searchConfig = SearchConfiguration<SearchableUser>(
-            prompt: "Buscar usuarios...",
+        let searchConfig = SearchConfiguration<SearchableUser>.enabled(
+            prompt: "Search...",
             strategy: PartialMatchStrategy(),
         )
 
@@ -187,8 +187,8 @@ struct SearchViewModelTests {
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
-        let searchConfig = SearchConfiguration<SearchableUser>(
-            prompt: "Buscar usuarios...",
+        let searchConfig = SearchConfiguration<SearchableUser>.enabled(
+            prompt: "Search...",
             strategy: PartialMatchStrategy(),
         )
 
@@ -219,8 +219,8 @@ struct SearchViewModelTests {
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
-        let searchConfig = SearchConfiguration<SearchableUser>(
-            prompt: "Buscar usuarios...",
+        let searchConfig = SearchConfiguration<SearchableUser>.enabled(
+            prompt: "Search...",
             strategy: PartialMatchStrategy(),
         )
 
@@ -252,8 +252,8 @@ struct SearchViewModelTests {
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
-        let searchConfig = SearchConfiguration<SearchableUser>(
-            prompt: "Buscar usuarios...",
+        let searchConfig = SearchConfiguration<SearchableUser>.enabled(
+            prompt: "Search...",
             strategy: PartialMatchStrategy(),
         )
 
@@ -281,8 +281,8 @@ struct SearchViewModelTests {
             scheduler: .immediate,
             ioScheduler: .immediate,
         )
-        let searchConfig = SearchConfiguration<SearchableUser>(
-            prompt: "Buscar usuarios...",
+        let searchConfig = SearchConfiguration<SearchableUser>.enabled(
+            prompt: "Search...",
             strategy: ExactMatchStrategy(),
         )
 
@@ -340,8 +340,8 @@ struct SearchViewModelTests {
             ioScheduler: .immediate,
         )
 
-        let searchConfig = SearchConfiguration<SearchableUser>(
-            prompt: "Buscar usuarios...",
+        let searchConfig = SearchConfiguration<SearchableUser>.enabled(
+            prompt: "Search...",
             strategy: PartialMatchStrategy(),
         )
         viewModel.setSearchConfiguration(searchConfig)
@@ -383,8 +383,8 @@ struct SearchViewModelTests {
             ioScheduler: .immediate,
         )
 
-        let searchConfig = SearchConfiguration<SearchableUser>(
-            prompt: "Buscar usuarios...",
+        let searchConfig = SearchConfiguration<SearchableUser>.enabled(
+            prompt: "Search...",
             strategy: PartialMatchStrategy(),
         )
         viewModel.setSearchConfiguration(searchConfig)

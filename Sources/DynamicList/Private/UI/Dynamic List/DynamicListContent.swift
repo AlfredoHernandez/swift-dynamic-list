@@ -77,13 +77,12 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
         #if os(iOS)
             .navigationBarHidden(listConfiguration.navigationBarHidden)
         #endif
-            .searchable(
+            .conditionalSearchable(
+                searchConfiguration,
                 text: Binding(
                     get: { viewModel.searchText },
                     set: { viewModel.searchText = $0 },
                 ),
-                placement: searchConfiguration?.placement ?? .automatic,
-                prompt: searchConfiguration?.prompt ?? "Buscar...",
             )
     }
 
