@@ -87,6 +87,43 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     /// List configuration for appearance and behavior
     private var listConfiguration: ListConfiguration = .default
 
+    // MARK: - Private Helper Methods
+
+    /// Updates the list configuration using a transformation closure
+    private func updateListConfiguration(_ transform: (ListConfiguration) -> ListConfiguration) -> Self {
+        listConfiguration = transform(listConfiguration)
+        return self
+    }
+
+    /// Updates the search configuration using a transformation closure
+    private func updateSearchConfiguration(_ transform: (SearchConfiguration<Item>?) -> SearchConfiguration<Item>?) -> Self {
+        searchConfiguration = transform(searchConfiguration)
+        return self
+    }
+
+    /// Creates a view model based on the current configuration
+    private func createViewModel() -> DynamicListViewModel<Item> {
+        if let publisher {
+            DynamicListViewModel(dataProvider: publisher, initialItems: items)
+        } else {
+            DynamicListViewModel(items: items)
+        }
+    }
+
+    /// Creates the shared content view with common configuration
+    @MainActor
+    private func createContentView(viewModel: DynamicListViewModel<Item>) -> DynamicListContent<Item> {
+        DynamicListContent(
+            viewModel: viewModel,
+            rowContent: rowContent ?? { item in AnyView(DefaultRowView(item: item)) },
+            detailContent: detailContent,
+            errorContent: errorContent,
+            skeletonContent: skeletonContent,
+            listConfiguration: listConfiguration,
+            searchConfiguration: searchConfiguration,
+        )
+    }
+
     // MARK: - Initialization
 
     /// Creates a new DynamicListBuilder instance.
@@ -419,12 +456,13 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     /// ```
     @discardableResult
     public func title(_ title: String) -> Self {
-        listConfiguration = ListConfiguration(
-            style: listConfiguration.style,
-            navigationBarHidden: listConfiguration.navigationBarHidden,
-            title: title,
-        )
-        return self
+        updateListConfiguration { config in
+            ListConfiguration(
+                style: config.style,
+                navigationBarHidden: config.navigationBarHidden,
+                title: title,
+            )
+        }
     }
 
     /// Hides the navigation bar.
@@ -443,12 +481,13 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     /// ```
     @discardableResult
     public func hideNavigationBar() -> Self {
-        listConfiguration = ListConfiguration(
-            style: listConfiguration.style,
-            navigationBarHidden: true,
-            title: listConfiguration.title,
-        )
-        return self
+        updateListConfiguration { config in
+            ListConfiguration(
+                style: config.style,
+                navigationBarHidden: true,
+                title: config.title,
+            )
+        }
     }
 
     /// Sets the list style for the list.
@@ -475,12 +514,13 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     /// - `.insetGrouped` - Inset grouped style (iOS only)
     @discardableResult
     public func listStyle(_ style: ListStyleType) -> Self {
-        listConfiguration = ListConfiguration(
-            style: style,
-            navigationBarHidden: listConfiguration.navigationBarHidden,
-            title: listConfiguration.title,
-        )
-        return self
+        updateListConfiguration { config in
+            ListConfiguration(
+                style: style,
+                navigationBarHidden: config.navigationBarHidden,
+                title: config.title,
+            )
+        }
     }
 
     /// Sets the complete list configuration.
@@ -629,17 +669,18 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     /// ```
     @discardableResult
     public func searchPlacement(_ placement: SearchFieldPlacement) -> Self {
-        if let existingConfig = searchConfiguration {
-            searchConfiguration = SearchConfiguration.enabled(
-                prompt: existingConfig.prompt,
-                predicate: existingConfig.predicate,
-                strategy: existingConfig.strategy,
-                placement: placement,
-            )
-        } else {
-            searchConfiguration = SearchConfiguration.enabled(placement: placement)
+        updateSearchConfiguration { existingConfig in
+            if let config = existingConfig {
+                SearchConfiguration.enabled(
+                    prompt: config.prompt,
+                    predicate: config.predicate,
+                    strategy: config.strategy,
+                    placement: placement,
+                )
+            } else {
+                SearchConfiguration.enabled(placement: placement)
+            }
         }
-        return self
     }
 
     /// Sets the search configuration directly.
@@ -694,17 +735,11 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     ///   to avoid navigation conflicts. Use `buildWithoutNavigation()` instead.
     @MainActor
     public func build() -> some View {
-        let viewModel: DynamicListViewModel<Item> = if let publisher {
-            DynamicListViewModel(dataProvider: publisher, initialItems: items)
-        } else {
-            DynamicListViewModel(items: items)
-        }
+        let viewModel = createViewModel()
 
         return DynamicListWrapper(
             viewModel: viewModel,
-            rowContent: rowContent ?? { item in
-                AnyView(DefaultRowView(item: item))
-            },
+            rowContent: rowContent ?? { item in AnyView(DefaultRowView(item: item)) },
             detailContent: detailContent,
             errorContent: errorContent,
             skeletonContent: skeletonContent,
@@ -755,23 +790,8 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     ///   navigation context and handles `navigationDestination` appropriately.
     @MainActor
     public func buildWithoutNavigation() -> some View {
-        let viewModel: DynamicListViewModel<Item> = if let publisher {
-            DynamicListViewModel(dataProvider: publisher, initialItems: items)
-        } else {
-            DynamicListViewModel(items: items)
-        }
-
-        return DynamicListContent(
-            viewModel: viewModel,
-            rowContent: rowContent ?? { item in
-                AnyView(DefaultRowView(item: item))
-            },
-            detailContent: detailContent,
-            errorContent: errorContent,
-            skeletonContent: skeletonContent,
-            listConfiguration: listConfiguration,
-            searchConfiguration: searchConfiguration,
-        )
+        let viewModel = createViewModel()
+        return createContentView(viewModel: viewModel)
     }
 }
 
@@ -817,8 +837,7 @@ public extension DynamicListBuilder {
         @ViewBuilder rowContent: @escaping (Item) -> some View,
         @ViewBuilder detailContent: @escaping (Item) -> some View,
     ) -> some View {
-        DynamicListBuilder<Item>()
-            .title(title)
+        createFactoryBuilder(title: title)
             .items(items)
             .rowContent(rowContent)
             .detailContent(detailContent)
@@ -858,7 +877,7 @@ public extension DynamicListBuilder {
         @ViewBuilder rowContent: @escaping (Item) -> some View,
         @ViewBuilder detailContent: @escaping (Item) -> some View,
     ) -> some View {
-        DynamicListBuilder<Item>()
+        createFactoryBuilder()
             .publisher { publisher }
             .rowContent(rowContent)
             .detailContent(detailContent)
@@ -901,10 +920,16 @@ public extension DynamicListBuilder {
         @ViewBuilder rowContent: @escaping (Item) -> some View,
         @ViewBuilder detailContent: @escaping (Item) -> some View,
     ) -> some View {
-        DynamicListBuilder<Item>()
+        createFactoryBuilder()
             .simulatedPublisher(items, delay: delay)
             .rowContent(rowContent)
             .detailContent(detailContent)
             .buildWithoutNavigation()
+    }
+
+    /// Creates a pre-configured builder instance for factory methods
+    private static func createFactoryBuilder(title: String = "") -> DynamicListBuilder<Item> {
+        let builder = DynamicListBuilder<Item>()
+        return title.isEmpty ? builder : builder.title(title)
     }
 }
