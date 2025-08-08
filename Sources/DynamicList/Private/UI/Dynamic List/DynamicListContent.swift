@@ -56,16 +56,14 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
             }
         }
         .navigationTitle(listConfiguration.title ?? "")
-        #if os(iOS)
-            .navigationBarHidden(listConfiguration.navigationBarHidden)
-        #endif
-            .conditionalSearchable(
-                searchConfiguration,
-                text: Binding(
-                    get: { viewModel.searchText },
-                    set: { viewModel.searchText = $0 },
-                ),
-            )
+        .conditionalNavigationBarHidden(listConfiguration.navigationBarHidden)
+        .conditionalSearchable(
+            searchConfiguration,
+            text: Binding(
+                get: { viewModel.searchText },
+                set: { viewModel.searchText = $0 },
+            ),
+        )
     }
 
     @ViewBuilder

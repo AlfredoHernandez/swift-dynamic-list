@@ -27,3 +27,19 @@ extension View {
         }
     }
 }
+
+// MARK: - View Extension for Conditional iOS Navigation
+
+extension View {
+    /// Applies navigation bar hidden modifier conditionally for iOS platform.
+    ///
+    /// - Parameter isHidden: Whether to hide the navigation bar.
+    /// - Returns: A view with conditional navigation bar visibility.
+    func conditionalNavigationBarHidden(_ isHidden: Bool) -> some View {
+        #if os(iOS)
+        return AnyView(navigationBarHidden(isHidden))
+        #else
+        return AnyView(self)
+        #endif
+    }
+}

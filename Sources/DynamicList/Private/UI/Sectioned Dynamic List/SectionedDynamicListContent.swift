@@ -91,9 +91,7 @@ struct SectionedDynamicListContent<Item: Identifiable & Hashable>: View {
             }
         }
         .navigationTitle(listConfiguration.title ?? "")
-        #if os(iOS)
-            .navigationBarHidden(listConfiguration.navigationBarHidden)
-        #endif
+        .conditionalNavigationBarHidden(listConfiguration.navigationBarHidden)
     }
 
     @ViewBuilder
