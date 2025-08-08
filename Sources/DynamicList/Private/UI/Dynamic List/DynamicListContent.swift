@@ -69,25 +69,8 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
 
     @ViewBuilder
     private var itemsList: some View {
-        ScrollViewReader { proxy in
-            ZStack(alignment: .bottomTrailing) {
-                listContent
-                if shouldShowScrollToTopButton {
-                    Button(action: {
-                        withAnimation(.easeInOut(duration: 0.5)) {
-                            proxy.scrollTo("listContent", anchor: .top)
-                        }
-                    }) {
-                        Image(systemName: "arrow.up.circle.fill")
-                            .font(.title2)
-                            .foregroundColor(.white)
-                            .background(Circle().fill(Color.blue))
-                            .shadow(radius: 3)
-                    }
-                    .padding(.trailing, 20)
-                    .padding(.bottom, 20)
-                }
-            }
+        ScrollToTopButton(itemCount: viewModel.items.count, scrollTarget: "listContent") {
+            listContent
         }
     }
 
@@ -127,10 +110,6 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
 
     private func isFirstItem(_ item: Item) -> Bool {
         viewModel.items.firstIndex(of: item) == 0
-    }
-
-    private var shouldShowScrollToTopButton: Bool {
-        viewModel.items.count > 5
     }
 
     @ViewBuilder
