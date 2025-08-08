@@ -3,7 +3,7 @@
 //
 
 /// Represents the complete view state for a sectioned dynamic list
-public struct SectionedListViewState<Item: Identifiable & Hashable>: Equatable {
+public struct SectionedListViewState<Item: Identifiable & Hashable>: Equatable, DynamicListViewStateProtocol {
     /// The current loading state
     public let loadingState: LoadingState
 

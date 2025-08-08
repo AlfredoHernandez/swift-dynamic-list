@@ -11,7 +11,7 @@ import Foundation
 /// This view model handles loading states, error handling, and data management for lists
 /// that display data in sections. It supports both static data and reactive publishers.
 @Observable
-public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable> {
+public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: DynamicListViewModelProtocol {
     // MARK: - Private Properties
 
     /// The current view state
