@@ -119,26 +119,4 @@ struct SectionedDynamicListContent<Item: Identifiable & Hashable>: View {
             DefaultErrorView(error: error)
         }
     }
-
-    /// ViewModifier to apply list styles
-    private struct ListStyleModifier: ViewModifier {
-        let style: ListStyleType
-
-        func body(content: Content) -> some View {
-            switch style {
-            case .automatic:
-                content.listStyle(.automatic)
-            case .plain:
-                content.listStyle(.plain)
-            case .inset:
-                content.listStyle(.inset)
-            #if os(iOS)
-            case .grouped:
-                content.listStyle(.grouped)
-            case .insetGrouped:
-                content.listStyle(.insetGrouped)
-            #endif
-            }
-        }
-    }
 }
