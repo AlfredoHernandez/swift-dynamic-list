@@ -11,7 +11,6 @@ import SwiftUI
 /// the `buildWithoutNavigation()` method.
 struct DynamicListContent<Item: Identifiable & Hashable>: View {
     @State private var viewModel: DynamicListViewModel<Item>
-    @State private var scrollToTop = false
     private let rowContent: (Item) -> AnyView
     private let detailContent: ((Item) -> AnyView?)?
     private let errorContent: ((Error) -> AnyView)?
@@ -36,7 +35,6 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
         self.listConfiguration = listConfiguration
         self.searchConfiguration = searchConfiguration
 
-        // Configure search in the view model
         viewModel.setSearchConfiguration(searchConfiguration)
     }
 
@@ -47,50 +45,12 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
             } else if viewModel.viewState.shouldShowError {
                 errorView
             } else {
-                ScrollViewReader { proxy in
-                    ZStack(alignment: .bottomTrailing) {
-                        List(viewModel.items) { item in
-                            if let detailContent, let _ = detailContent(item) {
-                                NavigationLink(value: item) {
-                                    rowContent(item)
-                                        .redacted(reason: viewModel.viewState.isLoading ? .placeholder : [])
-                                }
-                                .id(viewModel.items.firstIndex(of: item) == 0 ? "listContent" : nil)
-                            } else {
-                                rowContent(item)
-                                    .redacted(reason: viewModel.viewState.isLoading ? .placeholder : [])
-                                    .id(viewModel.items.firstIndex(of: item) == 0 ? "listContent" : nil)
-                            }
-                        }
-                        .modifier(ListStyleModifier(style: listConfiguration.style))
-                        .refreshable {
-                            viewModel.refresh()
-                        }
-
-                        if viewModel.items.count > 5 {
-                            Button(action: {
-                                withAnimation(.easeInOut(duration: 0.5)) {
-                                    proxy.scrollTo("listContent", anchor: .top)
-                                }
-                            }) {
-                                Image(systemName: "arrow.up.circle.fill")
-                                    .font(.title2)
-                                    .foregroundColor(.white)
-                                    .background(Circle().fill(Color.blue))
-                                    .shadow(radius: 3)
-                            }
-                            .padding(.trailing, 20)
-                            .padding(.bottom, 20)
-                        }
-                    }
-                }
+                itemsList
             }
         }
         .onAppear(perform: viewModel.loadData)
         .navigationDestination(for: Item.self) { item in
-            if let detailContent,
-               let detailView = detailContent(item)
-            {
+            if let detailContent, let detailView = detailContent(item) {
                 detailView
             }
         }
@@ -105,6 +65,72 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
                     set: { viewModel.searchText = $0 },
                 ),
             )
+    }
+
+    @ViewBuilder
+    private var itemsList: some View {
+        ScrollViewReader { proxy in
+            ZStack(alignment: .bottomTrailing) {
+                listContent
+                if shouldShowScrollToTopButton {
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.5)) {
+                            proxy.scrollTo("listContent", anchor: .top)
+                        }
+                    }) {
+                        Image(systemName: "arrow.up.circle.fill")
+                            .font(.title2)
+                            .foregroundColor(.white)
+                            .background(Circle().fill(Color.blue))
+                            .shadow(radius: 3)
+                    }
+                    .padding(.trailing, 20)
+                    .padding(.bottom, 20)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var listContent: some View {
+        List(viewModel.items) { item in
+            listRow(for: item)
+        }
+        .modifier(ListStyleModifier(style: listConfiguration.style))
+        .refreshable {
+            viewModel.refresh()
+        }
+    }
+
+    @ViewBuilder
+    private func listRow(for item: Item) -> some View {
+        if shouldShowNavigationLink(for: item) {
+            NavigationLink(value: item) {
+                rowContentWithRedaction(item)
+            }
+            .id(isFirstItem(item) ? "listContent" : nil)
+        } else {
+            rowContentWithRedaction(item)
+                .id(isFirstItem(item) ? "listContent" : nil)
+        }
+    }
+
+    private func rowContentWithRedaction(_ item: Item) -> some View {
+        rowContent(item)
+            .redacted(reason: viewModel.viewState.isLoading ? .placeholder : [])
+    }
+
+    private func shouldShowNavigationLink(for item: Item) -> Bool {
+        guard let detailContent else { return false }
+        return detailContent(item) != nil
+    }
+
+    private func isFirstItem(_ item: Item) -> Bool {
+        viewModel.items.firstIndex(of: item) == 0
+    }
+
+    private var shouldShowScrollToTopButton: Bool {
+        viewModel.items.count > 5
     }
 
     @ViewBuilder

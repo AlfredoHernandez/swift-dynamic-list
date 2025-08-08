@@ -131,18 +131,12 @@ enum SimpleError: Error, LocalizedError {
 
 #Preview("Combine Publisher - Success") {
     DynamicListBuilder<Fruit>()
+        .title("Fruits and Vegetables")
         .publisher {
-            Just([
-                Fruit(name: "Watermelon", symbol: "🍉", color: .red),
-                Fruit(name: "Pear", symbol: "🍐", color: .green),
-                Fruit(name: "Apple", symbol: "🍎", color: .red),
-                Fruit(name: "Orange", symbol: "🍊", color: .orange),
-                Fruit(name: "Banana", symbol: "🍌", color: .yellow),
-                Fruit(name: "Grape", symbol: "🍇", color: .purple),
-            ])
-            .delay(for: .seconds(2), scheduler: DispatchQueue.main)
-            .setFailureType(to: Error.self)
-            .eraseToAnyPublisher()
+            Just(fruits)
+                .delay(for: .seconds(2), scheduler: DispatchQueue.main)
+                .setFailureType(to: Error.self)
+                .eraseToAnyPublisher()
         }
         .rowContent { fruit in
             HStack {
