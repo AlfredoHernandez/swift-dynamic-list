@@ -113,10 +113,10 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
         }
     }
 
-    /// Creates the shared content view with common configuration
+    /// Processes skeleton configuration and returns the appropriate skeleton content
     @MainActor
-    private func createContentView(viewModel: DynamicListViewModel<Item>) -> DynamicListContent<Item> {
-        let finalSkeletonContent: (() -> AnyView)? = if let config = skeletonRowConfiguration {
+    private func processFinalSkeletonContent() -> (() -> AnyView)? {
+        if let config = skeletonRowConfiguration {
             {
                 AnyView(
                     List(0 ..< config.count, id: \.self) { _ in
@@ -129,13 +129,17 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
         } else {
             skeletonContent
         }
+    }
 
-        return DynamicListContent(
+    /// Creates the shared content view with common configuration
+    @MainActor
+    private func createContentView(viewModel: DynamicListViewModel<Item>) -> DynamicListContent<Item> {
+        DynamicListContent(
             viewModel: viewModel,
             rowContent: rowContent ?? { item in AnyView(DefaultRowView(item: item)) },
             detailContent: detailContent,
             errorContent: errorContent,
-            skeletonContent: finalSkeletonContent,
+            skeletonContent: processFinalSkeletonContent(),
             listConfiguration: listConfiguration,
             searchConfiguration: searchConfiguration,
         )
@@ -804,27 +808,12 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     public func build() -> some View {
         let viewModel = createViewModel()
 
-        // Process skeleton row configuration if present
-        let finalSkeletonContent: (() -> AnyView)? = if let config = skeletonRowConfiguration {
-            {
-                AnyView(
-                    List(0 ..< config.count, id: \.self) { _ in
-                        config.rowContentBuilder()
-                    }
-                    .modifier(ListStyleModifier(style: config.listStyle))
-                    .redacted(reason: .placeholder),
-                )
-            }
-        } else {
-            skeletonContent
-        }
-
         return DynamicListWrapper(
             viewModel: viewModel,
             rowContent: rowContent ?? { item in AnyView(DefaultRowView(item: item)) },
             detailContent: detailContent,
             errorContent: errorContent,
-            skeletonContent: finalSkeletonContent,
+            skeletonContent: processFinalSkeletonContent(),
             listConfiguration: listConfiguration,
             searchConfiguration: searchConfiguration,
         )
