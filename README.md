@@ -75,6 +75,19 @@ struct ContentView: View {
 }
 ```
 
+## 📚 Examples
+
+The package includes comprehensive examples organized by functionality:
+
+- **`BasicListsExample.swift`** - Simple lists with static data and custom actions
+- **`ReactiveListsExample.swift`** - Reactive lists with publishers and error handling  
+- **`SectionedListsExample.swift`** - Sectioned lists and search functionality
+- **`ListConfigurationExample.swift`** - List configuration and styling options
+- **`AdvancedFeaturesExample.swift`** - Advanced features like optional details and default views
+- **`SharedExampleData.swift`** - Common models and sample data used across examples
+
+Each example includes interactive SwiftUI previews with multiple scenarios per file.
+
 ### Sectioned List
 
 ```swift
@@ -221,8 +234,12 @@ Supports English, Spanish, French, and Portuguese with automatic localization.
 
 ## 📚 Documentation
 
-- **[Developer Guide](Sources/DynamicList/Documentation/DeveloperGuide.md)** - Complete guide
+- **[Developer Guide](Sources/DynamicList/Documentation/DeveloperGuide.md)** - Complete development guide
+- **[Examples Guide](Sources/DynamicList/Documentation/ExamplesGuide.md)** - Comprehensive examples overview
 - **[File Structure](Sources/DynamicList/Documentation/FileStructure.md)** - Architecture details
+- **[DynamicListBuilder](Sources/DynamicList/Documentation/DynamicListBuilder.md)** - Builder pattern documentation
+- **[Combine Integration](Sources/DynamicList/Documentation/CombineIntegration.md)** - Reactive data handling
+- **[Custom Error Views](Sources/DynamicList/Documentation/CustomErrorViews.md)** - Error handling guide
 
 ## 🤝 Contributing
 

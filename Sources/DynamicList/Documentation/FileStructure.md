@@ -210,24 +210,25 @@ Presentation/
 
 ## 📚 Examples and Previews
 
-SwiftUI examples and previews for development and testing.
+SwiftUI examples and previews for development and testing, organized by functionality.
 
 ```
 Examples/
-├── DynamicListPreviews.swift          # Previews for simple lists
-├── DefaultViewsPreviews.swift         # Previews for default views
-├── SearchEnabledExample.swift         # Search functionality example
-├── ListConfigurationExample.swift     # List configuration example
-├── ListStyleExample.swift             # List styling example
-├── OptionalDetailContentExample.swift # Optional detail content example
-└── CustomActionsExample.swift         # Custom actions example
+├── SharedExampleData.swift            # Shared models and sample data
+├── BasicListsExample.swift            # Basic lists with static data
+├── ReactiveListsExample.swift         # Reactive lists with publishers
+├── SectionedListsExample.swift        # Sectioned lists and search
+├── ListConfigurationExample.swift     # List configuration and styles
+└── AdvancedFeaturesExample.swift      # Advanced features and default views
 ```
 
 **Features:**
-- Comprehensive examples for all features
-- SwiftUI previews for development
-- Real-world usage patterns
-- Testing scenarios
+- **Modular organization**: Each example focuses on specific functionality
+- **Shared data**: Common models and sample data in `SharedExampleData.swift`
+- **Comprehensive coverage**: All DynamicList features demonstrated
+- **Real-world patterns**: Practical usage examples
+- **SwiftUI previews**: Interactive development and testing
+- **TabView navigation**: Multiple examples per preview for easy exploration
 
 ## 🧪 Tests
 
@@ -309,6 +310,7 @@ Domain/
 - **Private Implementation**: All internal logic is encapsulated
 - **Domain Layer**: Business logic separated from UI
 - **UI Components**: Specific components per list type
+- **Examples**: Organized by functionality with shared data models
 
 ### 2. **Modularity**
 - **Independent components**: Each list type has its own components
@@ -325,6 +327,7 @@ Domain/
 - **Prepared architecture**: Structure ready for future extensions
 - **Stable APIs**: Well-defined and stable public APIs
 - **Complete testing**: Tests organized by functionality
+- **Modular examples**: Easy to add new example categories
 
 ## 🚀 Benefits of the New Structure
 
@@ -333,7 +336,8 @@ Domain/
 - **Maintenance**: Isolated changes per component and layer
 - **Reusability**: Well-defined shared components
 - **Testing**: Tests organized by functionality
-- **Examples**: Comprehensive examples for all features
+- **Examples**: Comprehensive examples organized by functionality
+- **Learning**: Easy navigation through different features
 
 ### For the Project
 - **Scalability**: Easy to add new list types and features

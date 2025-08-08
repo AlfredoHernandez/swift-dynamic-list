@@ -96,6 +96,17 @@ dependencies: [
 ]
 ```
 
+### 📚 Examples Structure
+
+The package includes comprehensive examples organized by functionality:
+
+- **`BasicListsExample.swift`** - Simple lists with static data and custom actions
+- **`ReactiveListsExample.swift`** - Reactive lists with publishers and error handling
+- **`SectionedListsExample.swift`** - Sectioned lists and search functionality
+- **`ListConfigurationExample.swift`** - List configuration and styling options
+- **`AdvancedFeaturesExample.swift`** - Advanced features like optional details and default views
+- **`SharedExampleData.swift`** - Common models and sample data used across examples
+
 ### Basic Usage - Simple List
 
 ```swift
@@ -873,7 +884,7 @@ DynamicListBuilder.simulated(
 ## 📚 Additional Resources
 
 - **[File Structure](FileStructure.md)** - Architecture documentation
-- **[Code Examples](PreviewSupport/)** - Complete and functional examples
+- **[Code Examples](Examples/)** - Complete and functional examples organized by functionality
 - **[Tests](Tests/)** - Testing examples and best practices
 
 ---
