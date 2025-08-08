@@ -12,6 +12,7 @@ import SwiftUI
         DynamicListBuilder<Fruit>()
             .title("Fruits")
             .items(fruits)
+            .searchable()
             .rowContent { fruit in
                 HStack {
                     Text(fruit.symbol).font(.title2)
@@ -45,6 +46,7 @@ import SwiftUI
         DynamicListBuilder<User>()
             .title("Users with Actions")
             .items(users)
+            .searchable()
             .rowContent { user in
                 HStack {
                     Circle()
