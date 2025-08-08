@@ -10,14 +10,14 @@ import Testing
 struct FunctionalTests {
     // MARK: - String Utilities Tests
 
-    @Test("When string is empty returns empty string")
-    func whenStringIsEmpty_returnsEmptyString() throws {
+    @Test("normalizeString returns empty string on empty input")
+    func normalizeString_returnsEmptyStringOnEmptyInput() throws {
         let result = normalizeString("")
         #expect(result == "")
     }
 
-    @Test("When string contains only whitespace returns empty string")
-    func whenStringContainsOnlyWhitespace_returnsEmptyString() throws {
+    @Test("normalizeString returns empty string on whitespace only input")
+    func normalizeString_returnsEmptyStringOnWhitespaceOnlyInput() throws {
         let result1 = normalizeString("   ")
         let result2 = normalizeString("\t\n")
         let result3 = normalizeString("  \t  \n  ")
@@ -27,28 +27,28 @@ struct FunctionalTests {
         #expect(result3 == "")
     }
 
-    @Test("When string has mixed case and whitespace normalizes correctly")
-    func whenStringHasMixedCaseAndWhitespace_normalizesCorrectly() throws {
+    @Test("normalizeString normalizes mixed case and whitespace")
+    func normalizeString_normalizesMixedCaseAndWhitespace() throws {
         let result = normalizeString("  Hello World  ")
         #expect(result == "hello world")
     }
 
-    @Test("When string has special characters normalizes correctly")
-    func whenStringHasSpecialCharacters_normalizesCorrectly() throws {
+    @Test("normalizeString normalizes special characters")
+    func normalizeString_normalizesSpecialCharacters() throws {
         let result = normalizeString("  iPhone 15 Pro (2024)  ")
         #expect(result == "iphone 15 pro (2024)")
     }
 
     // MARK: - Tokenization Tests
 
-    @Test("When string is empty returns empty array")
-    func whenStringIsEmpty_returnsEmptyArray() throws {
+    @Test("tokenizeString returns empty array on empty input")
+    func tokenizeString_returnsEmptyArrayOnEmptyInput() throws {
         let result = tokenizeString("")
         #expect(result == [])
     }
 
-    @Test("When string contains only whitespace returns empty array")
-    func whenStringContainsOnlyWhitespace_returnsEmptyArray() throws {
+    @Test("tokenizeString returns empty array on whitespace only input")
+    func tokenizeString_returnsEmptyArrayOnWhitespaceOnlyInput() throws {
         let result1 = tokenizeString("   ")
         let result2 = tokenizeString("\t\n")
         let result3 = tokenizeString("  \t  \n  ")
@@ -58,32 +58,32 @@ struct FunctionalTests {
         #expect(result3 == [])
     }
 
-    @Test("When string has single word returns single token")
-    func whenStringHasSingleWord_returnsSingleToken() throws {
+    @Test("tokenizeString returns single token on single word")
+    func tokenizeString_returnsSingleTokenOnSingleWord() throws {
         let result = tokenizeString("Hello")
         #expect(result == ["hello"])
     }
 
-    @Test("When string has multiple words returns multiple tokens")
-    func whenStringHasMultipleWords_returnsMultipleTokens() throws {
+    @Test("tokenizeString returns multiple tokens on multiple words")
+    func tokenizeString_returnsMultipleTokensOnMultipleWords() throws {
         let result = tokenizeString("Hello World")
         #expect(result == ["hello", "world"])
     }
 
-    @Test("When string has multiple spaces between words handles correctly")
-    func whenStringHasMultipleSpacesBetweenWords_handlesCorrectly() throws {
+    @Test("tokenizeString handles multiple spaces between words correctly")
+    func tokenizeString_handlesMultipleSpacesBetweenWordsCorrectly() throws {
         let result = tokenizeString("Hello   World")
         #expect(result == ["hello", "world"])
     }
 
-    @Test("When string has mixed case normalizes tokens")
-    func whenStringHasMixedCase_normalizesTokens() throws {
+    @Test("tokenizeString normalizes tokens on mixed case")
+    func tokenizeString_normalizesTokensOnMixedCase() throws {
         let result = tokenizeString("Hello WORLD")
         #expect(result == ["hello", "world"])
     }
 
-    @Test("When string has leading and trailing whitespace trims correctly")
-    func whenStringHasLeadingAndTrailingWhitespace_trimsCorrectly() throws {
+    @Test("tokenizeString trims leading and trailing whitespace correctly")
+    func tokenizeString_trimsLeadingAndTrailingWhitespaceCorrectly() throws {
         let result = tokenizeString("  Hello World  ")
         #expect(result == ["hello", "world"])
     }

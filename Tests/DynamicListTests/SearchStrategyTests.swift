@@ -25,8 +25,8 @@ struct TestSearchableItem: Searchable {
 struct SearchStrategyTests {
     // MARK: - PartialMatchStrategy Tests
 
-    @Test("When query is empty returns true for all items")
-    func whenQueryIsEmpty_returnsTrueForAllItems() throws {
+    @Test("PartialMatchStrategy returns true on empty query")
+    func partialMatchStrategy_returnsTrueOnEmptyQuery() throws {
         let strategy = PartialMatchStrategy()
         let item = TestSearchableItem(
             name: "Test Item",
@@ -39,8 +39,8 @@ struct SearchStrategyTests {
         #expect(result == true)
     }
 
-    @Test("When query matches name returns true")
-    func whenQueryMatchesName_returnsTrue() throws {
+    @Test("PartialMatchStrategy returns true when query matches name")
+    func partialMatchStrategy_returnsTrueWhenQueryMatchesName() throws {
         let strategy = PartialMatchStrategy()
         let item = TestSearchableItem(
             name: "iPhone 15 Pro",
@@ -53,8 +53,8 @@ struct SearchStrategyTests {
         #expect(result == true)
     }
 
-    @Test("When query matches description returns true")
-    func whenQueryMatchesDescription_returnsTrue() throws {
+    @Test("PartialMatchStrategy returns true when query matches description")
+    func partialMatchStrategy_returnsTrueWhenQueryMatchesDescription() throws {
         let strategy = PartialMatchStrategy()
         let item = TestSearchableItem(
             name: "MacBook",
@@ -67,8 +67,8 @@ struct SearchStrategyTests {
         #expect(result == true)
     }
 
-    @Test("When query matches tag returns true")
-    func whenQueryMatchesTag_returnsTrue() throws {
+    @Test("PartialMatchStrategy returns true when query matches tag")
+    func partialMatchStrategy_returnsTrueWhenQueryMatchesTag() throws {
         let strategy = PartialMatchStrategy()
         let item = TestSearchableItem(
             name: "AirPods",
@@ -81,8 +81,8 @@ struct SearchStrategyTests {
         #expect(result == true)
     }
 
-    @Test("When query is case insensitive matches correctly")
-    func whenQueryIsCaseInsensitive_matchesCorrectly() throws {
+    @Test("PartialMatchStrategy matches correctly with case insensitive query")
+    func partialMatchStrategy_matchesCorrectlyWithCaseInsensitiveQuery() throws {
         let strategy = PartialMatchStrategy()
         let item = TestSearchableItem(
             name: "iPhone 15 Pro",
@@ -99,8 +99,8 @@ struct SearchStrategyTests {
         #expect(result3 == true)
     }
 
-    @Test("When query does not match any key returns false")
-    func whenQueryDoesNotMatchAnyKey_returnsFalse() throws {
+    @Test("PartialMatchStrategy returns false when query matches no key")
+    func partialMatchStrategy_returnsFalseWhenQueryMatchesNoKey() throws {
         let strategy = PartialMatchStrategy()
         let item = TestSearchableItem(
             name: "iPhone 15 Pro",
@@ -113,8 +113,8 @@ struct SearchStrategyTests {
         #expect(result == false)
     }
 
-    @Test("When query is partial match returns true")
-    func whenQueryIsPartialMatch_returnsTrue() throws {
+    @Test("PartialMatchStrategy returns true on partial match")
+    func partialMatchStrategy_returnsTrueOnPartialMatch() throws {
         let strategy = PartialMatchStrategy()
         let item = TestSearchableItem(
             name: "MacBook Pro M3",
@@ -129,8 +129,8 @@ struct SearchStrategyTests {
 
     // MARK: - ExactMatchStrategy Tests
 
-    @Test("When query exactly matches name returns true")
-    func whenQueryExactlyMatchesName_returnsTrue() throws {
+    @Test("ExactMatchStrategy returns true when query exactly matches name")
+    func exactMatchStrategy_returnsTrueWhenQueryExactlyMatchesName() throws {
         let strategy = ExactMatchStrategy()
         let item = TestSearchableItem(
             name: "iPhone 15 Pro",
@@ -143,8 +143,8 @@ struct SearchStrategyTests {
         #expect(result == true)
     }
 
-    @Test("When query exactly matches description returns true")
-    func whenQueryExactlyMatchesDescription_returnsTrue() throws {
+    @Test("ExactMatchStrategy returns true when query exactly matches description")
+    func exactMatchStrategy_returnsTrueWhenQueryExactlyMatchesDescription() throws {
         let strategy = ExactMatchStrategy()
         let item = TestSearchableItem(
             name: "MacBook",
@@ -157,8 +157,8 @@ struct SearchStrategyTests {
         #expect(result == true)
     }
 
-    @Test("When query exactly matches tag returns true")
-    func whenQueryExactlyMatchesTag_returnsTrue() throws {
+    @Test("ExactMatchStrategy returns true when query exactly matches tag")
+    func exactMatchStrategy_returnsTrueWhenQueryExactlyMatchesTag() throws {
         let strategy = ExactMatchStrategy()
         let item = TestSearchableItem(
             name: "AirPods",
@@ -171,8 +171,8 @@ struct SearchStrategyTests {
         #expect(result == true)
     }
 
-    @Test("When query is case insensitive exact match returns true")
-    func whenQueryIsCaseInsensitiveExactMatch_returnsTrue() throws {
+    @Test("ExactMatchStrategy returns true with case insensitive exact match")
+    func exactMatchStrategy_returnsTrueWithCaseInsensitiveExactMatch() throws {
         let strategy = ExactMatchStrategy()
         let item = TestSearchableItem(
             name: "iPhone 15 Pro",
@@ -187,8 +187,8 @@ struct SearchStrategyTests {
         #expect(result2 == true)
     }
 
-    @Test("When query is partial match returns false")
-    func whenQueryIsPartialMatch_returnsFalse() throws {
+    @Test("ExactMatchStrategy returns false on partial match")
+    func exactMatchStrategy_returnsFalseOnPartialMatch() throws {
         let strategy = ExactMatchStrategy()
         let item = TestSearchableItem(
             name: "iPhone 15 Pro",
@@ -201,8 +201,8 @@ struct SearchStrategyTests {
         #expect(result == false)
     }
 
-    @Test("When query does not match any key exactly returns false")
-    func whenQueryDoesNotMatchAnyKeyExactly_returnsFalse() throws {
+    @Test("ExactMatchStrategy returns false when query matches no key exactly")
+    func exactMatchStrategy_returnsFalseWhenQueryMatchesNoKeyExactly() throws {
         let strategy = ExactMatchStrategy()
         let item = TestSearchableItem(
             name: "iPhone 15 Pro",
@@ -215,8 +215,8 @@ struct SearchStrategyTests {
         #expect(result == false)
     }
 
-    @Test("When query is empty returns true")
-    func whenQueryIsEmpty_returnsTrue() throws {
+    @Test("ExactMatchStrategy returns true on empty query")
+    func exactMatchStrategy_returnsTrueOnEmptyQuery() throws {
         let strategy = ExactMatchStrategy()
         let item = TestSearchableItem(
             name: "iPhone 15 Pro",
@@ -229,8 +229,8 @@ struct SearchStrategyTests {
         #expect(result == true)
     }
 
-    @Test("When query contains only whitespace returns true")
-    func whenQueryContainsOnlyWhitespace_returnsTrue() throws {
+    @Test("ExactMatchStrategy returns true on whitespace only query")
+    func exactMatchStrategy_returnsTrueOnWhitespaceOnlyQuery() throws {
         let strategy = ExactMatchStrategy()
         let item = TestSearchableItem(
             name: "iPhone 15 Pro",
@@ -247,8 +247,8 @@ struct SearchStrategyTests {
         #expect(result3 == true)
     }
 
-    @Test("When search keys contain whitespace handles correctly")
-    func whenSearchKeysContainWhitespace_handlesCorrectly() throws {
+    @Test("ExactMatchStrategy handles whitespace in search keys correctly")
+    func exactMatchStrategy_handlesWhitespaceInSearchKeysCorrectly() throws {
         let strategy = ExactMatchStrategy()
         let item = TestSearchableItem(
             name: "  iPhone 15 Pro  ",
@@ -267,8 +267,8 @@ struct SearchStrategyTests {
 
     // MARK: - TokenizedMatchStrategy Tests
 
-    @Test("When query is empty returns true")
-    func whenQueryIsEmpty_returnsTrueForTokenized() throws {
+    @Test("TokenizedMatchStrategy returns true on empty query")
+    func tokenizedMatchStrategy_returnsTrueOnEmptyQuery() throws {
         let strategy = TokenizedMatchStrategy()
         let item = TestSearchableItem(
             name: "iPhone 15 Pro Max",
@@ -281,8 +281,8 @@ struct SearchStrategyTests {
         #expect(result == true)
     }
 
-    @Test("When all query tokens match returns true")
-    func whenAllQueryTokensMatch_returnsTrue() throws {
+    @Test("TokenizedMatchStrategy returns true when all query tokens match")
+    func tokenizedMatchStrategy_returnsTrueWhenAllQueryTokensMatch() throws {
         let strategy = TokenizedMatchStrategy()
         let item = TestSearchableItem(
             name: "iPhone 15 Pro Max",
@@ -295,8 +295,8 @@ struct SearchStrategyTests {
         #expect(result == true)
     }
 
-    @Test("When some query tokens match returns false")
-    func whenSomeQueryTokensMatch_returnsFalse() throws {
+    @Test("TokenizedMatchStrategy returns false when some query tokens match")
+    func tokenizedMatchStrategy_returnsFalseWhenSomeQueryTokensMatch() throws {
         let strategy = TokenizedMatchStrategy()
         let item = TestSearchableItem(
             name: "iPhone 15 Pro Max",
@@ -309,8 +309,8 @@ struct SearchStrategyTests {
         #expect(result == false)
     }
 
-    @Test("When query tokens match across different keys returns true")
-    func whenQueryTokensMatchAcrossDifferentKeys_returnsTrue() throws {
+    @Test("TokenizedMatchStrategy returns true when query tokens match across different keys")
+    func tokenizedMatchStrategy_returnsTrueWhenQueryTokensMatchAcrossDifferentKeys() throws {
         let strategy = TokenizedMatchStrategy()
         let item = TestSearchableItem(
             name: "iPhone 15",
@@ -323,8 +323,8 @@ struct SearchStrategyTests {
         #expect(result == true)
     }
 
-    @Test("When query tokens are case insensitive matches correctly")
-    func whenQueryTokensAreCaseInsensitive_matchesCorrectly() throws {
+    @Test("TokenizedMatchStrategy matches correctly with case insensitive query tokens")
+    func tokenizedMatchStrategy_matchesCorrectlyWithCaseInsensitiveQueryTokens() throws {
         let strategy = TokenizedMatchStrategy()
         let item = TestSearchableItem(
             name: "iPhone 15 Pro Max",
@@ -341,8 +341,8 @@ struct SearchStrategyTests {
         #expect(result3 == true)
     }
 
-    @Test("When query has single token matches correctly")
-    func whenQueryHasSingleToken_matchesCorrectly() throws {
+    @Test("TokenizedMatchStrategy matches correctly with single token query")
+    func tokenizedMatchStrategy_matchesCorrectlyWithSingleTokenQuery() throws {
         let strategy = TokenizedMatchStrategy()
         let item = TestSearchableItem(
             name: "iPhone 15 Pro Max",
@@ -355,8 +355,8 @@ struct SearchStrategyTests {
         #expect(result == true)
     }
 
-    @Test("When query has multiple spaces handles correctly")
-    func whenQueryHasMultipleSpaces_handlesCorrectly() throws {
+    @Test("TokenizedMatchStrategy handles multiple spaces in query correctly")
+    func tokenizedMatchStrategy_handlesMultipleSpacesInQueryCorrectly() throws {
         let strategy = TokenizedMatchStrategy()
         let item = TestSearchableItem(
             name: "iPhone 15 Pro Max",
@@ -369,8 +369,8 @@ struct SearchStrategyTests {
         #expect(result == true)
     }
 
-    @Test("When item has empty search keys returns false for non-empty query")
-    func whenItemHasEmptySearchKeys_returnsFalseForNonEmptyQuery() throws {
+    @Test("TokenizedMatchStrategy returns false for non-empty query when item has empty search keys")
+    func tokenizedMatchStrategy_returnsFalseForNonEmptyQueryWhenItemHasEmptySearchKeys() throws {
         let strategy = TokenizedMatchStrategy()
         let item = TestSearchableItem(
             name: "",
@@ -385,8 +385,8 @@ struct SearchStrategyTests {
 
     // MARK: - Edge Cases Tests
 
-    @Test("When searchable item has empty search keys returns false")
-    func whenSearchableItemHasEmptySearchKeys_returnsFalse() throws {
+    @Test("PartialMatchStrategy returns false when searchable item has empty search keys")
+    func partialMatchStrategy_returnsFalseWhenSearchableItemHasEmptySearchKeys() throws {
         let strategy = PartialMatchStrategy()
         let item = TestSearchableItem(
             name: "",
@@ -399,8 +399,8 @@ struct SearchStrategyTests {
         #expect(result == false)
     }
 
-    @Test("When searchable item has whitespace only keys handles correctly")
-    func whenSearchableItemHasWhitespaceOnlyKeys_handlesCorrectly() throws {
+    @Test("PartialMatchStrategy handles whitespace only keys correctly")
+    func partialMatchStrategy_handlesWhitespaceOnlyKeysCorrectly() throws {
         let strategy = PartialMatchStrategy()
         let item = TestSearchableItem(
             name: "   ",
@@ -413,8 +413,8 @@ struct SearchStrategyTests {
         #expect(result == false)
     }
 
-    @Test("When query contains special characters handles correctly")
-    func whenQueryContainsSpecialCharacters_handlesCorrectly() throws {
+    @Test("PartialMatchStrategy handles special characters in query correctly")
+    func partialMatchStrategy_handlesSpecialCharactersInQueryCorrectly() throws {
         let strategy = PartialMatchStrategy()
         let item = TestSearchableItem(
             name: "iPhone 15 Pro (2024)",
