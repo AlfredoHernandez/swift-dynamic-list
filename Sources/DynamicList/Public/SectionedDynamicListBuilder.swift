@@ -73,6 +73,43 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
     /// List configuration for appearance and behavior
     private var listConfiguration: ListConfiguration = .default
 
+    // MARK: - Private Helper Methods
+
+    /// Updates the list configuration using a transformation closure
+    private func updateListConfiguration(_ transform: (ListConfiguration) -> ListConfiguration) -> Self {
+        listConfiguration = transform(listConfiguration)
+        return self
+    }
+
+    /// Updates the search configuration using a transformation closure
+    private func updateSearchConfiguration(_ transform: (SearchConfiguration<Item>?) -> SearchConfiguration<Item>?) -> Self {
+        searchConfiguration = transform(searchConfiguration)
+        return self
+    }
+
+    /// Creates a view model based on the current configuration
+    private func createViewModel() -> SectionedDynamicListViewModel<Item> {
+        if let publisher {
+            SectionedDynamicListViewModel(dataProvider: publisher, initialSections: sections)
+        } else {
+            SectionedDynamicListViewModel(sections: sections)
+        }
+    }
+
+    /// Creates the shared content view with common configuration
+    @MainActor
+    private func createContentView(viewModel: SectionedDynamicListViewModel<Item>) -> SectionedDynamicListContent<Item> {
+        SectionedDynamicListContent(
+            viewModel: viewModel,
+            rowContent: rowContent ?? { item in AnyView(DefaultRowView(item: item)) },
+            detailContent: detailContent,
+            errorContent: errorContent,
+            skeletonContent: skeletonContent,
+            listConfiguration: listConfiguration,
+            searchConfiguration: searchConfiguration,
+        )
+    }
+
     // MARK: - Initialization
 
     /// Creates a new SectionedDynamicListBuilder instance.
@@ -257,12 +294,13 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
     /// - Returns: The builder instance for method chaining.
     @discardableResult
     public func title(_ title: String) -> Self {
-        listConfiguration = ListConfiguration(
-            style: listConfiguration.style,
-            navigationBarHidden: listConfiguration.navigationBarHidden,
-            title: title,
-        )
-        return self
+        updateListConfiguration { config in
+            ListConfiguration(
+                style: config.style,
+                navigationBarHidden: config.navigationBarHidden,
+                title: title,
+            )
+        }
     }
 
     /// Hides the navigation bar.
@@ -273,12 +311,13 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
     /// - Returns: The builder instance for method chaining.
     @discardableResult
     public func hideNavigationBar() -> Self {
-        listConfiguration = ListConfiguration(
-            style: listConfiguration.style,
-            navigationBarHidden: true,
-            title: listConfiguration.title,
-        )
-        return self
+        updateListConfiguration { config in
+            ListConfiguration(
+                style: config.style,
+                navigationBarHidden: true,
+                title: config.title,
+            )
+        }
     }
 
     /// Sets the list style for the list.
@@ -305,12 +344,13 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
     /// - `.insetGrouped` - Inset grouped style (iOS only)
     @discardableResult
     public func listStyle(_ style: ListStyleType) -> Self {
-        listConfiguration = ListConfiguration(
-            style: style,
-            navigationBarHidden: listConfiguration.navigationBarHidden,
-            title: listConfiguration.title,
-        )
-        return self
+        updateListConfiguration { config in
+            ListConfiguration(
+                style: style,
+                navigationBarHidden: config.navigationBarHidden,
+                title: config.title,
+            )
+        }
     }
 
     /// Sets the complete list configuration.
@@ -452,17 +492,18 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
     /// - Returns: The builder instance for method chaining.
     @discardableResult
     public func searchPlacement(_ placement: SearchFieldPlacement) -> Self {
-        if let existingConfig = searchConfiguration {
-            searchConfiguration = SearchConfiguration.enabled(
-                prompt: existingConfig.prompt,
-                predicate: existingConfig.predicate,
-                strategy: existingConfig.strategy,
-                placement: placement,
-            )
-        } else {
-            searchConfiguration = SearchConfiguration.enabled(placement: placement)
+        updateSearchConfiguration { existingConfig in
+            if let config = existingConfig {
+                SearchConfiguration.enabled(
+                    prompt: config.prompt,
+                    predicate: config.predicate,
+                    strategy: config.strategy,
+                    placement: placement,
+                )
+            } else {
+                SearchConfiguration.enabled(placement: placement)
+            }
         }
-        return self
     }
 
     /// Sets the search configuration directly.
@@ -502,17 +543,11 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
     /// - Returns: A SwiftUI view containing the configured sectioned dynamic list.
     @MainActor
     public func build() -> some View {
-        let viewModel: SectionedDynamicListViewModel<Item> = if let publisher {
-            SectionedDynamicListViewModel(dataProvider: publisher, initialSections: sections)
-        } else {
-            SectionedDynamicListViewModel(sections: sections)
-        }
+        let viewModel = createViewModel()
 
         return SectionedDynamicListWrapper(
             viewModel: viewModel,
-            rowContent: rowContent ?? { item in
-                AnyView(DefaultRowView(item: item))
-            },
+            rowContent: rowContent ?? { item in AnyView(DefaultRowView(item: item)) },
             detailContent: detailContent,
             errorContent: errorContent,
             skeletonContent: skeletonContent,
@@ -530,22 +565,7 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
     /// - Returns: A SwiftUI view containing the configured sectioned dynamic list without navigation wrapper.
     @MainActor
     public func buildWithoutNavigation() -> some View {
-        let viewModel: SectionedDynamicListViewModel<Item> = if let publisher {
-            SectionedDynamicListViewModel(dataProvider: publisher, initialSections: sections)
-        } else {
-            SectionedDynamicListViewModel(sections: sections)
-        }
-
-        return SectionedDynamicListContent(
-            viewModel: viewModel,
-            rowContent: rowContent ?? { item in
-                AnyView(DefaultRowView(item: item))
-            },
-            detailContent: detailContent,
-            errorContent: errorContent,
-            skeletonContent: skeletonContent,
-            listConfiguration: listConfiguration,
-            searchConfiguration: searchConfiguration,
-        )
+        let viewModel = createViewModel()
+        return createContentView(viewModel: viewModel)
     }
 }
