@@ -17,6 +17,7 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
     private let skeletonContent: (() -> AnyView)?
     private let listConfiguration: ListConfiguration
     private let searchConfiguration: SearchConfiguration<Item>?
+    private let scrollIdentifier = "FIRST_ITEM_IN_LIST"
 
     init(
         viewModel: DynamicListViewModel<Item>,
@@ -69,7 +70,7 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
 
     @ViewBuilder
     private var itemsList: some View {
-        ScrollToTopButton(itemCount: viewModel.items.count, scrollTarget: "listContent") {
+        ScrollToTopButton(itemCount: viewModel.items.count, scrollTarget: scrollIdentifier) {
             listContent
         }
     }
@@ -91,10 +92,10 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
             NavigationLink(value: item) {
                 rowContentWithRedaction(item)
             }
-            .id(isFirstItem(item) ? "listContent" : nil)
+            .id(isFirstItem(item) ? scrollIdentifier : nil)
         } else {
             rowContentWithRedaction(item)
-                .id(isFirstItem(item) ? "listContent" : nil)
+                .id(isFirstItem(item) ? scrollIdentifier : nil)
         }
     }
 
