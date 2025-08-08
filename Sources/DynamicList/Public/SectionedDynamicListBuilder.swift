@@ -629,12 +629,38 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
     public func build() -> some View {
         let viewModel = createViewModel()
 
+        // Process skeleton row configuration if present
+        let finalSkeletonContent: (() -> AnyView)? = if let config = skeletonRowConfiguration {
+            {
+                AnyView(
+                    List {
+                        ForEach(0 ..< config.sections, id: \.self) { _ in
+                            Section {
+                                ForEach(0 ..< config.itemsPerSection, id: \.self) { _ in
+                                    config.rowContentBuilder()
+                                }
+                            } header: {
+                                RoundedRectangle(cornerRadius: 2)
+                                    .fill(Color.gray.opacity(0.4))
+                                    .frame(height: 20)
+                                    .frame(maxWidth: .infinity * 0.5)
+                            }
+                        }
+                    }
+                    .modifier(ListStyleModifier(style: config.listStyle))
+                    .redacted(reason: .placeholder),
+                )
+            }
+        } else {
+            skeletonContent
+        }
+
         return SectionedDynamicListWrapper(
             viewModel: viewModel,
             rowContent: rowContent ?? { item in AnyView(DefaultRowView(item: item)) },
             detailContent: detailContent,
             errorContent: errorContent,
-            skeletonContent: skeletonContent,
+            skeletonContent: finalSkeletonContent,
             listConfiguration: listConfiguration,
             searchConfiguration: searchConfiguration,
         )

@@ -33,22 +33,11 @@ import SwiftUI
             }
             .navigationTitle("Details")
         }
-        .skeletonRow(count: 8) {
-            HStack {
-                Text("🍎").font(.title2)
-                VStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(Color.gray.opacity(0.3))
-                        .frame(height: 16)
-                        .frame(maxWidth: .infinity * 0.8)
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(Color.gray.opacity(0.2))
-                        .frame(height: 12)
-                        .frame(maxWidth: .infinity * 0.6)
-                }
-                Spacer()
+        .skeletonRow(count: 100) {
+            VStack(alignment: .leading) {
+                Text("Here is the symbol")
+                Text("This is a simple skeleton row...")
             }
-            .padding(.vertical, 4)
         }
         .build()
 }

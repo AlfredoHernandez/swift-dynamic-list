@@ -2,6 +2,7 @@
 //  Copyright © 2025 Jesús Alfredo Hernández Alarcón. All rights reserved.
 //
 
+import Combine
 import SwiftUI
 
 // MARK: - Skeleton Row Examples
@@ -57,11 +58,13 @@ import SwiftUI
 #Preview("Sectioned Skeleton Row") {
     SectionedDynamicListBuilder<Product>()
         .title("Custom Sectioned Skeleton")
-        .sections([
-            ListSection(title: "Electronics", items: Array(products.prefix(3))),
-            ListSection(title: "Audio", items: Array(products.dropFirst(8).prefix(3))),
-        ])
-        .skeletonRow(sections: 2, itemsPerSection: 4) {
+        .publisher {
+            Just([Array(products.dropFirst(3)), Array(products.dropLast(4)), products])
+                .setFailureType(to: (any Error).self)
+                .delay(for: 3, scheduler: DispatchQueue.main)
+                .eraseToAnyPublisher()
+        }
+        .skeletonRow(sections: 2, itemsPerSection: 3) {
             HStack {
                 RoundedRectangle(cornerRadius: 8)
                     .fill(Color.green.opacity(0.3))

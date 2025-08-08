@@ -804,12 +804,27 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     public func build() -> some View {
         let viewModel = createViewModel()
 
+        // Process skeleton row configuration if present
+        let finalSkeletonContent: (() -> AnyView)? = if let config = skeletonRowConfiguration {
+            {
+                AnyView(
+                    List(0 ..< config.count, id: \.self) { _ in
+                        config.rowContentBuilder()
+                    }
+                    .modifier(ListStyleModifier(style: config.listStyle))
+                    .redacted(reason: .placeholder),
+                )
+            }
+        } else {
+            skeletonContent
+        }
+
         return DynamicListWrapper(
             viewModel: viewModel,
             rowContent: rowContent ?? { item in AnyView(DefaultRowView(item: item)) },
             detailContent: detailContent,
             errorContent: errorContent,
-            skeletonContent: skeletonContent,
+            skeletonContent: finalSkeletonContent,
             listConfiguration: listConfiguration,
             searchConfiguration: searchConfiguration,
         )

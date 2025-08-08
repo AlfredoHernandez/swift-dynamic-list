@@ -139,3 +139,4 @@ SectionedDynamicListBuilder<Product>()
 - The `skeletonRow` method automatically applies `.redacted(reason: .placeholder)` and proper list styling
 - If both `skeletonContent` and `skeletonRow` are used, `skeletonRow` takes precedence
 - The skeleton view inherits the list style configuration from your builder
+- Works correctly with both `build()` and `buildWithoutNavigation()` methods
