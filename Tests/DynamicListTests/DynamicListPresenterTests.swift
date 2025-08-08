@@ -10,7 +10,7 @@ import Testing
 struct DynamicListPresenterTests {
     // MARK: - Loading States Tests
 
-    @Test("loadingContent returns localized string")
+    @Test("LoadingContent returns localized string")
     func loadingContent_returnsLocalizedString() {
         let expected = localized("loading_content")
         #expect(DynamicListPresenter.loadingContent == expected)
@@ -18,7 +18,7 @@ struct DynamicListPresenterTests {
 
     // MARK: - Error Messages Tests
 
-    @Test("networkError returns localized string")
+    @Test("NetworkError returns localized string")
     func networkError_returnsLocalizedString() {
         let expected = localized("network_error")
         #expect(DynamicListPresenter.networkError == expected)
@@ -26,7 +26,7 @@ struct DynamicListPresenterTests {
 
     // MARK: - Error Actions Tests
 
-    @Test("retry returns localized string")
+    @Test("Retry returns localized string")
     func retry_returnsLocalizedString() {
         let expected = localized("retry")
         #expect(DynamicListPresenter.retry == expected)
@@ -34,25 +34,25 @@ struct DynamicListPresenterTests {
 
     // MARK: - Navigation Tests
 
-    @Test("profile returns localized string")
+    @Test("Profile returns localized string")
     func profile_returnsLocalizedString() {
         let expected = localized("profile")
         #expect(DynamicListPresenter.profile == expected)
     }
 
-    @Test("detail returns localized string")
+    @Test("Detail returns localized string")
     func detail_returnsLocalizedString() {
         let expected = localized("detail")
         #expect(DynamicListPresenter.detail == expected)
     }
 
-    @Test("userDetail returns localized string")
+    @Test("UserDetail returns localized string")
     func userDetail_returnsLocalizedString() {
         let expected = localized("user_detail")
         #expect(DynamicListPresenter.userDetail == expected)
     }
 
-    @Test("productDetail returns localized string")
+    @Test("ProductDetail returns localized string")
     func productDetail_returnsLocalizedString() {
         let expected = localized("product_detail")
         #expect(DynamicListPresenter.productDetail == expected)
@@ -60,7 +60,7 @@ struct DynamicListPresenterTests {
 
     // MARK: - Content Labels Tests
 
-    @Test("itemID returns localized string")
+    @Test("ItemID returns localized string")
     func itemID_returnsLocalizedString() {
         let expected = localized("item_id")
         #expect(DynamicListPresenter.itemID == expected)
@@ -68,13 +68,13 @@ struct DynamicListPresenterTests {
 
     // MARK: - Default Views Tests
 
-    @Test("itemDetail returns localized string")
+    @Test("ItemDetail returns localized string")
     func itemDetail_returnsLocalizedString() {
         let expected = localized("item_detail")
         #expect(DynamicListPresenter.itemDetail == expected)
     }
 
-    @Test("errorLoadingData returns localized string")
+    @Test("ErrorLoadingData returns localized string")
     func errorLoadingData_returnsLocalizedString() {
         let expected = localized("error_loading_data")
         #expect(DynamicListPresenter.errorLoadingData == expected)
