@@ -67,6 +67,9 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
     /// Custom skeleton content builder
     private var skeletonContent: (() -> AnyView)?
 
+    /// Skeleton row configuration for simplified skeleton creation
+    private var skeletonRowConfiguration: SectionedSkeletonRowConfiguration?
+
     /// Search configuration for the list
     private var searchConfiguration: SearchConfiguration<Item>?
 
@@ -99,12 +102,37 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
     /// Creates the shared content view with common configuration
     @MainActor
     private func createContentView(viewModel: SectionedDynamicListViewModel<Item>) -> SectionedDynamicListContent<Item> {
-        SectionedDynamicListContent(
+        let finalSkeletonContent: (() -> AnyView)? = if let config = skeletonRowConfiguration {
+            {
+                AnyView(
+                    List {
+                        ForEach(0 ..< config.sections, id: \.self) { _ in
+                            Section {
+                                ForEach(0 ..< config.itemsPerSection, id: \.self) { _ in
+                                    config.rowContentBuilder()
+                                }
+                            } header: {
+                                RoundedRectangle(cornerRadius: 2)
+                                    .fill(Color.gray.opacity(0.4))
+                                    .frame(height: 20)
+                                    .frame(maxWidth: .infinity * 0.5)
+                            }
+                        }
+                    }
+                    .modifier(ListStyleModifier(style: config.listStyle))
+                    .redacted(reason: .placeholder),
+                )
+            }
+        } else {
+            skeletonContent
+        }
+
+        return SectionedDynamicListContent(
             viewModel: viewModel,
             rowContent: rowContent ?? { item in AnyView(DefaultRowView(item: item)) },
             detailContent: detailContent,
             errorContent: errorContent,
-            skeletonContent: skeletonContent,
+            skeletonContent: finalSkeletonContent,
             listConfiguration: listConfiguration,
             searchConfiguration: searchConfiguration,
         )
@@ -285,6 +313,62 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
         skeletonContent = {
             AnyView(content())
         }
+        return self
+    }
+
+    /// Sets custom skeleton content using a single row view for sectioned lists.
+    ///
+    /// Use this method to provide a single row view that will be repeated to create
+    /// a sectioned skeleton loading state. This is more convenient than creating the entire
+    /// skeleton list manually.
+    ///
+    /// - Parameters:
+    ///   - sections: The number of sections to display. Defaults to 3.
+    ///   - itemsPerSection: The number of items per section. Defaults to 4.
+    ///   - content: A view builder that creates a single skeleton row view.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// SectionedDynamicListBuilder<User>()
+    ///     .publisher(apiService.fetchUsersByCategory())
+    ///     .skeletonRow(sections: 2, itemsPerSection: 5) {
+    ///         HStack {
+    ///             Circle()
+    ///                 .fill(Color.gray.opacity(0.3))
+    ///                 .frame(width: 50, height: 50)
+    ///
+    ///             VStack(alignment: .leading) {
+    ///                 RoundedRectangle(cornerRadius: 4)
+    ///                     .fill(Color.gray.opacity(0.3))
+    ///                     .frame(height: 20)
+    ///                     .frame(maxWidth: .infinity * 0.8)
+    ///
+    ///                 RoundedRectangle(cornerRadius: 4)
+    ///                     .fill(Color.gray.opacity(0.2))
+    ///                     .frame(height: 16)
+    ///                     .frame(maxWidth: .infinity * 0.6)
+    ///             }
+    ///
+    ///             Spacer()
+    ///         }
+    ///         .padding(.vertical, 8)
+    ///     }
+    ///     .build()
+    /// ```
+    @discardableResult
+    public func skeletonRow(
+        sections: Int = 3,
+        itemsPerSection: Int = 4,
+        @ViewBuilder _ content: @escaping () -> some View,
+    ) -> Self {
+        skeletonRowConfiguration = SectionedSkeletonRowConfiguration(
+            sections: sections,
+            itemsPerSection: itemsPerSection,
+            listStyle: listConfiguration.style,
+            rowContent: content,
+        )
+        skeletonContent = nil // Clear any existing skeleton content
         return self
     }
 

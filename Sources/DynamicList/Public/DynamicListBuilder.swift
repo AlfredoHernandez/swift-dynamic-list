@@ -81,6 +81,9 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     /// Custom skeleton content builder
     private var skeletonContent: (() -> AnyView)?
 
+    /// Skeleton row configuration for simplified skeleton creation
+    private var skeletonRowConfiguration: SkeletonRowConfiguration?
+
     /// Search configuration for the list
     private var searchConfiguration: SearchConfiguration<Item>?
 
@@ -113,12 +116,26 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     /// Creates the shared content view with common configuration
     @MainActor
     private func createContentView(viewModel: DynamicListViewModel<Item>) -> DynamicListContent<Item> {
-        DynamicListContent(
+        let finalSkeletonContent: (() -> AnyView)? = if let config = skeletonRowConfiguration {
+            {
+                AnyView(
+                    List(0 ..< config.count, id: \.self) { _ in
+                        config.rowContentBuilder()
+                    }
+                    .modifier(ListStyleModifier(style: config.listStyle))
+                    .redacted(reason: .placeholder),
+                )
+            }
+        } else {
+            skeletonContent
+        }
+
+        return DynamicListContent(
             viewModel: viewModel,
             rowContent: rowContent ?? { item in AnyView(DefaultRowView(item: item)) },
             detailContent: detailContent,
             errorContent: errorContent,
-            skeletonContent: skeletonContent,
+            skeletonContent: finalSkeletonContent,
             listConfiguration: listConfiguration,
             searchConfiguration: searchConfiguration,
         )
@@ -439,6 +456,56 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
         skeletonContent = {
             AnyView(content())
         }
+        return self
+    }
+
+    /// Sets custom skeleton content using a single row view.
+    ///
+    /// Use this method to provide a single row view that will be repeated to create
+    /// a skeleton loading state. This is more convenient than creating the entire
+    /// skeleton list manually.
+    ///
+    /// - Parameters:
+    ///   - count: The number of skeleton rows to display. Defaults to 10.
+    ///   - content: A view builder that creates a single skeleton row view.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// DynamicListBuilder<User>()
+    ///     .publisher(apiService.fetchUsers())
+    ///     .skeletonRow(count: 8) {
+    ///         HStack {
+    ///             Circle()
+    ///                 .fill(Color.gray.opacity(0.3))
+    ///                 .frame(width: 50, height: 50)
+    ///
+    ///             VStack(alignment: .leading) {
+    ///                 RoundedRectangle(cornerRadius: 4)
+    ///                     .fill(Color.gray.opacity(0.3))
+    ///                     .frame(height: 20)
+    ///                     .frame(maxWidth: .infinity * 0.8)
+    ///
+    ///                 RoundedRectangle(cornerRadius: 4)
+    ///                     .fill(Color.gray.opacity(0.2))
+    ///                     .frame(height: 16)
+    ///                     .frame(maxWidth: .infinity * 0.6)
+    ///             }
+    ///
+    ///             Spacer()
+    ///         }
+    ///         .padding(.vertical, 8)
+    ///     }
+    ///     .build()
+    /// ```
+    @discardableResult
+    public func skeletonRow(count: Int = 10, @ViewBuilder _ content: @escaping () -> some View) -> Self {
+        skeletonRowConfiguration = SkeletonRowConfiguration(
+            count: count,
+            listStyle: listConfiguration.style,
+            rowContent: content,
+        )
+        skeletonContent = nil // Clear any existing skeleton content
         return self
     }
 
