@@ -50,9 +50,7 @@ struct SectionedDynamicListContent<Item: Identifiable & Hashable>: View {
                     ForEach(viewModel.sections) { section in
                         Section {
                             ForEach(section.items) { item in
-                                if let detailContent,
-                                   let _ = detailContent(item)
-                                {
+                                if let detailContent, let _ = detailContent(item) {
                                     NavigationLink(value: item) {
                                         rowContent(item)
                                             .redacted(reason: viewModel.viewState.isLoading ? .placeholder : [])
@@ -88,9 +86,7 @@ struct SectionedDynamicListContent<Item: Identifiable & Hashable>: View {
         }
         .onAppear(perform: viewModel.loadData)
         .navigationDestination(for: Item.self) { item in
-            if let detailContent,
-               let detailView = detailContent(item)
-            {
+            if let detailContent, let detailView = detailContent(item) {
                 detailView
             }
         }
@@ -111,9 +107,7 @@ struct SectionedDynamicListContent<Item: Identifiable & Hashable>: View {
 
     @ViewBuilder
     private var errorView: some View {
-        if let errorContent,
-           let error = viewModel.viewState.error
-        {
+        if let errorContent, let error = viewModel.viewState.error {
             errorContent(error)
         } else if let error = viewModel.viewState.error {
             DefaultErrorView(error: error)
