@@ -78,20 +78,27 @@ Public/
 - Predefined list styles
 - Customizable appearance options
 
-### 🔍 Search Strategies
-Public search strategy implementations.
+### 🔍 Domain Layer
+Public domain components and search system.
 
 ```
-Public/Search Strategies/
-├── PartialMatchStrategy.swift         # Partial search (default)
-├── ExactMatchStrategy.swift           # Exact match search
-└── TokenizedMatchStrategy.swift       # Token-based search
+Public/Domain/
+├── Functional.swift                   # Functional utilities
+└── Search Engine/
+    ├── Searchable.swift               # Protocol for searchable items
+    ├── SearchStrategy.swift           # Protocol for search strategies
+    └── Search Strategies/
+        ├── ExactMatchStrategy.swift   # Exact match search
+        ├── PartialMatchStrategy.swift # Partial search (default)
+        └── TokenizedMatchStrategy.swift # Token-based search
 ```
 
 **Features:**
 - Multiple search algorithms
 - Customizable search behavior
 - Easy integration with lists
+- Functional programming utilities
+- Protocol-based architecture
 
 ### 🎨 Default Views
 Public default view implementations.
@@ -123,8 +130,7 @@ UI/Dynamic List/
 ├── DynamicListViewModel.swift         # ViewModel for simple lists
 ├── DynamicListViewState.swift         # View states for simple lists
 ├── DynamicListContent.swift           # Internal list content
-├── DynamicListWrapper.swift           # Wrapper with NavigationStack
-└── ListConfiguration.swift            # List configuration
+└── DynamicListWrapper.swift           # Wrapper with NavigationStack
 ```
 
 **Features:**
@@ -161,13 +167,23 @@ Components shared between both types of lists.
 
 ```
 UI/Shared/
-└── LoadingState.swift                 # Shared loading states
+├── DynamicListViewModelProtocol.swift # Protocol for view models
+├── DynamicListViewStateProtocol.swift # Protocol for view states
+├── ListStyleModifier.swift            # List style modifiers
+├── ListType.swift                     # List type definitions
+├── LoadingState.swift                 # Shared loading states
+├── ScrollToTopButton.swift            # Scroll to top functionality
+├── UnifiedDynamicListContent.swift    # Unified list content
+└── View+Extensions.swift              # SwiftUI view extensions
 ```
 
 **Features:**
 - Reusable loading states
 - Shared enums and types
 - Common logic between components
+- View model and view state protocols
+- Unified content management
+- SwiftUI extensions and utilities
 
 ### 🧠 Domain Layer
 
@@ -176,9 +192,14 @@ Advanced search system with customizable strategies.
 
 ```
 Domain/
-├── Searchable.swift                   # Protocol for searchable items
-├── SearchStrategy.swift               # Protocol for search strategies
-└── Functional.swift                   # Functional utilities
+├── Functional.swift                   # Functional utilities
+└── Search Engine/
+    ├── Searchable.swift               # Protocol for searchable items
+    ├── SearchStrategy.swift           # Protocol for search strategies
+    └── Search Strategies/
+        ├── ExactMatchStrategy.swift   # Exact match implementation
+        ├── PartialMatchStrategy.swift # Partial match implementation
+        └── TokenizedMatchStrategy.swift # Tokenized match implementation
 ```
 
 **Features:**
@@ -257,37 +278,53 @@ Tests/DynamicListTests/
 ### Dynamic List Dependencies
 ```
 DynamicListBuilder (Public)
-├── DynamicList (Private)
+├── DynamicListContent (Private)
 ├── DynamicListViewModel (Private)
 ├── DynamicListViewState (Private)
-├── ListConfiguration (Private)
+├── DynamicListWrapper (Private)
+├── ListConfiguration (Public)
 ├── LoadingState (Private/Shared)
+├── Shared Components (Private/Shared)
 └── Default Views (Public)
 ```
 
 ### Sectioned Dynamic List Dependencies
 ```
 SectionedDynamicListBuilder (Public)
-├── SectionedDynamicList (Private)
+├── SectionedDynamicListContent (Private)
 ├── SectionedDynamicListViewModel (Private)
 ├── SectionedListViewState (Private)
-├── ListSection (Private)
+├── SectionedDynamicListWrapper (Private)
+├── ListSection (Public)
 ├── LoadingState (Private/Shared)
+├── Shared Components (Private/Shared)
 └── Default Views (Public)
 ```
 
 ### Search System Dependencies
 ```
 SearchConfiguration (Public)
-├── Searchable (Private/Domain)
-├── SearchStrategy (Private/Domain)
-└── Search Strategies (Public)
+├── Searchable (Public/Domain)
+├── SearchStrategy (Public/Domain)
+└── Search Strategies (Public/Domain)
 ```
 
 ### Shared Components
 ```
 Shared/
-└── LoadingState
+├── LoadingState
+│   ├── DynamicList (uses)
+│   └── SectionedDynamicList (uses)
+├── DynamicListViewModelProtocol
+│   ├── DynamicListViewModel (implements)
+│   └── SectionedDynamicListViewModel (implements)
+├── DynamicListViewStateProtocol
+│   ├── DynamicListViewState (implements)
+│   └── SectionedListViewState (implements)
+├── UnifiedDynamicListContent
+│   ├── DynamicList (uses)
+│   └── SectionedDynamicList (uses)
+└── View+Extensions
     ├── DynamicList (uses)
     └── SectionedDynamicList (uses)
 
@@ -295,7 +332,7 @@ Default Views (Public)/
 ├── DynamicList (uses)
 └── SectionedDynamicList (uses)
 
-Domain/
+Domain (Public)/
 ├── Searchable
 │   ├── DynamicList (uses)
 │   └── SearchStrategy (uses)
@@ -375,9 +412,12 @@ Domain/
 - `DynamicListBuilder<Item>` - Main builder for simple lists
 - `SectionedDynamicListBuilder<Item>` - Builder for sectioned lists
 - `SearchConfiguration<Item>` - Search configuration
+- `ListConfiguration` - List configuration options
+- `ListSection<Item>` - Section model for sectioned lists
 - `ListStyleType` - List styling options
 - `Searchable` - Protocol for searchable items
 - `SearchStrategy` - Protocol for search strategies
+- `Functional` - Functional programming utilities
 - `PartialMatchStrategy` - Partial search implementation
 - `ExactMatchStrategy` - Exact match search implementation
 - `TokenizedMatchStrategy` - Token-based search implementation
@@ -390,7 +430,7 @@ Domain/
 ### Private Implementation
 - All UI components are marked as `internal`
 - ViewModels and ViewStates are `internal`
-- Domain components are `internal`
-- ListConfiguration is `internal`
+- Shared components and protocols are `internal`
+- View extensions and utilities are `internal`
 
 This structure provides a solid and scalable foundation for the `DynamicList` package, with clear separation of responsibilities and well-defined public APIs.
