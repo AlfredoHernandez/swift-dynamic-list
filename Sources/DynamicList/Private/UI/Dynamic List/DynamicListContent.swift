@@ -11,6 +11,7 @@ import SwiftUI
 /// the `buildWithoutNavigation()` method.
 struct DynamicListContent<Item: Identifiable & Hashable>: View {
     @State private var viewModel: DynamicListViewModel<Item>
+    @State private var scrollToTop = false
     private let rowContent: (Item) -> AnyView
     private let detailContent: ((Item) -> AnyView?)?
     private let errorContent: ((Error) -> AnyView)?
@@ -46,22 +47,42 @@ struct DynamicListContent<Item: Identifiable & Hashable>: View {
             } else if viewModel.viewState.shouldShowError {
                 errorView
             } else {
-                List(viewModel.items) { item in
-                    if let detailContent,
-                       let _ = detailContent(item)
-                    {
-                        NavigationLink(value: item) {
-                            rowContent(item)
-                                .redacted(reason: viewModel.viewState.isLoading ? .placeholder : [])
+                ScrollViewReader { proxy in
+                    ZStack(alignment: .bottomTrailing) {
+                        List(viewModel.items) { item in
+                            if let detailContent, let _ = detailContent(item) {
+                                NavigationLink(value: item) {
+                                    rowContent(item)
+                                        .redacted(reason: viewModel.viewState.isLoading ? .placeholder : [])
+                                }
+                                .id(viewModel.items.firstIndex(of: item) == 0 ? "listContent" : nil)
+                            } else {
+                                rowContent(item)
+                                    .redacted(reason: viewModel.viewState.isLoading ? .placeholder : [])
+                                    .id(viewModel.items.firstIndex(of: item) == 0 ? "listContent" : nil)
+                            }
                         }
-                    } else {
-                        rowContent(item)
-                            .redacted(reason: viewModel.viewState.isLoading ? .placeholder : [])
+                        .modifier(ListStyleModifier(style: listConfiguration.style))
+                        .refreshable {
+                            viewModel.refresh()
+                        }
+
+                        if viewModel.items.count > 5 {
+                            Button(action: {
+                                withAnimation(.easeInOut(duration: 0.5)) {
+                                    proxy.scrollTo("listContent", anchor: .top)
+                                }
+                            }) {
+                                Image(systemName: "arrow.up.circle.fill")
+                                    .font(.title2)
+                                    .foregroundColor(.white)
+                                    .background(Circle().fill(Color.blue))
+                                    .shadow(radius: 3)
+                            }
+                            .padding(.trailing, 20)
+                            .padding(.bottom, 20)
+                        }
                     }
-                }
-                .modifier(ListStyleModifier(style: listConfiguration.style))
-                .refreshable {
-                    viewModel.refresh()
                 }
             }
         }

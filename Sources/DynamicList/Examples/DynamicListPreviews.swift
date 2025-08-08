@@ -14,6 +14,10 @@ enum FruitColor: CaseIterable {
     case green
     case orange
     case purple
+    case blue
+    case black
+    case brown
+    case white
 }
 
 /// Fruit model used in previews
@@ -23,6 +27,45 @@ struct Fruit: Identifiable, Hashable {
     let symbol: String
     let color: FruitColor
 }
+
+/// Fruits list
+
+let fruits = [
+    Fruit(name: "Watermelon", symbol: "🍉", color: .red),
+    Fruit(name: "Pear", symbol: "🍐", color: .green),
+    Fruit(name: "Apple", symbol: "🍎", color: .red),
+    Fruit(name: "Orange", symbol: "🍊", color: .orange),
+    Fruit(name: "Banana", symbol: "🍌", color: .yellow),
+    Fruit(name: "Strawberry", symbol: "🍓", color: .red),
+    Fruit(name: "Blueberry", symbol: "🫐", color: .blue),
+    Fruit(name: "Blackberry", symbol: "🫐", color: .black),
+    Fruit(name: "Grape", symbol: "🍇", color: .purple),
+    Fruit(name: "Pineapple", symbol: "🍍", color: .yellow),
+    Fruit(name: "Lemon", symbol: "🍋", color: .yellow),
+    Fruit(name: "Lime", symbol: "🍈", color: .green),
+    Fruit(name: "Peach", symbol: "🍑", color: .orange),
+    Fruit(name: "Cherry", symbol: "🍒", color: .red),
+    Fruit(name: "Mango", symbol: "🥭", color: .orange),
+    Fruit(name: "Kiwi", symbol: "🥝", color: .green),
+    Fruit(name: "Coconut", symbol: "🥥", color: .brown),
+    Fruit(name: "Avocado", symbol: "🥑", color: .green),
+    Fruit(name: "Eggplant", symbol: "🍆", color: .purple),
+    Fruit(name: "Tomato", symbol: "🍅", color: .red),
+    Fruit(name: "Carrot", symbol: "🥕", color: .orange),
+    Fruit(name: "Broccoli", symbol: "🥦", color: .green),
+    Fruit(name: "Mushroom", symbol: "🍄", color: .brown),
+    Fruit(name: "Bell Pepper", symbol: "🫑", color: .green),
+    Fruit(name: "Hot Pepper", symbol: "🌶️", color: .red),
+    Fruit(name: "Cucumber", symbol: "🥒", color: .green),
+    Fruit(name: "Corn", symbol: "🌽", color: .yellow),
+    Fruit(name: "Garlic", symbol: "🧄", color: .white),
+    Fruit(name: "Onion", symbol: "🧅", color: .purple),
+    Fruit(name: "Potato", symbol: "🥔", color: .brown),
+    Fruit(name: "Sweet Potato", symbol: "🍠", color: .orange),
+    Fruit(name: "Radish", symbol: "🥬", color: .red),
+    Fruit(name: "Cabbage", symbol: "🥬", color: .green),
+    Fruit(name: "Cauliflower", symbol: "🥦", color: .white),
+]
 
 /// Error types used in preview examples
 enum LoadError: Error, LocalizedError {
@@ -55,13 +98,8 @@ enum SimpleError: Error, LocalizedError {
 
 #Preview("Static Data") {
     DynamicListBuilder<Fruit>()
-        .items([
-            Fruit(name: "Watermelon", symbol: "🍉", color: .red),
-            Fruit(name: "Pear", symbol: "🍐", color: .green),
-            Fruit(name: "Apple", symbol: "🍎", color: .red),
-            Fruit(name: "Orange", symbol: "🍊", color: .orange),
-            Fruit(name: "Banana", symbol: "🍌", color: .yellow),
-        ])
+        .title("Fruits and Vegetables")
+        .items(fruits)
         .rowContent { fruit in
             HStack {
                 Text(fruit.symbol)
