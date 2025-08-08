@@ -11,13 +11,14 @@ import SwiftUI
 /// `SectionedDynamicListWrapper` and the `buildWithoutNavigation()` methods.
 struct UnifiedDynamicListContent<Item: Identifiable & Hashable>: View {
     @State private var viewModel: AnyDynamicListViewModel<Item>
-    let listType: ListType<Item>
+
+    private let listType: ListType<Item>
     private let rowContent: (Item) -> AnyView
     private let detailContent: ((Item) -> AnyView?)?
     private let errorContent: ((Error) -> AnyView)?
     private let skeletonContent: (() -> AnyView)?
-    let listConfiguration: ListConfiguration
-    let searchConfiguration: SearchConfiguration<Item>?
+    private let listConfiguration: ListConfiguration
+    private let searchConfiguration: SearchConfiguration<Item>?
     private let scrollIdentifier = "FIRST_ITEM_IN_LIST"
 
     init<V: DynamicListViewModelProtocol>(
