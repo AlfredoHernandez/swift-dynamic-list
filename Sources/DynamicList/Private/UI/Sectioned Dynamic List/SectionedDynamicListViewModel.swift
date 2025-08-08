@@ -11,7 +11,7 @@ import Foundation
 /// This view model handles loading states, error handling, and data management for lists
 /// that display data in sections. It supports both static data and reactive publishers.
 @Observable
-public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: DynamicListViewModelProtocol {
+final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: DynamicListViewModelProtocol {
     // MARK: - Private Properties
 
     /// The current view state
@@ -53,7 +53,7 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>:
     ///   - sections: The sections to display in the list.
     ///   - scheduler: The scheduler for UI updates. Defaults to main queue.
     ///   - ioScheduler: The scheduler for background operations. Defaults to background queue.
-    public init(
+    init(
         sections: [ListSection<Item>] = [],
         scheduler: AnySchedulerOf<DispatchQueue> = .main,
         ioScheduler: AnySchedulerOf<DispatchQueue> = .global(qos: .userInitiated),
@@ -69,7 +69,7 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>:
     /// - Parameters:
     ///   - arrays: Array of arrays representing sections
     ///   - titles: Optional titles for each section
-    public convenience init(arrays: [[Item]], titles: [String?] = []) {
+    convenience init(arrays: [[Item]], titles: [String?] = []) {
         let sections = zip(arrays, titles).map { items, title in
             ListSection(title: title, items: items)
         }
@@ -83,7 +83,7 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>:
     ///   - initialSections: Initial sections to display while loading
     ///   - scheduler: The scheduler for UI updates. Defaults to main queue.
     ///   - ioScheduler: The scheduler for background operations. Defaults to background queue.
-    public init(
+    init(
         dataProvider: @escaping () -> AnyPublisher<[[Item]], Error>,
         initialSections: [ListSection<Item>] = [],
         scheduler: AnySchedulerOf<DispatchQueue> = .main,
@@ -96,13 +96,13 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>:
         self.dataProvider = dataProvider
     }
 
-    // MARK: - Public Methods
+    // MARK: -  Methods
 
     /// Loads data from the current data provider.
     ///
     /// This method will update the view state to loading and then subscribe to the
     /// data provider to receive updates.
-    public func loadData() {
+    func loadData() {
         guard let dataProvider else { return }
 
         viewState = .loading(sections: viewState.sections)
@@ -134,7 +134,7 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>:
     ///
     /// - Parameters:
     ///   - dataProvider: A closure that returns a publisher emitting arrays of arrays
-    public func loadItems(from dataProvider: @escaping () -> AnyPublisher<[[Item]], Error>) {
+    func loadItems(from dataProvider: @escaping () -> AnyPublisher<[[Item]], Error>) {
         self.dataProvider = dataProvider
         loadData()
     }
@@ -143,14 +143,14 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>:
     ///
     /// This method will trigger a new subscription to the data provider, effectively
     /// reloading the data.
-    public func refresh() {
+    func refresh() {
         loadData()
     }
 
     /// Updates the sections with new data.
     ///
     /// - Parameter sections: The new sections to display
-    public func updateSections(_ sections: [ListSection<Item>]) {
+    func updateSections(_ sections: [ListSection<Item>]) {
         viewState = .loaded(sections: sections)
     }
 
@@ -159,7 +159,7 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>:
     /// - Parameters:
     ///   - arrays: Array of arrays representing sections
     ///   - titles: Optional titles for each section
-    public func updateSections(arrays: [[Item]], titles: [String?] = []) {
+    func updateSections(arrays: [[Item]], titles: [String?] = []) {
         let sections = zip(arrays, titles).map { items, title in
             ListSection(title: title, items: items)
         }
@@ -171,7 +171,7 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>:
     /// Sets the search configuration for filtering items.
     ///
     /// - Parameter configuration: The search configuration to use for filtering.
-    public func setSearchConfiguration(_ configuration: SearchConfiguration<Item>?) {
+    func setSearchConfiguration(_ configuration: SearchConfiguration<Item>?) {
         searchConfiguration = configuration
     }
 
@@ -238,17 +238,17 @@ public final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>:
     // MARK: - Convenience Properties
 
     /// The collection of sections to be displayed.
-    public var sections: [ListSection<Item>] {
+    var sections: [ListSection<Item>] {
         viewState.sections
     }
 
     /// Indicates whether data is currently being loaded.
-    public var isLoading: Bool {
+    var isLoading: Bool {
         viewState.isLoading
     }
 
     /// Contains any error that occurred during data loading.
-    public var error: Error? {
+    var error: Error? {
         viewState.error
     }
 }
