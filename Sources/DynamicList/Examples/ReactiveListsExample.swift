@@ -34,11 +34,14 @@ import SwiftUI
             .navigationTitle("Details")
         }
         .skeletonRow(count: 100) {
-            VStack(alignment: .leading) {
-                Text("Here is the symbol")
+            HStack(alignment: .center) {
+                Circle()
+                    .fill(Color.blue.opacity(0.3))
+                    .frame(width: 30, height: 30)
                 Text("This is a simple skeleton row...")
             }
         }
+        .showSkeletonOnRefresh()
         .build()
 }
 

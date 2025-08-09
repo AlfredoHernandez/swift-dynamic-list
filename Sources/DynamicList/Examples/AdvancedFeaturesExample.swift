@@ -295,5 +295,52 @@ import SwiftUI
                 Image(systemName: "rectangle.stack.badge.minus")
                 Text("Footer Only")
             }
+
+        // Skeleton on refresh example
+        SectionedDynamicListBuilder<Product>()
+            .publisher {
+                Just([
+                    products.filter { $0.category == "Electronics" },
+                    products.filter { $0.category == "Audio" },
+                ])
+                .delay(for: .seconds(2), scheduler: DispatchQueue.main)
+                .setFailureType(to: Error.self)
+                .eraseToAnyPublisher()
+            }
+            .title("Skeleton on Refresh")
+            .skeletonRow(
+                sections: 2,
+                itemsPerSection: 4,
+                rowContent: {
+                    HStack {
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(Color.blue.opacity(0.3))
+                            .frame(width: 40, height: 40)
+                        VStack(alignment: .leading, spacing: 3) {
+                            RoundedRectangle(cornerRadius: 3)
+                                .fill(Color.gray.opacity(0.4))
+                                .frame(height: 14)
+                                .frame(maxWidth: .infinity * 0.7)
+                            RoundedRectangle(cornerRadius: 3)
+                                .fill(Color.gray.opacity(0.3))
+                                .frame(height: 10)
+                                .frame(maxWidth: .infinity * 0.5)
+                        }
+                        Spacer()
+                    }
+                    .padding(.vertical, 4)
+                },
+                headerContent: {
+                    Text("Loading Section...")
+                        .font(.headline)
+                        .foregroundColor(.blue.opacity(0.6))
+                },
+            )
+            .showSkeletonOnRefresh() // 🎯 Esta es la nueva funcionalidad
+            .build()
+            .tabItem {
+                Image(systemName: "arrow.clockwise.circle")
+                Text("Refresh Skeleton")
+            }
     }
 }

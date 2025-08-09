@@ -45,7 +45,7 @@ struct UnifiedDynamicListContent<Item: Identifiable & Hashable>: View {
 
     var body: some View {
         Group {
-            if viewModel.viewState.shouldShowLoading {
+            if viewModel.viewState.shouldShowLoading(showSkeletonOnRefresh: listConfiguration.showSkeletonOnRefresh) {
                 skeletonView
             } else if viewModel.viewState.shouldShowError {
                 errorView

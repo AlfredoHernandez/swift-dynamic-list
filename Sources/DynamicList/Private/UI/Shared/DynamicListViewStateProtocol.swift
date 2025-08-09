@@ -26,6 +26,11 @@ protocol DynamicListViewStateProtocol {
     /// Returns true if should show loading indicator (loading and no items)
     var shouldShowLoading: Bool { get }
 
+    /// Returns true if should show loading indicator with refresh configuration
+    /// - Parameter showSkeletonOnRefresh: Whether to show skeleton during refresh
+    /// - Returns: True if should show skeleton based on loading state and configuration
+    func shouldShowLoading(showSkeletonOnRefresh: Bool) -> Bool
+
     /// Returns true if should show error state (has error and no items)
     var shouldShowError: Bool { get }
 
@@ -37,6 +42,11 @@ protocol DynamicListViewStateProtocol {
 
 extension DynamicListViewStateProtocol {
     var shouldShowLoading: Bool { isLoading && isEmpty }
+
+    func shouldShowLoading(showSkeletonOnRefresh: Bool) -> Bool {
+        isLoading && (isEmpty || showSkeletonOnRefresh)
+    }
+
     var shouldShowError: Bool { hasError && isEmpty }
     var shouldShowList: Bool { !isEmpty }
 }

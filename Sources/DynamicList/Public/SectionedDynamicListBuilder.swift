@@ -569,6 +569,7 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
                 style: config.style,
                 navigationBarHidden: config.navigationBarHidden,
                 title: title,
+                showSkeletonOnRefresh: config.showSkeletonOnRefresh,
             )
         }
     }
@@ -586,6 +587,7 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
                 style: config.style,
                 navigationBarHidden: true,
                 title: config.title,
+                showSkeletonOnRefresh: config.showSkeletonOnRefresh,
             )
         }
     }
@@ -619,6 +621,37 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
                 style: style,
                 navigationBarHidden: config.navigationBarHidden,
                 title: config.title,
+                showSkeletonOnRefresh: config.showSkeletonOnRefresh,
+            )
+        }
+    }
+
+    /// Enables showing skeleton view during refresh operations.
+    ///
+    /// Use this method to show the custom skeleton view even during refresh operations,
+    /// not just during initial loading. By default, skeleton is only shown when the list
+    /// is empty and loading.
+    ///
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// SectionedDynamicListBuilder<User>()
+    ///     .publisher(apiService.fetchUsersByCategory())
+    ///     .skeletonRow(sections: 2, itemsPerSection: 3) {
+    ///         Text("Loading...")
+    ///     }
+    ///     .showSkeletonOnRefresh()
+    ///     .build()
+    /// ```
+    @discardableResult
+    public func showSkeletonOnRefresh() -> Self {
+        updateListConfiguration { config in
+            ListConfiguration(
+                style: config.style,
+                navigationBarHidden: config.navigationBarHidden,
+                title: config.title,
+                showSkeletonOnRefresh: true,
             )
         }
     }

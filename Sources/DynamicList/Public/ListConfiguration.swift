@@ -15,19 +15,25 @@ public struct ListConfiguration {
     /// The navigation title for the list
     public let title: String?
 
+    /// Whether to show skeleton view during refresh operations
+    public let showSkeletonOnRefresh: Bool
+
     /// Creates a new ListConfiguration
     /// - Parameters:
     ///   - style: The list style to apply
     ///   - navigationBarHidden: Whether to hide the navigation bar
     ///   - title: The navigation title
+    ///   - showSkeletonOnRefresh: Whether to show skeleton during refresh
     public init(
         style: ListStyleType = .automatic,
         navigationBarHidden: Bool = false,
         title: String? = nil,
+        showSkeletonOnRefresh: Bool = false,
     ) {
         self.style = style
         self.navigationBarHidden = navigationBarHidden
         self.title = title
+        self.showSkeletonOnRefresh = showSkeletonOnRefresh
     }
 
     /// Creates a configuration with just the style
@@ -45,6 +51,11 @@ public struct ListConfiguration {
     /// Creates a configuration that hides the navigation bar
     public static var hiddenNavigationBar: ListConfiguration {
         ListConfiguration(navigationBarHidden: true)
+    }
+
+    /// Creates a configuration that shows skeleton during refresh
+    public static var showSkeletonOnRefresh: ListConfiguration {
+        ListConfiguration(showSkeletonOnRefresh: true)
     }
 
     /// Creates a configuration with all default values
