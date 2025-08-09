@@ -23,16 +23,22 @@ struct SectionedSkeletonRowConfiguration {
     let itemsPerSection: Int
     let listStyle: ListStyleType
     let rowContentBuilder: () -> AnyView
+    let headerContentBuilder: (() -> AnyView)?
+    let footerContentBuilder: (() -> AnyView)?
 
     init(
         sections: Int,
         itemsPerSection: Int,
         listStyle: ListStyleType,
         @ViewBuilder rowContent: @escaping () -> some View,
+        headerContent: (() -> AnyView)? = nil,
+        footerContent: (() -> AnyView)? = nil,
     ) {
         self.sections = sections
         self.itemsPerSection = itemsPerSection
         self.listStyle = listStyle
         rowContentBuilder = { AnyView(rowContent()) }
+        headerContentBuilder = headerContent
+        footerContentBuilder = footerContent
     }
 }

@@ -112,10 +112,17 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
                                     config.rowContentBuilder()
                                 }
                             } header: {
-                                RoundedRectangle(cornerRadius: 2)
-                                    .fill(Color.gray.opacity(0.4))
-                                    .frame(height: 20)
-                                    .frame(maxWidth: .infinity * 0.5)
+                                if let headerBuilder = config.headerContentBuilder {
+                                    headerBuilder()
+                                } else {
+                                    EmptyView()
+                                }
+                            } footer: {
+                                if let footerBuilder = config.footerContentBuilder {
+                                    footerBuilder()
+                                } else {
+                                    EmptyView()
+                                }
                             }
                         }
                     }
@@ -371,6 +378,181 @@ public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
             itemsPerSection: itemsPerSection,
             listStyle: listConfiguration.style,
             rowContent: content,
+        )
+        skeletonContent = nil // Clear any existing skeleton content
+        return self
+    }
+
+    /// Sets custom skeleton content with header and footer views for sectioned lists.
+    ///
+    /// Use this method to provide custom skeleton views for rows, headers, and footers
+    /// that will be repeated to create a complete sectioned skeleton loading state.
+    ///
+    /// - Parameters:
+    ///   - sections: The number of sections to display. Defaults to 3.
+    ///   - itemsPerSection: The number of items per section. Defaults to 4.
+    ///   - rowContent: A view builder that creates a single skeleton row view.
+    ///   - headerContent: A view builder that creates a skeleton header view.
+    ///   - footerContent: A view builder that creates a skeleton footer view.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// SectionedDynamicListBuilder<User>()
+    ///     .publisher(apiService.fetchUsersByCategory())
+    ///     .skeletonRow(
+    ///         sections: 2,
+    ///         itemsPerSection: 5,
+    ///         rowContent: {
+    ///             HStack {
+    ///                 Circle()
+    ///                     .fill(Color.gray.opacity(0.3))
+    ///                     .frame(width: 50, height: 50)
+    ///                 VStack(alignment: .leading) {
+    ///                     RoundedRectangle(cornerRadius: 4)
+    ///                         .fill(Color.gray.opacity(0.3))
+    ///                         .frame(height: 20)
+    ///                         .frame(maxWidth: .infinity * 0.8)
+    ///                 }
+    ///                 Spacer()
+    ///             }
+    ///         },
+    ///         headerContent: {
+    ///             RoundedRectangle(cornerRadius: 6)
+    ///                 .fill(Color.blue.opacity(0.3))
+    ///                 .frame(height: 30)
+    ///                 .frame(maxWidth: .infinity * 0.7)
+    ///         },
+    ///         footerContent: {
+    ///             RoundedRectangle(cornerRadius: 4)
+    ///                 .fill(Color.gray.opacity(0.2))
+    ///                 .frame(height: 15)
+    ///                 .frame(maxWidth: .infinity * 0.4)
+    ///         }
+    ///     )
+    ///     .build()
+    /// ```
+    @discardableResult
+    public func skeletonRow(
+        sections: Int = 3,
+        itemsPerSection: Int = 4,
+        @ViewBuilder rowContent: @escaping () -> some View,
+        @ViewBuilder headerContent: @escaping () -> some View,
+        @ViewBuilder footerContent: @escaping () -> some View,
+    ) -> Self {
+        skeletonRowConfiguration = SectionedSkeletonRowConfiguration(
+            sections: sections,
+            itemsPerSection: itemsPerSection,
+            listStyle: listConfiguration.style,
+            rowContent: rowContent,
+            headerContent: { AnyView(headerContent()) },
+            footerContent: { AnyView(footerContent()) },
+        )
+        skeletonContent = nil // Clear any existing skeleton content
+        return self
+    }
+
+    /// Sets custom skeleton content with only header view for sectioned lists.
+    ///
+    /// Use this method when you want to customize only the header skeleton view
+    /// while keeping the default footer behavior (no footer).
+    ///
+    /// - Parameters:
+    ///   - sections: The number of sections to display. Defaults to 3.
+    ///   - itemsPerSection: The number of items per section. Defaults to 4.
+    ///   - rowContent: A view builder that creates a single skeleton row view.
+    ///   - headerContent: A view builder that creates a skeleton header view.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// SectionedDynamicListBuilder<User>()
+    ///     .publisher(apiService.fetchUsersByCategory())
+    ///     .skeletonRow(
+    ///         sections: 2,
+    ///         itemsPerSection: 5,
+    ///         rowContent: {
+    ///             HStack {
+    ///                 Circle().fill(Color.gray.opacity(0.3)).frame(width: 50, height: 50)
+    ///                 Text("Loading...").foregroundColor(.gray)
+    ///                 Spacer()
+    ///             }
+    ///         },
+    ///         headerContent: {
+    ///             Text("Section Loading...")
+    ///                 .font(.headline)
+    ///                 .foregroundColor(.blue.opacity(0.7))
+    ///         }
+    ///     )
+    ///     .build()
+    /// ```
+    @discardableResult
+    public func skeletonRow(
+        sections: Int = 3,
+        itemsPerSection: Int = 4,
+        @ViewBuilder rowContent: @escaping () -> some View,
+        @ViewBuilder headerContent: @escaping () -> some View,
+    ) -> Self {
+        skeletonRowConfiguration = SectionedSkeletonRowConfiguration(
+            sections: sections,
+            itemsPerSection: itemsPerSection,
+            listStyle: listConfiguration.style,
+            rowContent: rowContent,
+            headerContent: { AnyView(headerContent()) },
+            footerContent: nil,
+        )
+        skeletonContent = nil // Clear any existing skeleton content
+        return self
+    }
+
+    /// Sets custom skeleton content with only footer view for sectioned lists.
+    ///
+    /// Use this method when you want to customize only the footer skeleton view
+    /// while keeping the default header behavior (no header).
+    ///
+    /// - Parameters:
+    ///   - sections: The number of sections to display. Defaults to 3.
+    ///   - itemsPerSection: The number of items per section. Defaults to 4.
+    ///   - rowContent: A view builder that creates a single skeleton row view.
+    ///   - footerContent: A view builder that creates a skeleton footer view.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// SectionedDynamicListBuilder<User>()
+    ///     .publisher(apiService.fetchUsersByCategory())
+    ///     .skeletonRow(
+    ///         sections: 2,
+    ///         itemsPerSection: 5,
+    ///         rowContent: {
+    ///             HStack {
+    ///                 Circle().fill(Color.gray.opacity(0.3)).frame(width: 50, height: 50)
+    ///                 Text("Loading...").foregroundColor(.gray)
+    ///                 Spacer()
+    ///             }
+    ///         },
+    ///         footerContent: {
+    ///             Text("More info...")
+    ///                 .font(.caption)
+    ///                 .foregroundColor(.gray.opacity(0.7))
+    ///         }
+    ///     )
+    ///     .build()
+    /// ```
+    @discardableResult
+    public func skeletonRow(
+        sections: Int = 3,
+        itemsPerSection: Int = 4,
+        @ViewBuilder rowContent: @escaping () -> some View,
+        @ViewBuilder footerContent: @escaping () -> some View,
+    ) -> Self {
+        skeletonRowConfiguration = SectionedSkeletonRowConfiguration(
+            sections: sections,
+            itemsPerSection: itemsPerSection,
+            listStyle: listConfiguration.style,
+            rowContent: rowContent,
+            headerContent: nil,
+            footerContent: { AnyView(footerContent()) },
         )
         skeletonContent = nil // Clear any existing skeleton content
         return self
