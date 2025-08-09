@@ -12,7 +12,7 @@ import Observation
 /// This view model uses the Observation framework to allow SwiftUI views to automatically
 /// track changes to the view state. It also supports reactive data loading using Combine publishers.
 @Observable
-final class DynamicListViewModel<Item: Identifiable & Hashable> {
+final class DynamicListViewModel<Item: Identifiable & Hashable>: DynamicListViewModelProtocol {
     /// The current view state containing items and loading information.
     var viewState: DynamicListViewState<Item>
 

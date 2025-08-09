@@ -5,7 +5,7 @@
 import Foundation
 
 /// Represents the complete view state for a dynamic list
-struct DynamicListViewState<Item: Identifiable & Hashable>: Equatable {
+struct DynamicListViewState<Item: Identifiable & Hashable>: Equatable, DynamicListViewStateProtocol {
     /// The current loading state
     let loadingState: LoadingState
 

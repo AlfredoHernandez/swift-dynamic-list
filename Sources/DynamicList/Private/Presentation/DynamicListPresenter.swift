@@ -9,14 +9,14 @@ public final class DynamicListPresenter {
     // MARK: - Loading States
 
     /// Loading content text
-    public static let loadingContent = NSLocalizedString(
+    static let loadingContent = NSLocalizedString(
         "loading_content",
         bundle: Bundle.module,
         comment: "Loading content text shown while fetching data",
     )
 
     /// Loading text
-    public static let loading = NSLocalizedString(
+    static let loading = NSLocalizedString(
         "loading",
         bundle: Bundle.module,
         comment: "Loading text for navigation titles",
@@ -25,7 +25,7 @@ public final class DynamicListPresenter {
     // MARK: - Error Messages
 
     /// Network error message
-    public static let networkError = NSLocalizedString(
+    static let networkError = NSLocalizedString(
         "network_error",
         bundle: Bundle.module,
         comment: "Network error message when connection fails",
@@ -34,7 +34,7 @@ public final class DynamicListPresenter {
     // MARK: - Error Actions
 
     /// Retry button text
-    public static let retry = NSLocalizedString(
+    static let retry = NSLocalizedString(
         "retry",
         bundle: Bundle.module,
         comment: "Retry button text",
@@ -43,35 +43,35 @@ public final class DynamicListPresenter {
     // MARK: - Navigation
 
     /// Profile navigation title
-    public static let profile = NSLocalizedString(
+    static let profile = NSLocalizedString(
         "profile",
         bundle: Bundle.module,
         comment: "Profile navigation title",
     )
 
     /// Detail navigation title
-    public static let detail = NSLocalizedString(
+    static let detail = NSLocalizedString(
         "detail",
         bundle: Bundle.module,
         comment: "Detail navigation title",
     )
 
     /// User detail navigation title
-    public static let userDetail = NSLocalizedString(
+    static let userDetail = NSLocalizedString(
         "user_detail",
         bundle: Bundle.module,
         comment: "User detail navigation title",
     )
 
     /// Product detail navigation title
-    public static let productDetail = NSLocalizedString(
+    static let productDetail = NSLocalizedString(
         "product_detail",
         bundle: Bundle.module,
         comment: "Product detail navigation title",
     )
 
     /// Error navigation title
-    public static let error = NSLocalizedString(
+    static let error = NSLocalizedString(
         "error",
         bundle: Bundle.module,
         comment: "Error navigation title",
@@ -80,21 +80,21 @@ public final class DynamicListPresenter {
     // MARK: - Content Labels
 
     /// Item ID label
-    public static let itemID = NSLocalizedString(
+    static let itemID = NSLocalizedString(
         "item_id",
         bundle: Bundle.module,
         comment: "Item ID label",
     )
 
     /// ID label with colon
-    public static let idLabel = NSLocalizedString(
+    static let idLabel = NSLocalizedString(
         "id_label",
         bundle: Bundle.module,
         comment: "ID label with colon for item display",
     )
 
     /// Details text
-    public static let details = NSLocalizedString(
+    static let details = NSLocalizedString(
         "details",
         bundle: Bundle.module,
         comment: "Details text for detail views",
@@ -110,14 +110,14 @@ public final class DynamicListPresenter {
     // MARK: - Default Views
 
     /// Default item detail title
-    public static let itemDetail = NSLocalizedString(
+    static let itemDetail = NSLocalizedString(
         "item_detail",
         bundle: Bundle.module,
         comment: "Default item detail title",
     )
 
     /// Default error view title
-    public static let errorLoadingData = NSLocalizedString(
+    static let errorLoadingData = NSLocalizedString(
         "error_loading_data",
         bundle: Bundle.module,
         comment: "Default error view title",

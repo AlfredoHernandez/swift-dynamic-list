@@ -81,11 +81,69 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     /// Custom skeleton content builder
     private var skeletonContent: (() -> AnyView)?
 
+    /// Skeleton row configuration for simplified skeleton creation
+    private var skeletonRowConfiguration: SkeletonRowConfiguration?
+
     /// Search configuration for the list
     private var searchConfiguration: SearchConfiguration<Item>?
 
     /// List configuration for appearance and behavior
     private var listConfiguration: ListConfiguration = .default
+
+    // MARK: - Private Helper Methods
+
+    /// Updates the list configuration using a transformation closure
+    private func updateListConfiguration(_ transform: (ListConfiguration) -> ListConfiguration) -> Self {
+        listConfiguration = transform(listConfiguration)
+        return self
+    }
+
+    /// Updates the search configuration using a transformation closure
+    private func updateSearchConfiguration(_ transform: (SearchConfiguration<Item>?) -> SearchConfiguration<Item>?) -> Self {
+        searchConfiguration = transform(searchConfiguration)
+        return self
+    }
+
+    /// Creates a view model based on the current configuration
+    private func createViewModel() -> DynamicListViewModel<Item> {
+        if let publisher {
+            DynamicListViewModel(dataProvider: publisher, initialItems: items)
+        } else {
+            DynamicListViewModel(items: items)
+        }
+    }
+
+    /// Processes skeleton configuration and returns the appropriate skeleton content
+    @MainActor
+    private func processFinalSkeletonContent() -> (() -> AnyView)? {
+        if let config = skeletonRowConfiguration {
+            {
+                AnyView(
+                    List(0 ..< config.count, id: \.self) { _ in
+                        config.rowContentBuilder()
+                    }
+                    .modifier(ListStyleModifier(style: config.listStyle))
+                    .redacted(reason: .placeholder),
+                )
+            }
+        } else {
+            skeletonContent
+        }
+    }
+
+    /// Creates the shared content view with common configuration
+    @MainActor
+    private func createContentView(viewModel: DynamicListViewModel<Item>) -> DynamicListContent<Item> {
+        DynamicListContent(
+            viewModel: viewModel,
+            rowContent: rowContent ?? { item in AnyView(DefaultRowView(item: item)) },
+            detailContent: detailContent,
+            errorContent: errorContent,
+            skeletonContent: processFinalSkeletonContent(),
+            listConfiguration: listConfiguration,
+            searchConfiguration: searchConfiguration,
+        )
+    }
 
     // MARK: - Initialization
 
@@ -405,6 +463,56 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
         return self
     }
 
+    /// Sets custom skeleton content using a single row view.
+    ///
+    /// Use this method to provide a single row view that will be repeated to create
+    /// a skeleton loading state. This is more convenient than creating the entire
+    /// skeleton list manually.
+    ///
+    /// - Parameters:
+    ///   - count: The number of skeleton rows to display. Defaults to 10.
+    ///   - content: A view builder that creates a single skeleton row view.
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// DynamicListBuilder<User>()
+    ///     .publisher(apiService.fetchUsers())
+    ///     .skeletonRow(count: 8) {
+    ///         HStack {
+    ///             Circle()
+    ///                 .fill(Color.gray.opacity(0.3))
+    ///                 .frame(width: 50, height: 50)
+    ///
+    ///             VStack(alignment: .leading) {
+    ///                 RoundedRectangle(cornerRadius: 4)
+    ///                     .fill(Color.gray.opacity(0.3))
+    ///                     .frame(height: 20)
+    ///                     .frame(maxWidth: .infinity * 0.8)
+    ///
+    ///                 RoundedRectangle(cornerRadius: 4)
+    ///                     .fill(Color.gray.opacity(0.2))
+    ///                     .frame(height: 16)
+    ///                     .frame(maxWidth: .infinity * 0.6)
+    ///             }
+    ///
+    ///             Spacer()
+    ///         }
+    ///         .padding(.vertical, 8)
+    ///     }
+    ///     .build()
+    /// ```
+    @discardableResult
+    public func skeletonRow(count: Int = 10, @ViewBuilder _ content: @escaping () -> some View) -> Self {
+        skeletonRowConfiguration = SkeletonRowConfiguration(
+            count: count,
+            listStyle: listConfiguration.style,
+            rowContent: content,
+        )
+        skeletonContent = nil // Clear any existing skeleton content
+        return self
+    }
+
     /// Sets the navigation title for the list.
     ///
     /// - Parameter title: The title to display in the navigation bar.
@@ -419,12 +527,14 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     /// ```
     @discardableResult
     public func title(_ title: String) -> Self {
-        listConfiguration = ListConfiguration(
-            style: listConfiguration.style,
-            navigationBarHidden: listConfiguration.navigationBarHidden,
-            title: title,
-        )
-        return self
+        updateListConfiguration { config in
+            ListConfiguration(
+                style: config.style,
+                navigationBarHidden: config.navigationBarHidden,
+                title: title,
+                showSkeletonOnRefresh: config.showSkeletonOnRefresh,
+            )
+        }
     }
 
     /// Hides the navigation bar.
@@ -443,12 +553,14 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     /// ```
     @discardableResult
     public func hideNavigationBar() -> Self {
-        listConfiguration = ListConfiguration(
-            style: listConfiguration.style,
-            navigationBarHidden: true,
-            title: listConfiguration.title,
-        )
-        return self
+        updateListConfiguration { config in
+            ListConfiguration(
+                style: config.style,
+                navigationBarHidden: true,
+                title: config.title,
+                showSkeletonOnRefresh: config.showSkeletonOnRefresh,
+            )
+        }
     }
 
     /// Sets the list style for the list.
@@ -475,12 +587,44 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     /// - `.insetGrouped` - Inset grouped style (iOS only)
     @discardableResult
     public func listStyle(_ style: ListStyleType) -> Self {
-        listConfiguration = ListConfiguration(
-            style: style,
-            navigationBarHidden: listConfiguration.navigationBarHidden,
-            title: listConfiguration.title,
-        )
-        return self
+        updateListConfiguration { config in
+            ListConfiguration(
+                style: style,
+                navigationBarHidden: config.navigationBarHidden,
+                title: config.title,
+                showSkeletonOnRefresh: config.showSkeletonOnRefresh,
+            )
+        }
+    }
+
+    /// Enables showing skeleton view during refresh operations.
+    ///
+    /// Use this method to show the custom skeleton view even during refresh operations,
+    /// not just during initial loading. By default, skeleton is only shown when the list
+    /// is empty and loading.
+    ///
+    /// - Returns: The builder instance for method chaining.
+    ///
+    /// ## Example
+    /// ```swift
+    /// DynamicListBuilder<User>()
+    ///     .publisher(apiService.fetchUsers())
+    ///     .skeletonRow(count: 5) {
+    ///         Text("Loading...")
+    ///     }
+    ///     .showSkeletonOnRefresh()
+    ///     .build()
+    /// ```
+    @discardableResult
+    public func showSkeletonOnRefresh() -> Self {
+        updateListConfiguration { config in
+            ListConfiguration(
+                style: config.style,
+                navigationBarHidden: config.navigationBarHidden,
+                title: config.title,
+                showSkeletonOnRefresh: true,
+            )
+        }
     }
 
     /// Sets the complete list configuration.
@@ -629,17 +773,18 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     /// ```
     @discardableResult
     public func searchPlacement(_ placement: SearchFieldPlacement) -> Self {
-        if let existingConfig = searchConfiguration {
-            searchConfiguration = SearchConfiguration.enabled(
-                prompt: existingConfig.prompt,
-                predicate: existingConfig.predicate,
-                strategy: existingConfig.strategy,
-                placement: placement,
-            )
-        } else {
-            searchConfiguration = SearchConfiguration.enabled(placement: placement)
+        updateSearchConfiguration { existingConfig in
+            if let config = existingConfig {
+                SearchConfiguration.enabled(
+                    prompt: config.prompt,
+                    predicate: config.predicate,
+                    strategy: config.strategy,
+                    placement: placement,
+                )
+            } else {
+                SearchConfiguration.enabled(placement: placement)
+            }
         }
-        return self
     }
 
     /// Sets the search configuration directly.
@@ -694,20 +839,14 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     ///   to avoid navigation conflicts. Use `buildWithoutNavigation()` instead.
     @MainActor
     public func build() -> some View {
-        let viewModel: DynamicListViewModel<Item> = if let publisher {
-            DynamicListViewModel(dataProvider: publisher, initialItems: items)
-        } else {
-            DynamicListViewModel(items: items)
-        }
+        let viewModel = createViewModel()
 
         return DynamicListWrapper(
             viewModel: viewModel,
-            rowContent: rowContent ?? { item in
-                AnyView(DefaultRowView(item: item))
-            },
+            rowContent: rowContent ?? { item in AnyView(DefaultRowView(item: item)) },
             detailContent: detailContent,
             errorContent: errorContent,
-            skeletonContent: skeletonContent,
+            skeletonContent: processFinalSkeletonContent(),
             listConfiguration: listConfiguration,
             searchConfiguration: searchConfiguration,
         )
@@ -755,23 +894,8 @@ public final class DynamicListBuilder<Item: Identifiable & Hashable> {
     ///   navigation context and handles `navigationDestination` appropriately.
     @MainActor
     public func buildWithoutNavigation() -> some View {
-        let viewModel: DynamicListViewModel<Item> = if let publisher {
-            DynamicListViewModel(dataProvider: publisher, initialItems: items)
-        } else {
-            DynamicListViewModel(items: items)
-        }
-
-        return DynamicListContent(
-            viewModel: viewModel,
-            rowContent: rowContent ?? { item in
-                AnyView(DefaultRowView(item: item))
-            },
-            detailContent: detailContent,
-            errorContent: errorContent,
-            skeletonContent: skeletonContent,
-            listConfiguration: listConfiguration,
-            searchConfiguration: searchConfiguration,
-        )
+        let viewModel = createViewModel()
+        return createContentView(viewModel: viewModel)
     }
 }
 
@@ -817,8 +941,7 @@ public extension DynamicListBuilder {
         @ViewBuilder rowContent: @escaping (Item) -> some View,
         @ViewBuilder detailContent: @escaping (Item) -> some View,
     ) -> some View {
-        DynamicListBuilder<Item>()
-            .title(title)
+        createFactoryBuilder(title: title)
             .items(items)
             .rowContent(rowContent)
             .detailContent(detailContent)
@@ -858,7 +981,7 @@ public extension DynamicListBuilder {
         @ViewBuilder rowContent: @escaping (Item) -> some View,
         @ViewBuilder detailContent: @escaping (Item) -> some View,
     ) -> some View {
-        DynamicListBuilder<Item>()
+        createFactoryBuilder()
             .publisher { publisher }
             .rowContent(rowContent)
             .detailContent(detailContent)
@@ -901,10 +1024,16 @@ public extension DynamicListBuilder {
         @ViewBuilder rowContent: @escaping (Item) -> some View,
         @ViewBuilder detailContent: @escaping (Item) -> some View,
     ) -> some View {
-        DynamicListBuilder<Item>()
+        createFactoryBuilder()
             .simulatedPublisher(items, delay: delay)
             .rowContent(rowContent)
             .detailContent(detailContent)
             .buildWithoutNavigation()
+    }
+
+    /// Creates a pre-configured builder instance for factory methods
+    private static func createFactoryBuilder(title: String = "") -> DynamicListBuilder<Item> {
+        let builder = DynamicListBuilder<Item>()
+        return title.isEmpty ? builder : builder.title(title)
     }
 }

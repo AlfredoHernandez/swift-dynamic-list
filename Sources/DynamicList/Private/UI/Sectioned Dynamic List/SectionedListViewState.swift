@@ -3,44 +3,44 @@
 //
 
 /// Represents the complete view state for a sectioned dynamic list
-public struct SectionedListViewState<Item: Identifiable & Hashable>: Equatable {
+struct SectionedListViewState<Item: Identifiable & Hashable>: Equatable, DynamicListViewStateProtocol {
     /// The current loading state
-    public let loadingState: LoadingState
+    let loadingState: LoadingState
 
     /// The sections to display in the list
-    public let sections: [ListSection<Item>]
+    let sections: [ListSection<Item>]
 
     /// Creates a new sectioned view state
     /// - Parameters:
     ///   - loadingState: The current loading state
     ///   - sections: The sections to display
-    public init(loadingState: LoadingState, sections: [ListSection<Item>]) {
+    init(loadingState: LoadingState, sections: [ListSection<Item>]) {
         self.loadingState = loadingState
         self.sections = sections
     }
 
     /// Creates an idle state with the given sections
-    public static func idle(sections: [ListSection<Item>] = []) -> Self {
+    static func idle(sections: [ListSection<Item>] = []) -> Self {
         Self(loadingState: .idle, sections: sections)
     }
 
     /// Creates a loading state with the given sections (useful for showing previous data while loading new data)
-    public static func loading(sections: [ListSection<Item>] = []) -> Self {
+    static func loading(sections: [ListSection<Item>] = []) -> Self {
         Self(loadingState: .loading, sections: sections)
     }
 
     /// Creates a loaded state with the given sections
-    public static func loaded(sections: [ListSection<Item>]) -> Self {
+    static func loaded(sections: [ListSection<Item>]) -> Self {
         Self(loadingState: .loaded, sections: sections)
     }
 
     /// Creates an error state with the given error and sections
-    public static func error(_ error: Error, sections: [ListSection<Item>] = []) -> Self {
+    static func error(_ error: Error, sections: [ListSection<Item>] = []) -> Self {
         Self(loadingState: .error(error), sections: sections)
     }
 
     /// Convenience initializer from array of arrays
-    public static func fromArrays(_ arrays: [[Item]], titles: [String?] = []) -> Self {
+    static func fromArrays(_ arrays: [[Item]], titles: [String?] = []) -> Self {
         let sections = zip(arrays, titles).map { items, title in
             ListSection(title: title, items: items)
         }
