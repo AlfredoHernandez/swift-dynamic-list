@@ -104,11 +104,11 @@ final class DynamicListViewModel<Item: Identifiable & Hashable>: DynamicListView
         preserveCurrentItemsWhileLoading()
 
         provider()
-            .subscribe(on: ioScheduler)
             .map { [weak self] items -> [Item] in
                 self?.storeUnfilteredItems(items)
                 return self?.applySearchFilter(to: items) ?? items
             }
+            .subscribe(on: ioScheduler)
             .receive(on: scheduler)
             .sink(
                 receiveCompletion: { [weak self] completion in
