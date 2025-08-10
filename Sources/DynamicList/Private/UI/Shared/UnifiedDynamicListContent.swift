@@ -74,9 +74,8 @@ struct UnifiedDynamicListContent<Item: Identifiable & Hashable>: View {
     private var itemsList: some View {
         switch listType {
         case .simple:
-            ScrollToTopButton(itemCount: (viewModel.viewState as? DynamicListViewState<Item>)?.items.count ?? 0, scrollTarget: scrollIdentifier) {
-                simpleListContent
-            }
+            simpleListContent
+
         case .sectioned:
             sectionedListContent
         }
@@ -85,22 +84,21 @@ struct UnifiedDynamicListContent<Item: Identifiable & Hashable>: View {
     @ViewBuilder
     private var simpleListContent: some View {
         if let simpleState = viewModel.viewState as? DynamicListViewState<Item> {
-            List(simpleState.items) { item in
-                listRow(for: item)
+            ScrollToTopButton(itemCount: simpleState.items.count, scrollTarget: scrollIdentifier) {
+                List(simpleState.items) { item in
+                    listRow(for: item)
+                }
+                .modifier(ListStyleModifier(style: listConfiguration.style))
+                .refreshable {
+                    viewModel.refresh()
+                }
             }
-            .modifier(ListStyleModifier(style: listConfiguration.style))
-            .refreshable {
-                viewModel.refresh()
-            }
-        } else {
-            EmptyView()
         }
     }
 
     @ViewBuilder
     private var sectionedListContent: some View {
         List {
-            // Use dynamic sections from viewModel's viewState instead of static listType
             if let sectionedState = viewModel.viewState as? SectionedListViewState<Item> {
                 ForEach(sectionedState.sections) { section in
                     Section {
