@@ -23,8 +23,8 @@ struct SearchViewModelTests {
 
     // MARK: - DynamicListViewModel Search Tests
 
-    @Test("When search text is empty returns all items")
-    func whenSearchTextIsEmpty_returnsAllItems() {
+    @Test("DynamicListViewModel returns all items on empty search text")
+    func dynamicListViewModel_returnsAllItemsOnEmptySearchText() {
         let users = [
             SearchableUser(name: "Ana", email: "ana@test.com", role: "Admin"),
             SearchableUser(name: "Bob", email: "bob@test.com", role: "User"),
@@ -44,8 +44,8 @@ struct SearchViewModelTests {
         #expect(viewModel.items.contains(where: { $0.name == "Bob" }))
     }
 
-    @Test("When search text matches name filters correctly")
-    func whenSearchTextMatchesName_filtersCorrectly() {
+    @Test("DynamicListViewModel filters correctly when search text matches name")
+    func dynamicListViewModel_filtersCorrectlyWhenSearchTextMatchesName() {
         let users = [
             SearchableUser(name: "Ana", email: "ana@test.com", role: "Admin"),
             SearchableUser(name: "Bob", email: "bob@test.com", role: "User"),
@@ -68,8 +68,8 @@ struct SearchViewModelTests {
         #expect(viewModel.items.first?.name == "Ana")
     }
 
-    @Test("When search text matches email filters correctly")
-    func whenSearchTextMatchesEmail_filtersCorrectly() {
+    @Test("DynamicListViewModel filters correctly when search text matches email")
+    func dynamicListViewModel_filtersCorrectlyWhenSearchTextMatchesEmail() {
         let users = [
             SearchableUser(name: "Ana", email: "ana@test.com", role: "Admin"),
             SearchableUser(name: "Bob", email: "bob@test.com", role: "User"),
@@ -92,8 +92,8 @@ struct SearchViewModelTests {
         #expect(viewModel.items.first?.name == "Bob")
     }
 
-    @Test("When using custom predicate filters correctly")
-    func whenUsingCustomPredicate_filtersCorrectly() {
+    @Test("DynamicListViewModel filters correctly with custom predicate")
+    func dynamicListViewModel_filtersCorrectlyWithCustomPredicate() {
         let users = [
             SearchableUser(name: "Ana", email: "ana@test.com", role: "Admin"),
             SearchableUser(name: "Bob", email: "bob@test.com", role: "User"),
@@ -118,8 +118,8 @@ struct SearchViewModelTests {
         #expect(viewModel.items.first?.role == "Admin")
     }
 
-    @Test("When no search configuration uses fallback filtering")
-    func whenNoSearchConfiguration_usesFallbackFiltering() {
+    @Test("DynamicListViewModel uses fallback filtering without search configuration")
+    func dynamicListViewModel_usesFallbackFilteringWithoutSearchConfiguration() {
         let users = [
             SearchableUser(name: "Ana", email: "ana@test.com", role: "Admin"),
             SearchableUser(name: "Bob", email: "bob@test.com", role: "User"),
@@ -138,8 +138,8 @@ struct SearchViewModelTests {
 
     // MARK: - SectionedDynamicListViewModel Search Tests
 
-    @Test("When search text is empty returns all sections")
-    func whenSearchTextIsEmpty_returnsAllSections() {
+    @Test("SectionedDynamicListViewModel returns all sections on empty search text")
+    func sectionedDynamicListViewModel_returnsAllSectionsOnEmptySearchText() {
         let sections = [
             ListSection(
                 title: "Admins",
@@ -169,8 +169,8 @@ struct SearchViewModelTests {
         #expect(viewModel.sections[1].title == "Users")
     }
 
-    @Test("When search text matches items in one section filters correctly")
-    func whenSearchTextMatchesItemsInOneSection_filtersCorrectly() {
+    @Test("SectionedDynamicListViewModel filters correctly when search text matches items in one section")
+    func sectionedDynamicListViewModel_filtersCorrectlyWhenSearchTextMatchesItemsInOneSection() {
         let sections = [
             ListSection(
                 title: "Admins",
@@ -201,8 +201,8 @@ struct SearchViewModelTests {
         #expect(viewModel.sections[0].items.first?.name == "Ana")
     }
 
-    @Test("When search text matches items in multiple sections shows all matching sections")
-    func whenSearchTextMatchesItemsInMultipleSections_showsAllMatchingSections() {
+    @Test("SectionedDynamicListViewModel shows all matching sections when search text matches items in multiple sections")
+    func sectionedDynamicListViewModel_showsAllMatchingSectionsWhenSearchTextMatchesItemsInMultipleSections() {
         let sections = [
             ListSection(
                 title: "Admins",
@@ -234,8 +234,8 @@ struct SearchViewModelTests {
         #expect(viewModel.sections[1].items.first?.name == "Alice")
     }
 
-    @Test("When search text matches no items returns empty sections")
-    func whenSearchTextMatchesNoItems_returnsEmptySections() {
+    @Test("SectionedDynamicListViewModel returns empty sections when search text matches no items")
+    func sectionedDynamicListViewModel_returnsEmptySectionsWhenSearchTextMatchesNoItems() {
         let sections = [
             ListSection(
                 title: "Admins",
@@ -263,8 +263,8 @@ struct SearchViewModelTests {
         #expect(viewModel.sections.isEmpty)
     }
 
-    @Test("When using exact match strategy filters correctly")
-    func whenUsingExactMatchStrategy_filtersCorrectly() {
+    @Test("SectionedDynamicListViewModel filters correctly with exact match strategy")
+    func sectionedDynamicListViewModel_filtersCorrectlyWithExactMatchStrategy() {
         let sections = [
             ListSection(
                 title: "Admins",
@@ -298,8 +298,8 @@ struct SearchViewModelTests {
 
     // MARK: - Search State Tests
 
-    @Test("When search text is updated in view model reflects in searchText property")
-    func whenSearchTextIsUpdatedInViewModel_reflectsInSearchTextProperty() {
+    @Test("DynamicListViewModel searchText property reflects updates")
+    func dynamicListViewModel_searchTextPropertyReflectsUpdates() {
         let users = [
             SearchableUser(name: "Ana", email: "ana@test.com", role: "Admin"),
             SearchableUser(name: "Bob", email: "bob@test.com", role: "User"),
@@ -327,8 +327,8 @@ struct SearchViewModelTests {
         #expect(viewModel.searchText.isEmpty)
     }
 
-    @Test("When search text is updated directly triggers automatic filtering")
-    func whenSearchTextIsUpdatedDirectly_triggersAutomaticFiltering() {
+    @Test("DynamicListViewModel triggers automatic filtering on direct search text update")
+    func dynamicListViewModel_triggersAutomaticFilteringOnDirectSearchTextUpdate() {
         let users = [
             SearchableUser(name: "Ana", email: "ana@test.com", role: "Admin"),
             SearchableUser(name: "Bob", email: "bob@test.com", role: "User"),
@@ -364,8 +364,8 @@ struct SearchViewModelTests {
         #expect(viewModel.items.count == 2)
     }
 
-    @Test("When search text is updated directly in sectioned view model triggers automatic filtering")
-    func whenSearchTextIsUpdatedDirectlyInSectionedViewModel_triggersAutomaticFiltering() {
+    @Test("SectionedDynamicListViewModel triggers automatic filtering on direct search text update")
+    func sectionedDynamicListViewModel_triggersAutomaticFilteringOnDirectSearchTextUpdate() {
         let sections = [
             ListSection(
                 title: "Admins",
@@ -409,8 +409,8 @@ struct SearchViewModelTests {
         #expect(viewModel.sections.count == 2)
     }
 
-    @Test("When search text is updated in sectioned view model reflects in searchText property")
-    func whenSearchTextIsUpdatedInSectionedViewModel_reflectsInSearchTextProperty() {
+    @Test("SectionedDynamicListViewModel searchText property reflects updates")
+    func sectionedDynamicListViewModel_searchTextPropertyReflectsUpdates() {
         let sections = [
             ListSection(
                 title: "Admins",
