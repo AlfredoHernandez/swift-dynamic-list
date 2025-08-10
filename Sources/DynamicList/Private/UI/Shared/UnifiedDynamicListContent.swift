@@ -96,8 +96,9 @@ struct UnifiedDynamicListContent<Item: Identifiable & Hashable>: View {
     @ViewBuilder
     private var sectionedListContent: some View {
         List {
-            if case let .sectioned(sections) = listType {
-                ForEach(sections) { section in
+            // Use dynamic sections from viewModel's viewState instead of static listType
+            if let sectionedState = viewModel.viewState as? SectionedListViewState<Item> {
+                ForEach(sectionedState.sections) { section in
                     Section {
                         ForEach(section.items) { item in
                             listRow(for: item)
@@ -144,7 +145,16 @@ struct UnifiedDynamicListContent<Item: Identifiable & Hashable>: View {
     }
 
     private func isFirstItem(_ item: Item) -> Bool {
-        listType.allItems.firstIndex(of: item) == 0
+        // Use dynamic sections from viewModel's viewState
+        switch listType {
+        case .simple:
+            return listType.allItems.firstIndex(of: item) == 0
+        case .sectioned:
+            if let sectionedState = viewModel.viewState as? SectionedListViewState<Item> {
+                return sectionedState.sections.first?.items.firstIndex(of: item) == 0
+            }
+            return false
+        }
     }
 
     @ViewBuilder
