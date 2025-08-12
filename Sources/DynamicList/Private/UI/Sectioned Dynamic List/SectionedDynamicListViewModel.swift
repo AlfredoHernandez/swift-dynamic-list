@@ -18,10 +18,10 @@ final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: Dynami
     private(set) var viewState: SectionedListViewState<Item>
 
     /// Scheduler for UI updates
-    var scheduler: AnySchedulerOf<DispatchQueue>
+    private var scheduler: AnySchedulerOf<DispatchQueue>
 
     /// Scheduler for background operations like filtering
-    var ioScheduler: AnySchedulerOf<DispatchQueue>
+    private var ioScheduler: AnySchedulerOf<DispatchQueue>
 
     /// The data provider closure that returns a publisher
     private var dataProvider: (() -> AnyPublisher<[[Item]], Error>)?
