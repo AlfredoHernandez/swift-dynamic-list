@@ -116,13 +116,7 @@ final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: Dynami
                     return Just(sections).setFailureType(to: Error.self).eraseToAnyPublisher()
                 }
 
-                return searchTextSubject
-                    .map { searchText in
-                        let sections = arrays.map { ListSection(title: nil, items: $0) }
-                        self.originalSections = sections
-                        return self.applySearchFilter(to: sections, searchText: searchText)
-                    }
-                    .eraseToAnyPublisher()
+                return createFilteredSectionsPublisher(from: arrays)
             }
             .subscribe(on: ioScheduler)
             .receive(on: scheduler)
@@ -131,7 +125,7 @@ final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: Dynami
                     self?.handleDataLoadCompletion(completion)
                 },
                 receiveValue: { [weak self] filteredSections in
-                    self?.viewState = .loaded(sections: filteredSections)
+                    self?.updateViewStateWithLoadedSections(filteredSections)
                 },
             )
             .store(in: &cancellables)
@@ -158,6 +152,10 @@ final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: Dynami
     }
 
     func search(query: String) {
+        updateSearchText(query)
+    }
+
+    private func updateSearchText(_ query: String) {
         searchText = query
     }
 
@@ -273,6 +271,20 @@ final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: Dynami
             items: filteredItems,
             footer: section.footer,
         )
+    }
+
+    private func createFilteredSectionsPublisher(from arrays: [[Item]]) -> AnyPublisher<[ListSection<Item>], Error> {
+        searchTextSubject
+            .map { searchText in
+                let sections = arrays.map { ListSection(title: nil, items: $0) }
+                self.originalSections = sections
+                return self.applySearchFilter(to: sections, searchText: searchText)
+            }
+            .eraseToAnyPublisher()
+    }
+
+    private func updateViewStateWithLoadedSections(_ sections: [ListSection<Item>]) {
+        viewState = .loaded(sections: sections)
     }
 
     // MARK: - Convenience Properties
