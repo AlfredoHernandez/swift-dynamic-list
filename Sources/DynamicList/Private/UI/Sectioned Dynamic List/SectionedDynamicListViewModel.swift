@@ -14,34 +14,19 @@ import Foundation
 final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: DynamicListViewModelProtocol {
     // MARK: - Private Properties
 
-    /// The current view state
     private(set) var viewState: SectionedListViewState<Item>
-
-    /// Scheduler for UI updates
     private var scheduler: AnySchedulerOf<DispatchQueue>
-
-    /// Scheduler for background operations like filtering
     private var ioScheduler: AnySchedulerOf<DispatchQueue>
-
-    /// The data provider closure that returns a publisher
     private var dataProvider: (() -> AnyPublisher<[[Item]], Error>)?
-
-    /// The current subscription to the data provider
     private var cancellables = Set<AnyCancellable>()
-
-    /// Search configuration for filtering items
     private(set) var searchConfiguration: SearchConfiguration<Item>?
-
-    /// Search text subject for reactive filtering
     private let searchTextSubject = CurrentValueSubject<String, Error>("")
 
-    /// Current search text
     var searchText: String {
         get { searchTextSubject.value }
         set { searchTextSubject.send(newValue) }
     }
 
-    /// Current unfiltered sections (for filtering operations)
     private var originalSections: [ListSection<Item>] = []
 
     // MARK: - Initialization
@@ -122,10 +107,6 @@ final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: Dynami
         loadData()
     }
 
-    /// Refreshes the data by calling the current data provider again.
-    ///
-    /// This method will trigger a new subscription to the data provider, effectively
-    /// reloading the data.
     func refresh() {
         loadData()
     }
@@ -138,9 +119,6 @@ final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: Dynami
         searchText = query
     }
 
-    /// Updates the sections with new data.
-    ///
-    /// - Parameter sections: The new sections to display
     func updateSections(_ sections: [ListSection<Item>]) {
         originalSections = sections
         viewState = .loaded(sections: sections)
@@ -160,9 +138,6 @@ final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: Dynami
 
     // MARK: - Search Methods
 
-    /// Sets the search configuration for filtering items.
-    ///
-    /// - Parameter configuration: The search configuration to use for filtering.
     func setSearchConfiguration(_ configuration: SearchConfiguration<Item>?) {
         searchConfiguration = configuration
     }
@@ -295,17 +270,14 @@ final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: Dynami
 
     // MARK: - Convenience Properties
 
-    /// The collection of sections to be displayed.
     var sections: [ListSection<Item>] {
         viewState.sections
     }
 
-    /// Indicates whether data is currently being loaded.
     var isLoading: Bool {
         viewState.isLoading
     }
 
-    /// Contains any error that occurred during data loading.
     var error: Error? {
         viewState.error
     }
