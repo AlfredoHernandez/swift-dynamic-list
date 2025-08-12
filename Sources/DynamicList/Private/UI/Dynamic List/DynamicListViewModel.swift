@@ -31,18 +31,17 @@ final class DynamicListViewModel<Item: Identifiable & Hashable>: DynamicListView
     /// Search configuration for filtering items
     private var searchConfiguration: SearchConfiguration<Item>?
 
+    /// Publisher for search text changes
+    private let searchTextSubject = CurrentValueSubject<String, Error>("")
+
     /// Current search text
-    var searchText: String = "" {
-        didSet {
-            // Trigger filtering when search text changes
-            if oldValue != searchText {
-                applySearchFilterOnBackground()
-            }
-        }
+    var searchText: String {
+        get { searchTextSubject.value }
+        set { searchTextSubject.send(newValue) }
     }
 
-    /// Current unfiltered items (for filtering operations)
-    private var allItems: [Item] = []
+    /// Original items for filtering (used for static data)
+    private var originalItems: [Item] = []
 
     /// Initializes the view model with an initial set of items.
     /// - Parameters:
@@ -57,7 +56,10 @@ final class DynamicListViewModel<Item: Identifiable & Hashable>: DynamicListView
         viewState = .idle(items: items)
         self.scheduler = scheduler
         self.ioScheduler = ioScheduler
-        allItems = items
+        originalItems = items
+
+        // Set up search text observer for static data
+        setupSearchTextObserver()
     }
 
     /// Initializes the view model with a data provider closure that returns a publisher.
@@ -81,7 +83,9 @@ final class DynamicListViewModel<Item: Identifiable & Hashable>: DynamicListView
         viewState = .loading(items: initialItems)
         self.scheduler = scheduler
         self.ioScheduler = ioScheduler
-        allItems = initialItems
+
+        // Set up search text observer for reactive data
+        setupSearchTextObserver()
     }
 
     /// Updates the items by subscribing to a new data provider.
@@ -91,6 +95,7 @@ final class DynamicListViewModel<Item: Identifiable & Hashable>: DynamicListView
     /// - Parameter dataProvider: A new closure that returns a publisher emitting arrays of items.
     func loadItems(from dataProvider: @escaping () -> AnyPublisher<[Item], Error>) {
         self.dataProvider = dataProvider
+        setupSearchTextObserver()
         loadData()
     }
 
@@ -104,9 +109,15 @@ final class DynamicListViewModel<Item: Identifiable & Hashable>: DynamicListView
         preserveCurrentItemsWhileLoading()
 
         provider()
-            .map { [weak self] items -> [Item] in
-                self?.storeUnfilteredItems(items)
-                return self?.applySearchFilter(to: items) ?? items
+            .flatMap { [weak self] items -> AnyPublisher<[Item], Error> in
+                guard let self else { return Just(items).setFailureType(to: Error.self).eraseToAnyPublisher() }
+
+                return searchTextSubject
+                    .map { searchText in
+                        self.originalItems = items
+                        return self.applySearchFilter(to: items, searchText: searchText)
+                    }
+                    .eraseToAnyPublisher()
             }
             .subscribe(on: ioScheduler)
             .receive(on: scheduler)
@@ -129,6 +140,14 @@ final class DynamicListViewModel<Item: Identifiable & Hashable>: DynamicListView
         loadData()
     }
 
+    func search(query: String) {
+        searchText = query
+        // For static data (no dataProvider), apply filtering immediately and synchronously
+        if dataProvider == nil {
+            applySearchFilterToCurrentItems()
+        }
+    }
+
     /// Sets the search configuration for filtering items.
     ///
     /// - Parameter configuration: The search configuration to use for filtering.
@@ -136,15 +155,30 @@ final class DynamicListViewModel<Item: Identifiable & Hashable>: DynamicListView
         searchConfiguration = configuration
     }
 
-    /// Applies search filter on background thread when search text changes.
-    private func applySearchFilterOnBackground() {
-        ioScheduler.schedule {
-            let filteredItems = self.applySearchFilter(to: self.allItems)
+    /// Sets up the search text observer to handle filtering for static data.
+    private func setupSearchTextObserver() {
+        searchTextSubject
+            .dropFirst() // Skip initial empty value
+            .subscribe(on: ioScheduler)
+            .receive(on: scheduler)
+            .sink(
+                receiveCompletion: { _ in },
+                receiveValue: { [weak self] _ in
+                    // Only apply filtering for static data (no dataProvider)
+                    if self?.dataProvider == nil {
+                        self?.applySearchFilterToCurrentItems()
+                    }
+                },
+            )
+            .store(in: &cancellables)
+    }
 
-            self.scheduler.schedule {
-                self.viewState = .loaded(items: filteredItems)
-            }
-        }
+    /// Applies search filter to current items when search text changes.
+    /// This method is used for static data scenarios.
+    private func applySearchFilterToCurrentItems() {
+        let currentItems = originalItems
+        let filteredItems = applySearchFilter(to: currentItems, searchText: searchText)
+        viewState = .loaded(items: filteredItems)
     }
 
     // MARK: - Private Helper Methods
@@ -157,10 +191,6 @@ final class DynamicListViewModel<Item: Identifiable & Hashable>: DynamicListView
         viewState = .loading(items: viewState.items)
     }
 
-    private func storeUnfilteredItems(_ items: [Item]) {
-        allItems = items
-    }
-
     private func handleDataLoadCompletion(_ completion: Subscribers.Completion<Error>) {
         switch completion {
         case .finished: break
@@ -171,9 +201,11 @@ final class DynamicListViewModel<Item: Identifiable & Hashable>: DynamicListView
 
     /// Applies search filter to the given items.
     ///
-    /// - Parameter items: The items to filter.
+    /// - Parameters:
+    ///   - items: The items to filter.
+    ///   - searchText: The search text to filter by.
     /// - Returns: The filtered array of items.
-    private func applySearchFilter(to items: [Item]) -> [Item] {
+    private func applySearchFilter(to items: [Item], searchText: String) -> [Item] {
         guard !searchText.isEmpty else {
             return items
         }
@@ -181,15 +213,19 @@ final class DynamicListViewModel<Item: Identifiable & Hashable>: DynamicListView
         return items.filter { item in
             if let searchConfiguration {
                 if let predicate = searchConfiguration.predicate {
-                    return predicate(item, searchText)
+                    let result = predicate(item, searchText)
+                    return result
                 } else if let searchableItem = item as? Searchable {
                     let strategy = searchConfiguration.strategy ?? PartialMatchStrategy()
-                    return strategy.matches(query: searchText, in: searchableItem)
+                    let result = strategy.matches(query: searchText, in: searchableItem)
+
+                    return result
                 }
             }
 
             // Fallback: try to use description if available
-            return String(describing: item).lowercased().contains(searchText.lowercased())
+            let result = String(describing: item).lowercased().contains(searchText.lowercased())
+            return result
         }
     }
 }
