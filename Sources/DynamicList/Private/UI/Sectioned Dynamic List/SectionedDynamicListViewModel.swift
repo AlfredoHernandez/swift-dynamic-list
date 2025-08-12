@@ -61,7 +61,7 @@ final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: Dynami
         self.scheduler = scheduler
         self.ioScheduler = ioScheduler
         originalSections = sections
-        setupSearchTextObserverForStaticData()
+        setupSearchTextObserverForStaticDataMode()
     }
 
     /// Creates a new view model with static arrays of items.
@@ -94,7 +94,7 @@ final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: Dynami
         self.ioScheduler = ioScheduler
         originalSections = initialSections
         self.dataProvider = dataProvider
-        setupSearchTextObserverForStaticData()
+        setupSearchTextObserverForStaticDataMode()
     }
 
     // MARK: -  Methods
@@ -146,16 +146,26 @@ final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: Dynami
         viewState = .loaded(sections: sections)
     }
 
+    /// Updates the sections with arrays of items and their corresponding titles.
+    ///
+    /// - Parameters:
+    ///   - arrays: Array of arrays representing sections
+    ///   - titles: Optional titles for each section
+    func updateSectionsFromArrays(_ arrays: [[Item]], withTitles titles: [String?] = []) {
+        let sections = zip(arrays, titles).map { items, title in
+            ListSection(title: title, items: items)
+        }
+        updateSections(sections)
+    }
+
     /// Updates the sections with arrays of items.
     ///
     /// - Parameters:
     ///   - arrays: Array of arrays representing sections
     ///   - titles: Optional titles for each section
+    @available(*, deprecated, message: "Use updateSectionsFromArrays(_:withTitles:) instead")
     func updateSections(arrays: [[Item]], titles: [String?] = []) {
-        let sections = zip(arrays, titles).map { items, title in
-            ListSection(title: title, items: items)
-        }
-        updateSections(sections)
+        updateSectionsFromArrays(arrays, withTitles: titles)
     }
 
     // MARK: - Search Methods
@@ -169,7 +179,7 @@ final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: Dynami
 
     // MARK: - Private Helper Methods
 
-    private func setupSearchTextObserverForStaticData() {
+    private func setupSearchTextObserverForStaticDataMode() {
         searchTextSubject
             .dropFirst()
             .subscribe(on: ioScheduler)
@@ -178,23 +188,23 @@ final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: Dynami
                 receiveCompletion: { _ in },
                 receiveValue: { [weak self] _ in
                     if self?.dataProvider == nil {
-                        self?.applySearchFilterToCurrentSections()
+                        self?.filterCurrentSectionsWithSearchText()
                     }
                 },
             )
             .store(in: &cancellables)
     }
 
-    private func applySearchFilterToCurrentSections() {
+    private func filterCurrentSectionsWithSearchText() {
         let filteredSections = applySearchFilter(to: originalSections, searchText: searchText)
         viewState = .loaded(sections: filteredSections)
     }
 
-    private func cancelPreviousSubscriptions() {
+    private func clearAllSubscriptions() {
         cancellables.removeAll()
     }
 
-    private func preserveCurrentSectionsWhileLoading() {
+    private func setLoadingStateWithCurrentSections() {
         viewState = .loading(sections: viewState.sections)
     }
 
@@ -267,8 +277,8 @@ final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: Dynami
     }
 
     private func prepareForDataLoading() {
-        cancelPreviousSubscriptions()
-        preserveCurrentSectionsWhileLoading()
+        clearAllSubscriptions()
+        setLoadingStateWithCurrentSections()
     }
 
     private func subscribeToDataProvider(_ provider: () -> AnyPublisher<[[Item]], Error>) {

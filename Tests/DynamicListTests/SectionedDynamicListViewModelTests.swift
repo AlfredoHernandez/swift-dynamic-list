@@ -230,7 +230,7 @@ struct SectionedDynamicListViewModelTests {
         ]
         let titles = ["Category 1", "Category 2"]
 
-        viewModel.updateSections(arrays: arrays, titles: titles)
+        viewModel.updateSectionsFromArrays(arrays, withTitles: titles)
         #expect(viewModel.viewState.sections.count == 2)
         #expect(viewModel.viewState.sections[0].title == "Category 1")
         #expect(viewModel.viewState.sections[1].title == "Category 2")
@@ -251,7 +251,7 @@ struct SectionedDynamicListViewModelTests {
         ]
         let titles: [String?] = [nil, nil]
 
-        viewModel.updateSections(arrays: arrays, titles: titles)
+        viewModel.updateSectionsFromArrays(arrays, withTitles: titles)
         #expect(viewModel.viewState.sections.count == 2)
         #expect(viewModel.viewState.sections[0].title == nil)
         #expect(viewModel.viewState.sections[1].title == nil)
@@ -272,7 +272,7 @@ struct SectionedDynamicListViewModelTests {
         ]
 
         // When no titles are provided, zip will be empty, so no sections will be created
-        viewModel.updateSections(arrays: arrays)
+        viewModel.updateSectionsFromArrays(arrays)
         #expect(viewModel.viewState.sections.isEmpty)
     }
 
