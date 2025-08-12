@@ -158,16 +158,6 @@ final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: Dynami
         updateSections(sections)
     }
 
-    /// Updates the sections with arrays of items.
-    ///
-    /// - Parameters:
-    ///   - arrays: Array of arrays representing sections
-    ///   - titles: Optional titles for each section
-    @available(*, deprecated, message: "Use updateSectionsFromArrays(_:withTitles:) instead")
-    func updateSections(arrays: [[Item]], titles: [String?] = []) {
-        updateSectionsFromArrays(arrays, withTitles: titles)
-    }
-
     // MARK: - Search Methods
 
     /// Sets the search configuration for filtering items.
