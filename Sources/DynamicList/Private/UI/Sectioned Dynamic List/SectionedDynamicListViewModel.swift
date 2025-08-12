@@ -104,31 +104,10 @@ final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: Dynami
     /// This method will update the view state to loading and then subscribe to the
     /// data provider to receive updates.
     func loadData() {
-        guard let provider = dataProvider else { return }
+        guard let dataProvider else { return }
 
-        cancelPreviousSubscriptions()
-        preserveCurrentSectionsWhileLoading()
-
-        provider()
-            .flatMap { [weak self] arrays -> AnyPublisher<[ListSection<Item>], Error> in
-                guard let self else {
-                    let sections = arrays.map { ListSection(title: nil, items: $0) }
-                    return Just(sections).setFailureType(to: Error.self).eraseToAnyPublisher()
-                }
-
-                return createFilteredSectionsPublisher(from: arrays)
-            }
-            .subscribe(on: ioScheduler)
-            .receive(on: scheduler)
-            .sink(
-                receiveCompletion: { [weak self] completion in
-                    self?.handleDataLoadCompletion(completion)
-                },
-                receiveValue: { [weak self] filteredSections in
-                    self?.updateViewStateWithLoadedSections(filteredSections)
-                },
-            )
-            .store(in: &cancellables)
+        prepareForDataLoading()
+        subscribeToDataProvider(dataProvider)
     }
 
     /// Loads data from a new data provider.
@@ -285,6 +264,33 @@ final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: Dynami
 
     private func updateViewStateWithLoadedSections(_ sections: [ListSection<Item>]) {
         viewState = .loaded(sections: sections)
+    }
+
+    private func prepareForDataLoading() {
+        cancelPreviousSubscriptions()
+        preserveCurrentSectionsWhileLoading()
+    }
+
+    private func subscribeToDataProvider(_ provider: () -> AnyPublisher<[[Item]], Error>) {
+        provider()
+            .flatMap { [weak self] arrays -> AnyPublisher<[ListSection<Item>], Error> in
+                guard let self else {
+                    let sections = arrays.map { ListSection(title: nil, items: $0) }
+                    return Just(sections).setFailureType(to: Error.self).eraseToAnyPublisher()
+                }
+                return createFilteredSectionsPublisher(from: arrays)
+            }
+            .subscribe(on: ioScheduler)
+            .receive(on: scheduler)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    self?.handleDataLoadCompletion(completion)
+                },
+                receiveValue: { [weak self] filteredSections in
+                    self?.updateViewStateWithLoadedSections(filteredSections)
+                },
+            )
+            .store(in: &cancellables)
     }
 
     // MARK: - Convenience Properties
