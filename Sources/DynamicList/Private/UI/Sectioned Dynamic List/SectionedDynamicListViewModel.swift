@@ -242,28 +242,37 @@ final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: Dynami
 
         return sections.compactMap { section in
             let filteredItems = section.items.filter { item in
-                if let searchConfiguration {
-                    if let predicate = searchConfiguration.predicate {
-                        return predicate(item, searchText)
-                    } else if let searchableItem = item as? Searchable {
-                        let strategy = searchConfiguration.strategy ?? PartialMatchStrategy()
-                        return strategy.matches(query: searchText, in: searchableItem)
-                    }
-                }
-
-                // Fallback: try to use description if available
-                return String(describing: item).lowercased().contains(searchText.lowercased())
+                matchesSearchConfiguration(for: item, searchText: searchText)
             }
-
-            // Only include sections that have matching items
-            guard !filteredItems.isEmpty else { return nil }
-
-            return ListSection(
-                title: section.title,
-                items: filteredItems,
-                footer: section.footer,
-            )
+            return createSectionWithMatchingItems(from: section, filteredItems: filteredItems)
         }
+    }
+
+    private func matchesSearchConfiguration(for item: Item, searchText: String) -> Bool {
+        if let searchConfiguration {
+            if let predicate = searchConfiguration.predicate {
+                return predicate(item, searchText)
+            } else if let searchableItem = item as? Searchable {
+                let strategy = searchConfiguration.strategy ?? PartialMatchStrategy()
+                return strategy.matches(query: searchText, in: searchableItem)
+            }
+        }
+
+        return matchesItemDescription(item: item, searchText: searchText)
+    }
+
+    private func matchesItemDescription(item: Item, searchText: String) -> Bool {
+        String(describing: item).lowercased().contains(searchText.lowercased())
+    }
+
+    private func createSectionWithMatchingItems(from section: ListSection<Item>, filteredItems: [Item]) -> ListSection<Item>? {
+        guard !filteredItems.isEmpty else { return nil }
+
+        return ListSection(
+            title: section.title,
+            items: filteredItems,
+            footer: section.footer,
+        )
     }
 
     // MARK: - Convenience Properties
