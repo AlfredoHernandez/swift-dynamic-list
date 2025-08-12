@@ -7,46 +7,33 @@ import CombineSchedulers
 import Foundation
 import Observation
 
-/// An observable view model to hold and manage a collection of items for a `DynamicList`.
+/// A view model that manages the state of a dynamic list.
 ///
-/// This view model uses the Observation framework to allow SwiftUI views to automatically
-/// track changes to the view state. It also supports reactive data loading using Combine publishers.
+/// This view model handles loading states, error handling, and data management for lists
+/// that display data in a flat structure. It supports both static data and reactive publishers.
 @Observable
 final class DynamicListViewModel<Item: Identifiable & Hashable>: DynamicListViewModelProtocol {
-    /// The current view state containing items and loading information.
     var viewState: DynamicListViewState<Item>
+    private var scheduler: AnySchedulerOf<DispatchQueue>
+    private var ioScheduler: AnySchedulerOf<DispatchQueue>
 
-    /// Scheduler for UI updates
-    var scheduler: AnySchedulerOf<DispatchQueue>
-
-    /// Scheduler for background operations like filtering
-    var ioScheduler: AnySchedulerOf<DispatchQueue>
-
-    /// Set to store Combine subscriptions.
     private var cancellables = Set<AnyCancellable>()
-
-    /// Closure that provides a publisher for loading data.
     private var dataProvider: (() -> AnyPublisher<[Item], Error>)?
-
-    /// Search configuration for filtering items
     private var searchConfiguration: SearchConfiguration<Item>?
+    private let searchTextSubject = CurrentValueSubject<String, Error>("")
+    private var originalItems: [Item] = []
 
-    /// Current search text
-    var searchText: String = "" {
-        didSet {
-            // Trigger filtering when search text changes
-            if oldValue != searchText {
-                applySearchFilterOnBackground()
-            }
-        }
+    var searchText: String {
+        get { searchTextSubject.value }
+        set { searchTextSubject.send(newValue) }
     }
 
-    /// Current unfiltered items (for filtering operations)
-    private var allItems: [Item] = []
+    // MARK: - Initialization
 
-    /// Initializes the view model with an initial set of items.
+    /// Creates a new view model with static items.
+    ///
     /// - Parameters:
-    ///   - items: The initial array of items. Defaults to an empty array.
+    ///   - items: The items to display in the list.
     ///   - scheduler: The scheduler for UI updates. Defaults to main queue.
     ///   - ioScheduler: The scheduler for background operations. Defaults to background queue.
     init(
@@ -57,18 +44,15 @@ final class DynamicListViewModel<Item: Identifiable & Hashable>: DynamicListView
         viewState = .idle(items: items)
         self.scheduler = scheduler
         self.ioScheduler = ioScheduler
-        allItems = items
+        originalItems = items
+        setupSearchTextObserverForStaticDataMode()
     }
 
-    /// Initializes the view model with a data provider closure that returns a publisher.
-    ///
-    /// This initializer allows you to connect the view model to external data sources
-    /// like Firebase, local JSON files, or any other service that returns a Combine publisher.
-    /// The closure is called each time data needs to be loaded, ensuring fresh data on refresh.
+    /// Creates a new view model with a data provider.
     ///
     /// - Parameters:
-    ///   - dataProvider: A closure that returns a Combine publisher emitting arrays of items.
-    ///   - initialItems: Initial items to display while loading. Defaults to an empty array.
+    ///   - dataProvider: A closure that returns a publisher emitting items
+    ///   - initialItems: Initial items to display while loading
     ///   - scheduler: The scheduler for UI updates. Defaults to main queue.
     ///   - ioScheduler: The scheduler for background operations. Defaults to background queue.
     init(
@@ -81,84 +65,120 @@ final class DynamicListViewModel<Item: Identifiable & Hashable>: DynamicListView
         viewState = .loading(items: initialItems)
         self.scheduler = scheduler
         self.ioScheduler = ioScheduler
-        allItems = initialItems
+        setupSearchTextObserverForStaticDataMode()
     }
 
-    /// Updates the items by subscribing to a new data provider.
+    // MARK: - Public Methods
+
+    /// Loads data from a new data provider.
     ///
-    /// This method allows you to change the data source dynamically or refresh the data.
+    /// This method will replace the current data provider and immediately start loading
+    /// data from the new provider.
     ///
-    /// - Parameter dataProvider: A new closure that returns a publisher emitting arrays of items.
+    /// - Parameters:
+    ///   - dataProvider: A closure that returns a publisher emitting items
     func loadItems(from dataProvider: @escaping () -> AnyPublisher<[Item], Error>) {
         self.dataProvider = dataProvider
         loadData()
     }
 
-    /// Loads data using the current data provider.
+    /// Loads data from the current data provider.
     ///
-    /// This method is called internally to load data and can be used to refresh the current data.
+    /// This method will update the view state to loading and then subscribe to the
+    /// data provider to receive updates.
     func loadData() {
         guard let provider = dataProvider else { return }
 
-        cancelPreviousSubscriptions()
-        preserveCurrentItemsWhileLoading()
+        prepareForDataLoading()
+        subscribeToDataProvider(provider)
+    }
 
+    func refresh() {
+        loadData()
+    }
+
+    func search(query: String) {
+        updateSearchText(query)
+        if dataProvider == nil {
+            filterCurrentItemsWithSearchText()
+        }
+    }
+
+    private func updateSearchText(_ query: String) {
+        searchText = query
+    }
+
+    func setSearchConfiguration(_ configuration: SearchConfiguration<Item>?) {
+        searchConfiguration = configuration
+    }
+
+    // MARK: - Private Helper Methods
+
+    private func prepareForDataLoading() {
+        clearAllSubscriptions()
+        setLoadingStateWithCurrentItems()
+    }
+
+    private func subscribeToDataProvider(_ provider: () -> AnyPublisher<[Item], Error>) {
         provider()
-            .subscribe(on: ioScheduler)
-            .map { [weak self] items -> [Item] in
-                self?.storeUnfilteredItems(items)
-                return self?.applySearchFilter(to: items) ?? items
+            .flatMap { [weak self] items -> AnyPublisher<[Item], Error> in
+                guard let self else { return Just(items).setFailureType(to: Error.self).eraseToAnyPublisher() }
+
+                return createFilteredItemsPublisher(from: items)
             }
+            .subscribe(on: ioScheduler)
             .receive(on: scheduler)
             .sink(
                 receiveCompletion: { [weak self] completion in
                     self?.handleDataLoadCompletion(completion)
                 },
                 receiveValue: { [weak self] filteredItems in
-                    self?.viewState = .loaded(items: filteredItems)
+                    self?.updateViewStateWithLoadedItems(filteredItems)
                 },
             )
             .store(in: &cancellables)
     }
 
-    /// Reloads the data by calling the current data provider.
-    ///
-    /// This method triggers a fresh data load using the current data provider,
-    /// ensuring that the latest data is retrieved.
-    func refresh() {
-        loadData()
-    }
-
-    /// Sets the search configuration for filtering items.
-    ///
-    /// - Parameter configuration: The search configuration to use for filtering.
-    func setSearchConfiguration(_ configuration: SearchConfiguration<Item>?) {
-        searchConfiguration = configuration
-    }
-
-    /// Applies search filter on background thread when search text changes.
-    private func applySearchFilterOnBackground() {
-        ioScheduler.schedule {
-            let filteredItems = self.applySearchFilter(to: self.allItems)
-
-            self.scheduler.schedule {
-                self.viewState = .loaded(items: filteredItems)
+    private func createFilteredItemsPublisher(from items: [Item]) -> AnyPublisher<[Item], Error> {
+        searchTextSubject
+            .map { searchText in
+                self.originalItems = items
+                return self.applySearchFilter(to: items, searchText: searchText)
             }
-        }
+            .eraseToAnyPublisher()
     }
 
-    // MARK: - Private Helper Methods
+    private func updateViewStateWithLoadedItems(_ items: [Item]) {
+        viewState = .loaded(items: items)
+    }
 
-    private func cancelPreviousSubscriptions() {
+    private func setupSearchTextObserverForStaticDataMode() {
+        searchTextSubject
+            .dropFirst()
+            .subscribe(on: ioScheduler)
+            .receive(on: scheduler)
+            .sink(
+                receiveCompletion: { _ in },
+                receiveValue: { [weak self] _ in
+                    if self?.dataProvider == nil {
+                        self?.filterCurrentItemsWithSearchText()
+                    }
+                },
+            )
+            .store(in: &cancellables)
+    }
+
+    private func filterCurrentItemsWithSearchText() {
+        let filteredItems = applySearchFilter(to: originalItems, searchText: searchText)
+        viewState = .loaded(items: filteredItems)
+    }
+
+    private func clearAllSubscriptions() {
         cancellables.removeAll()
     }
 
-    private func preserveCurrentItemsWhileLoading() {
+    private func setLoadingStateWithCurrentItems() {
         viewState = .loading(items: viewState.items)
-    }
-
-    private func storeUnfilteredItems(_ items: [Item]) {
-        allItems = items
     }
 
     private func handleDataLoadCompletion(_ completion: Subscribers.Completion<Error>) {
@@ -171,12 +191,12 @@ final class DynamicListViewModel<Item: Identifiable & Hashable>: DynamicListView
 
     /// Applies search filter to the given items.
     ///
-    /// - Parameter items: The items to filter.
+    /// - Parameters:
+    ///   - items: The items to filter.
+    ///   - searchText: The search text to filter by.
     /// - Returns: The filtered array of items.
-    private func applySearchFilter(to items: [Item]) -> [Item] {
-        guard !searchText.isEmpty else {
-            return items
-        }
+    private func applySearchFilter(to items: [Item], searchText: String) -> [Item] {
+        guard !searchText.isEmpty else { return items }
 
         return items.filter { item in
             if let searchConfiguration {
@@ -188,27 +208,15 @@ final class DynamicListViewModel<Item: Identifiable & Hashable>: DynamicListView
                 }
             }
 
-            // Fallback: try to use description if available
             return String(describing: item).lowercased().contains(searchText.lowercased())
         }
     }
 }
 
-// MARK: - Convenience Properties (for backward compatibility)
+// MARK: - Convenience Properties
 
 extension DynamicListViewModel {
-    /// The collection of items to be displayed.
-    var items: [Item] {
-        viewState.items
-    }
-
-    /// Indicates whether data is currently being loaded.
-    var isLoading: Bool {
-        viewState.isLoading
-    }
-
-    /// Contains any error that occurred during data loading.
-    var error: Error? {
-        viewState.error
-    }
+    var items: [Item] { viewState.items }
+    var isLoading: Bool { viewState.isLoading }
+    var error: Error? { viewState.error }
 }

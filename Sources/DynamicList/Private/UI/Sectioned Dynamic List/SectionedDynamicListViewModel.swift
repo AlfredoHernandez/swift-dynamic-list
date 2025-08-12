@@ -14,36 +14,20 @@ import Foundation
 final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: DynamicListViewModelProtocol {
     // MARK: - Private Properties
 
-    /// The current view state
     private(set) var viewState: SectionedListViewState<Item>
-
-    /// Scheduler for UI updates
-    var scheduler: AnySchedulerOf<DispatchQueue>
-
-    /// Scheduler for background operations like filtering
-    var ioScheduler: AnySchedulerOf<DispatchQueue>
-
-    /// The data provider closure that returns a publisher
+    private var scheduler: AnySchedulerOf<DispatchQueue>
+    private var ioScheduler: AnySchedulerOf<DispatchQueue>
     private var dataProvider: (() -> AnyPublisher<[[Item]], Error>)?
-
-    /// The current subscription to the data provider
     private var cancellables = Set<AnyCancellable>()
-
-    /// Search configuration for filtering items
     private(set) var searchConfiguration: SearchConfiguration<Item>?
+    private let searchTextSubject = CurrentValueSubject<String, Error>("")
 
-    /// Current search text
-    var searchText: String = "" {
-        didSet {
-            // Trigger filtering when search text changes
-            if oldValue != searchText {
-                applySearchFilterOnBackground()
-            }
-        }
+    var searchText: String {
+        get { searchTextSubject.value }
+        set { searchTextSubject.send(newValue) }
     }
 
-    /// Current unfiltered sections (for filtering operations)
-    private var allSections: [ListSection<Item>] = []
+    private var originalSections: [ListSection<Item>] = []
 
     // MARK: - Initialization
 
@@ -61,7 +45,8 @@ final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: Dynami
         viewState = .idle(sections: sections)
         self.scheduler = scheduler
         self.ioScheduler = ioScheduler
-        allSections = sections
+        originalSections = sections
+        setupSearchTextObserverForStaticDataMode()
     }
 
     /// Creates a new view model with static arrays of items.
@@ -92,8 +77,9 @@ final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: Dynami
         viewState = .idle(sections: initialSections)
         self.scheduler = scheduler
         self.ioScheduler = ioScheduler
-        allSections = initialSections
+        originalSections = initialSections
         self.dataProvider = dataProvider
+        setupSearchTextObserverForStaticDataMode()
     }
 
     // MARK: -  Methods
@@ -105,26 +91,8 @@ final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: Dynami
     func loadData() {
         guard let dataProvider else { return }
 
-        viewState = .loading(sections: viewState.sections)
-
-        dataProvider()
-            .map { [weak self] arrays -> [ListSection<Item>] in
-                let sections = arrays.map { ListSection(title: nil, items: $0) }
-
-                self?.storeUnfilteredSections(sections)
-                return self?.applySearchFilter(to: sections) ?? sections
-            }
-            .subscribe(on: ioScheduler)
-            .receive(on: scheduler)
-            .sink(
-                receiveCompletion: { [weak self] completion in
-                    self?.handleDataLoadCompletion(completion)
-                },
-                receiveValue: { [weak self] filteredSections in
-                    self?.viewState = .loaded(sections: filteredSections)
-                },
-            )
-            .store(in: &cancellables)
+        prepareForDataLoading()
+        subscribeToDataProvider(dataProvider)
     }
 
     /// Loads data from a new data provider.
@@ -139,27 +107,29 @@ final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: Dynami
         loadData()
     }
 
-    /// Refreshes the data by calling the current data provider again.
-    ///
-    /// This method will trigger a new subscription to the data provider, effectively
-    /// reloading the data.
     func refresh() {
         loadData()
     }
 
-    /// Updates the sections with new data.
-    ///
-    /// - Parameter sections: The new sections to display
+    func search(query: String) {
+        updateSearchText(query)
+    }
+
+    private func updateSearchText(_ query: String) {
+        searchText = query
+    }
+
     func updateSections(_ sections: [ListSection<Item>]) {
+        originalSections = sections
         viewState = .loaded(sections: sections)
     }
 
-    /// Updates the sections with arrays of items.
+    /// Updates the sections with arrays of items and their corresponding titles.
     ///
     /// - Parameters:
     ///   - arrays: Array of arrays representing sections
     ///   - titles: Optional titles for each section
-    func updateSections(arrays: [[Item]], titles: [String?] = []) {
+    func updateSectionsFromArrays(_ arrays: [[Item]], withTitles titles: [String?] = []) {
         let sections = zip(arrays, titles).map { items, title in
             ListSection(title: title, items: items)
         }
@@ -168,28 +138,39 @@ final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: Dynami
 
     // MARK: - Search Methods
 
-    /// Sets the search configuration for filtering items.
-    ///
-    /// - Parameter configuration: The search configuration to use for filtering.
     func setSearchConfiguration(_ configuration: SearchConfiguration<Item>?) {
         searchConfiguration = configuration
     }
 
-    /// Applies search filter on background thread when search text changes.
-    private func applySearchFilterOnBackground() {
-        ioScheduler.schedule {
-            let filteredSections = self.applySearchFilter(to: self.allSections)
-
-            self.scheduler.schedule {
-                self.viewState = .loaded(sections: filteredSections)
-            }
-        }
-    }
-
     // MARK: - Private Helper Methods
 
-    private func storeUnfilteredSections(_ sections: [ListSection<Item>]) {
-        allSections = sections
+    private func setupSearchTextObserverForStaticDataMode() {
+        searchTextSubject
+            .dropFirst()
+            .subscribe(on: ioScheduler)
+            .receive(on: scheduler)
+            .sink(
+                receiveCompletion: { _ in },
+                receiveValue: { [weak self] _ in
+                    if self?.dataProvider == nil {
+                        self?.filterCurrentSectionsWithSearchText()
+                    }
+                },
+            )
+            .store(in: &cancellables)
+    }
+
+    private func filterCurrentSectionsWithSearchText() {
+        let filteredSections = applySearchFilter(to: originalSections, searchText: searchText)
+        viewState = .loaded(sections: filteredSections)
+    }
+
+    private func clearAllSubscriptions() {
+        cancellables.removeAll()
+    }
+
+    private func setLoadingStateWithCurrentSections() {
+        viewState = .loading(sections: viewState.sections)
     }
 
     private func handleDataLoadCompletion(_ completion: Subscribers.Completion<Error>) {
@@ -202,52 +183,101 @@ final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: Dynami
 
     /// Applies search filter to the given sections.
     ///
-    /// - Parameter sections: The sections to filter.
+    /// - Parameters:
+    ///   - sections: The sections to filter.
+    ///   - searchText: The search text to filter by.
     /// - Returns: The filtered array of sections.
-    private func applySearchFilter(to sections: [ListSection<Item>]) -> [ListSection<Item>] {
+    private func applySearchFilter(to sections: [ListSection<Item>], searchText: String) -> [ListSection<Item>] {
         guard !searchText.isEmpty else {
             return sections
         }
 
         return sections.compactMap { section in
             let filteredItems = section.items.filter { item in
-                if let searchConfiguration {
-                    if let predicate = searchConfiguration.predicate {
-                        return predicate(item, searchText)
-                    } else if let searchableItem = item as? Searchable {
-                        let strategy = searchConfiguration.strategy ?? PartialMatchStrategy()
-                        return strategy.matches(query: searchText, in: searchableItem)
-                    }
-                }
-
-                // Fallback: try to use description if available
-                return String(describing: item).lowercased().contains(searchText.lowercased())
+                matchesSearchConfiguration(for: item, searchText: searchText)
             }
-
-            // Only include sections that have matching items
-            guard !filteredItems.isEmpty else { return nil }
-
-            return ListSection(
-                title: section.title,
-                items: filteredItems,
-                footer: section.footer,
-            )
+            return createSectionWithMatchingItems(from: section, filteredItems: filteredItems)
         }
+    }
+
+    private func matchesSearchConfiguration(for item: Item, searchText: String) -> Bool {
+        if let searchConfiguration {
+            if let predicate = searchConfiguration.predicate {
+                return predicate(item, searchText)
+            } else if let searchableItem = item as? Searchable {
+                let strategy = searchConfiguration.strategy ?? PartialMatchStrategy()
+                return strategy.matches(query: searchText, in: searchableItem)
+            }
+        }
+
+        return matchesItemDescription(item: item, searchText: searchText)
+    }
+
+    private func matchesItemDescription(item: Item, searchText: String) -> Bool {
+        String(describing: item).lowercased().contains(searchText.lowercased())
+    }
+
+    private func createSectionWithMatchingItems(from section: ListSection<Item>, filteredItems: [Item]) -> ListSection<Item>? {
+        guard !filteredItems.isEmpty else { return nil }
+
+        return ListSection(
+            title: section.title,
+            items: filteredItems,
+            footer: section.footer,
+        )
+    }
+
+    private func createFilteredSectionsPublisher(from arrays: [[Item]]) -> AnyPublisher<[ListSection<Item>], Error> {
+        searchTextSubject
+            .map { searchText in
+                let sections = arrays.map { ListSection(title: nil, items: $0) }
+                self.originalSections = sections
+                return self.applySearchFilter(to: sections, searchText: searchText)
+            }
+            .eraseToAnyPublisher()
+    }
+
+    private func updateViewStateWithLoadedSections(_ sections: [ListSection<Item>]) {
+        viewState = .loaded(sections: sections)
+    }
+
+    private func prepareForDataLoading() {
+        clearAllSubscriptions()
+        setLoadingStateWithCurrentSections()
+    }
+
+    private func subscribeToDataProvider(_ provider: () -> AnyPublisher<[[Item]], Error>) {
+        provider()
+            .flatMap { [weak self] arrays -> AnyPublisher<[ListSection<Item>], Error> in
+                guard let self else {
+                    let sections = arrays.map { ListSection(title: nil, items: $0) }
+                    return Just(sections).setFailureType(to: Error.self).eraseToAnyPublisher()
+                }
+                return createFilteredSectionsPublisher(from: arrays)
+            }
+            .subscribe(on: ioScheduler)
+            .receive(on: scheduler)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    self?.handleDataLoadCompletion(completion)
+                },
+                receiveValue: { [weak self] filteredSections in
+                    self?.updateViewStateWithLoadedSections(filteredSections)
+                },
+            )
+            .store(in: &cancellables)
     }
 
     // MARK: - Convenience Properties
 
-    /// The collection of sections to be displayed.
     var sections: [ListSection<Item>] {
         viewState.sections
     }
 
-    /// Indicates whether data is currently being loaded.
     var isLoading: Bool {
         viewState.isLoading
     }
 
-    /// Contains any error that occurred during data loading.
     var error: Error? {
         viewState.error
     }

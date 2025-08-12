@@ -46,86 +46,88 @@ import SwiftUI
 }
 
 #Preview("Reactive Sectioned Example") {
-    SectionedDynamicListBuilder<Product>()
-        .title("Reactive Sectioned")
-        .publisher {
-            // Simulate API call that returns products grouped by category
-            Just([
-                products.filter { $0.category == "Electronics" },
-                products.filter { $0.category == "Audio" },
-                products.filter { $0.category == "Tablets" },
-                products.filter { $0.category == "Wearables" },
-                products.filter { $0.category == "Accessories" },
-                products.filter { $0.category == "Software & Services" },
-            ])
-            .delay(for: .seconds(1.5), scheduler: DispatchQueue.main)
-            .setFailureType(to: Error.self)
-            .eraseToAnyPublisher()
-        }
-        .rowContent { product in
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
+    NavigationStack {
+        SectionedDynamicListBuilder<Product>()
+            .title("Reactive Sectioned")
+            .publisher {
+                // Simulate API call that returns products grouped by category
+                Just([
+                    products.filter { $0.category == "Electronics" },
+                    products.filter { $0.category == "Audio" },
+                    products.filter { $0.category == "Tablets" },
+                    products.filter { $0.category == "Wearables" },
+                    products.filter { $0.category == "Accessories" },
+                    products.filter { $0.category == "Software & Services" },
+                ])
+                .delay(for: .seconds(1.5), scheduler: DispatchQueue.main)
+                .setFailureType(to: Error.self)
+                .eraseToAnyPublisher()
+            }
+            .rowContent { product in
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(product.name)
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                        Text(product.category)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                    Text("$\(String(format: "%.0f", product.price))")
+                        .font(.title3)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.blue)
+                }
+                .padding(.vertical, 4)
+            }
+            .detailContent { product in
+                VStack(spacing: 20) {
+                    Image(systemName: "cube.box.fill")
+                        .font(.system(size: 80))
+                        .foregroundColor(.blue)
+
                     Text(product.name)
-                        .font(.headline)
-                        .foregroundColor(.primary)
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+
                     Text(product.category)
-                        .font(.caption)
+                        .font(.title2)
+                        .foregroundColor(.secondary)
+
+                    Text("$\(String(format: "%.2f", product.price))")
+                        .font(.title)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.green)
+
+                    Text("Loaded from Reactive Publisher")
+                        .font(.headline)
                         .foregroundColor(.secondary)
                 }
-                Spacer()
-                Text("$\(String(format: "%.0f", product.price))")
-                    .font(.title3)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.blue)
+                .navigationTitle("Product Details")
             }
-            .padding(.vertical, 4)
-        }
-        .detailContent { product in
-            VStack(spacing: 20) {
-                Image(systemName: "cube.box.fill")
-                    .font(.system(size: 80))
-                    .foregroundColor(.blue)
-
-                Text(product.name)
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-
-                Text(product.category)
-                    .font(.title2)
-                    .foregroundColor(.secondary)
-
-                Text("$\(String(format: "%.2f", product.price))")
-                    .font(.title)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.green)
-
-                Text("Loaded from Reactive Publisher")
-                    .font(.headline)
-                    .foregroundColor(.secondary)
-            }
-            .navigationTitle("Product Details")
-        }
-        .skeletonRow(sections: 2, itemsPerSection: 3) {
-            HStack {
-                Image(systemName: "cube.box")
-                    .font(.title2)
-                    .foregroundColor(.blue)
-                VStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(Color.gray.opacity(0.3))
-                        .frame(height: 16)
-                        .frame(maxWidth: .infinity * 0.7)
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(Color.gray.opacity(0.2))
-                        .frame(height: 12)
-                        .frame(maxWidth: .infinity * 0.5)
+            .skeletonRow(sections: 2, itemsPerSection: 3) {
+                HStack {
+                    Image(systemName: "cube.box")
+                        .font(.title2)
+                        .foregroundColor(.blue)
+                    VStack(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Color.gray.opacity(0.3))
+                            .frame(height: 16)
+                            .frame(maxWidth: .infinity * 0.7)
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Color.gray.opacity(0.2))
+                            .frame(height: 12)
+                            .frame(maxWidth: .infinity * 0.5)
+                    }
+                    Spacer()
                 }
-                Spacer()
+                .padding(.vertical, 4)
             }
-            .padding(.vertical, 4)
-        }
-        .listStyle(.automatic)
-        .build()
+            .listStyle(.automatic)
+            .build()
+    }
 }
 
 #Preview("Reactive Error Example") {

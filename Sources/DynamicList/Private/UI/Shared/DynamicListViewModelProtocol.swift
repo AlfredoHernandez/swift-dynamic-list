@@ -25,6 +25,9 @@ protocol DynamicListViewModelProtocol: Observable {
 
     /// Refreshes the data
     func refresh()
+
+    /// Perform search
+    func search(query: String)
 }
 
 // MARK: - Type Erased Wrapper
@@ -37,6 +40,7 @@ struct AnyDynamicListViewModel<Item: Identifiable & Hashable>: Observable {
     private let _setSearchConfiguration: (SearchConfiguration<Item>?) -> Void
     private let _loadData: () -> Void
     private let _refresh: () -> Void
+    private let _search: (String) -> Void
 
     var viewState: any DynamicListViewStateProtocol { _viewState() }
     var searchText: String {
@@ -52,6 +56,7 @@ struct AnyDynamicListViewModel<Item: Identifiable & Hashable>: Observable {
         _setSearchConfiguration = { capturedViewModel.setSearchConfiguration($0) }
         _loadData = { capturedViewModel.loadData() }
         _refresh = { capturedViewModel.refresh() }
+        _search = { capturedViewModel.search(query: $0) }
     }
 
     func setSearchConfiguration(_ configuration: SearchConfiguration<Item>?) {
@@ -64,5 +69,9 @@ struct AnyDynamicListViewModel<Item: Identifiable & Hashable>: Observable {
 
     func refresh() {
         _refresh()
+    }
+
+    func search(query: String) {
+        _search(query)
     }
 }
