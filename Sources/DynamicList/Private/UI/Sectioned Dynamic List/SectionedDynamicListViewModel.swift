@@ -1,5 +1,5 @@
 //
-//  Copyright © 2025 Jesús Alfredo Hernández Alarcón. All rights reserved.
+//  Copyright © 2026 Jesús Alfredo Hernández Alarcón. All rights reserved.
 //
 
 import Combine
@@ -12,273 +12,313 @@ import Foundation
 /// that display data in sections. It supports both static data and reactive publishers.
 @Observable
 final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: DynamicListViewModelProtocol {
-    // MARK: - Private Properties
+	// MARK: - Private Properties
 
-    private(set) var viewState: SectionedListViewState<Item>
-    private var scheduler: AnySchedulerOf<DispatchQueue>
-    private var ioScheduler: AnySchedulerOf<DispatchQueue>
-    private var dataProvider: (() -> AnyPublisher<[[Item]], Error>)?
-    private var cancellables = Set<AnyCancellable>()
-    private(set) var searchConfiguration: SearchConfiguration<Item>?
-    private let searchTextSubject = CurrentValueSubject<String, Error>("")
+	private(set) var viewState: SectionedListViewState<Item>
+	private var scheduler: AnySchedulerOf<DispatchQueue>
+	private var ioScheduler: AnySchedulerOf<DispatchQueue>
+	private var dataProvider: (() -> AnyPublisher<[ListSection<Item>], Error>)?
+	private var cancellables = Set<AnyCancellable>()
+	private(set) var searchConfiguration: SearchConfiguration<Item>?
+	private let searchTextSubject = CurrentValueSubject<String, Error>("")
 
-    var searchText: String {
-        get { searchTextSubject.value }
-        set { searchTextSubject.send(newValue) }
-    }
+	var searchText: String {
+		get { searchTextSubject.value }
+		set { searchTextSubject.send(newValue) }
+	}
 
-    private var originalSections: [ListSection<Item>] = []
+	private var originalSections: [ListSection<Item>] = []
 
-    // MARK: - Initialization
+	// MARK: - Initialization
 
-    /// Creates a new view model with static sections.
-    ///
-    /// - Parameters:
-    ///   - sections: The sections to display in the list.
-    ///   - scheduler: The scheduler for UI updates. Defaults to main queue.
-    ///   - ioScheduler: The scheduler for background operations. Defaults to background queue.
-    init(
-        sections: [ListSection<Item>] = [],
-        scheduler: AnySchedulerOf<DispatchQueue> = .main,
-        ioScheduler: AnySchedulerOf<DispatchQueue> = .global(qos: .userInitiated),
-    ) {
-        viewState = .idle(sections: sections)
-        self.scheduler = scheduler
-        self.ioScheduler = ioScheduler
-        originalSections = sections
-        setupSearchTextObserverForStaticDataMode()
-    }
+	/// Creates a new view model with static sections.
+	///
+	/// - Parameters:
+	///   - sections: The sections to display in the list.
+	///   - scheduler: The scheduler for UI updates. Defaults to main queue.
+	///   - ioScheduler: The scheduler for background operations. Defaults to background queue.
+	init(
+		sections: [ListSection<Item>] = [],
+		scheduler: AnySchedulerOf<DispatchQueue> = .main,
+		ioScheduler: AnySchedulerOf<DispatchQueue> = .global(qos: .userInitiated),
+	) {
+		viewState = .idle(sections: sections)
+		self.scheduler = scheduler
+		self.ioScheduler = ioScheduler
+		originalSections = sections
+		setupSearchTextObserverForStaticDataMode()
+	}
 
-    /// Creates a new view model with static arrays of items.
-    ///
-    /// - Parameters:
-    ///   - arrays: Array of arrays representing sections
-    ///   - titles: Optional titles for each section
-    convenience init(arrays: [[Item]], titles: [String?] = []) {
-        let sections = zip(arrays, titles).map { items, title in
-            ListSection(title: title, items: items)
-        }
-        self.init(sections: sections)
-    }
+	/// Creates a new view model with static arrays of items.
+	///
+	/// - Parameters:
+	///   - arrays: Array of arrays representing sections
+	///   - titles: Optional titles for each section
+	convenience init(arrays: [[Item]], titles: [String?] = []) {
+		let sections = zip(arrays, titles).map { items, title in
+			ListSection(title: title, items: items)
+		}
+		self.init(sections: sections)
+	}
 
-    /// Creates a new view model with a data provider.
-    ///
-    /// - Parameters:
-    ///   - dataProvider: A closure that returns a publisher emitting arrays of arrays
-    ///   - initialSections: Initial sections to display while loading
-    ///   - scheduler: The scheduler for UI updates. Defaults to main queue.
-    ///   - ioScheduler: The scheduler for background operations. Defaults to background queue.
-    init(
-        dataProvider: @escaping () -> AnyPublisher<[[Item]], Error>,
-        initialSections: [ListSection<Item>] = [],
-        scheduler: AnySchedulerOf<DispatchQueue> = .main,
-        ioScheduler: AnySchedulerOf<DispatchQueue> = .global(qos: .userInitiated),
-    ) {
-        viewState = .idle(sections: initialSections)
-        self.scheduler = scheduler
-        self.ioScheduler = ioScheduler
-        originalSections = initialSections
-        self.dataProvider = dataProvider
-        setupSearchTextObserverForStaticDataMode()
-    }
+	/// Creates a new view model with a data provider.
+	///
+	/// - Parameters:
+	///   - dataProvider: A closure that returns a publisher emitting arrays of arrays
+	///   - initialSections: Initial sections to display while loading
+	///   - scheduler: The scheduler for UI updates. Defaults to main queue.
+	///   - ioScheduler: The scheduler for background operations. Defaults to background queue.
+	convenience init(
+		dataProvider: @escaping () -> AnyPublisher<[[Item]], Error>,
+		initialSections: [ListSection<Item>] = [],
+		scheduler: AnySchedulerOf<DispatchQueue> = .main,
+		ioScheduler: AnySchedulerOf<DispatchQueue> = .global(qos: .userInitiated),
+	) {
+		self.init(
+			sectionsProvider: Self.untitledSectionsProvider(from: dataProvider),
+			initialSections: initialSections,
+			scheduler: scheduler,
+			ioScheduler: ioScheduler,
+		)
+	}
 
-    // MARK: -  Methods
+	/// Creates a new view model with a titled-sections data provider.
+	///
+	/// - Parameters:
+	///   - sectionsProvider: A closure that returns a publisher emitting sections, titles included
+	///   - initialSections: Initial sections to display while loading
+	///   - scheduler: The scheduler for UI updates. Defaults to main queue.
+	///   - ioScheduler: The scheduler for background operations. Defaults to background queue.
+	init(
+		sectionsProvider: @escaping () -> AnyPublisher<[ListSection<Item>], Error>,
+		initialSections: [ListSection<Item>] = [],
+		scheduler: AnySchedulerOf<DispatchQueue> = .main,
+		ioScheduler: AnySchedulerOf<DispatchQueue> = .global(qos: .userInitiated),
+	) {
+		viewState = .idle(sections: initialSections)
+		self.scheduler = scheduler
+		self.ioScheduler = ioScheduler
+		originalSections = initialSections
+		dataProvider = sectionsProvider
+		setupSearchTextObserverForStaticDataMode()
+	}
 
-    /// Loads data from the current data provider.
-    ///
-    /// This method will update the view state to loading and then subscribe to the
-    /// data provider to receive updates.
-    func loadData() {
-        guard let dataProvider else { return }
+	/// Adapts an arrays-of-arrays provider into the titled-sections shape the
+	/// pipeline consumes, with every title nil.
+	private static func untitledSectionsProvider(
+		from dataProvider: @escaping () -> AnyPublisher<[[Item]], Error>,
+	) -> () -> AnyPublisher<[ListSection<Item>], Error> {
+		{
+			dataProvider()
+				.map { arrays in arrays.map { ListSection(title: nil, items: $0) } }
+				.eraseToAnyPublisher()
+		}
+	}
 
-        prepareForDataLoading()
-        subscribeToDataProvider(dataProvider)
-    }
+	// MARK: -  Methods
 
-    /// Loads data from a new data provider.
-    ///
-    /// This method will replace the current data provider and immediately start loading
-    /// data from the new provider.
-    ///
-    /// - Parameters:
-    ///   - dataProvider: A closure that returns a publisher emitting arrays of arrays
-    func loadItems(from dataProvider: @escaping () -> AnyPublisher<[[Item]], Error>) {
-        self.dataProvider = dataProvider
-        loadData()
-    }
+	/// Loads data from the current data provider.
+	///
+	/// This method will update the view state to loading and then subscribe to the
+	/// data provider to receive updates.
+	func loadData() {
+		guard let dataProvider else { return }
 
-    func refresh() {
-        loadData()
-    }
+		prepareForDataLoading()
+		subscribeToDataProvider(dataProvider)
+	}
 
-    func search(query: String) {
-        updateSearchText(query)
-    }
+	/// Loads data from a new data provider.
+	///
+	/// This method will replace the current data provider and immediately start loading
+	/// data from the new provider.
+	///
+	/// - Parameters:
+	///   - dataProvider: A closure that returns a publisher emitting arrays of arrays
+	func loadItems(from dataProvider: @escaping () -> AnyPublisher<[[Item]], Error>) {
+		self.dataProvider = Self.untitledSectionsProvider(from: dataProvider)
+		loadData()
+	}
 
-    private func updateSearchText(_ query: String) {
-        searchText = query
-    }
+	/// Loads data from a new titled-sections provider.
+	///
+	/// - Parameters:
+	///   - sectionsProvider: A closure that returns a publisher emitting sections, titles included
+	func loadSections(from sectionsProvider: @escaping () -> AnyPublisher<[ListSection<Item>], Error>) {
+		dataProvider = sectionsProvider
+		loadData()
+	}
 
-    func updateSections(_ sections: [ListSection<Item>]) {
-        originalSections = sections
-        viewState = .loaded(sections: sections)
-    }
+	func refresh() {
+		loadData()
+	}
 
-    /// Updates the sections with arrays of items and their corresponding titles.
-    ///
-    /// - Parameters:
-    ///   - arrays: Array of arrays representing sections
-    ///   - titles: Optional titles for each section
-    func updateSectionsFromArrays(_ arrays: [[Item]], withTitles titles: [String?] = []) {
-        let sections = zip(arrays, titles).map { items, title in
-            ListSection(title: title, items: items)
-        }
-        updateSections(sections)
-    }
+	func search(query: String) {
+		updateSearchText(query)
+	}
 
-    // MARK: - Search Methods
+	private func updateSearchText(_ query: String) {
+		searchText = query
+	}
 
-    func setSearchConfiguration(_ configuration: SearchConfiguration<Item>?) {
-        searchConfiguration = configuration
-    }
+	func updateSections(_ sections: [ListSection<Item>]) {
+		originalSections = sections
+		viewState = .loaded(sections: sections)
+	}
 
-    // MARK: - Private Helper Methods
+	/// Updates the sections with arrays of items and their corresponding titles.
+	///
+	/// - Parameters:
+	///   - arrays: Array of arrays representing sections
+	///   - titles: Optional titles for each section
+	func updateSectionsFromArrays(_ arrays: [[Item]], withTitles titles: [String?] = []) {
+		let sections = zip(arrays, titles).map { items, title in
+			ListSection(title: title, items: items)
+		}
+		updateSections(sections)
+	}
 
-    private func setupSearchTextObserverForStaticDataMode() {
-        searchTextSubject
-            .dropFirst()
-            .subscribe(on: ioScheduler)
-            .receive(on: scheduler)
-            .sink(
-                receiveCompletion: { _ in },
-                receiveValue: { [weak self] _ in
-                    if self?.dataProvider == nil {
-                        self?.filterCurrentSectionsWithSearchText()
-                    }
-                },
-            )
-            .store(in: &cancellables)
-    }
+	// MARK: - Search Methods
 
-    private func filterCurrentSectionsWithSearchText() {
-        let filteredSections = applySearchFilter(to: originalSections, searchText: searchText)
-        viewState = .loaded(sections: filteredSections)
-    }
+	func setSearchConfiguration(_ configuration: SearchConfiguration<Item>?) {
+		searchConfiguration = configuration
+	}
 
-    private func clearAllSubscriptions() {
-        cancellables.removeAll()
-    }
+	// MARK: - Private Helper Methods
 
-    private func setLoadingStateWithCurrentSections() {
-        viewState = .loading(sections: viewState.sections)
-    }
+	private func setupSearchTextObserverForStaticDataMode() {
+		searchTextSubject
+			.dropFirst()
+			.subscribe(on: ioScheduler)
+			.receive(on: scheduler)
+			.sink(
+				receiveCompletion: { _ in },
+				receiveValue: { [weak self] _ in
+					if self?.dataProvider == nil {
+						self?.filterCurrentSectionsWithSearchText()
+					}
+				},
+			)
+			.store(in: &cancellables)
+	}
 
-    private func handleDataLoadCompletion(_ completion: Subscribers.Completion<Error>) {
-        switch completion {
-        case .finished: break
-        case let .failure(error):
-            viewState = .error(error, sections: viewState.sections)
-        }
-    }
+	private func filterCurrentSectionsWithSearchText() {
+		let filteredSections = applySearchFilter(to: originalSections, searchText: searchText)
+		viewState = .loaded(sections: filteredSections)
+	}
 
-    /// Applies search filter to the given sections.
-    ///
-    /// - Parameters:
-    ///   - sections: The sections to filter.
-    ///   - searchText: The search text to filter by.
-    /// - Returns: The filtered array of sections.
-    private func applySearchFilter(to sections: [ListSection<Item>], searchText: String) -> [ListSection<Item>] {
-        guard !searchText.isEmpty else {
-            return sections
-        }
+	private func clearAllSubscriptions() {
+		cancellables.removeAll()
+	}
 
-        return sections.compactMap { section in
-            let filteredItems = section.items.filter { item in
-                matchesSearchConfiguration(for: item, searchText: searchText)
-            }
-            return createSectionWithMatchingItems(from: section, filteredItems: filteredItems)
-        }
-    }
+	private func setLoadingStateWithCurrentSections() {
+		viewState = .loading(sections: viewState.sections)
+	}
 
-    private func matchesSearchConfiguration(for item: Item, searchText: String) -> Bool {
-        if let searchConfiguration {
-            if let predicate = searchConfiguration.predicate {
-                return predicate(item, searchText)
-            } else if let searchableItem = item as? Searchable {
-                let strategy = searchConfiguration.strategy ?? PartialMatchStrategy()
-                return strategy.matches(query: searchText, in: searchableItem)
-            }
-        }
+	private func handleDataLoadCompletion(_ completion: Subscribers.Completion<Error>) {
+		switch completion {
+		case .finished: break
+		case let .failure(error):
+			viewState = .error(error, sections: viewState.sections)
+		}
+	}
 
-        return matchesItemDescription(item: item, searchText: searchText)
-    }
+	/// Applies search filter to the given sections.
+	///
+	/// - Parameters:
+	///   - sections: The sections to filter.
+	///   - searchText: The search text to filter by.
+	/// - Returns: The filtered array of sections.
+	private func applySearchFilter(to sections: [ListSection<Item>], searchText: String) -> [ListSection<Item>] {
+		guard !searchText.isEmpty else {
+			return sections
+		}
 
-    private func matchesItemDescription(item: Item, searchText: String) -> Bool {
-        String(describing: item).lowercased().contains(searchText.lowercased())
-    }
+		return sections.compactMap { section in
+			let filteredItems = section.items.filter { item in
+				matchesSearchConfiguration(for: item, searchText: searchText)
+			}
+			return createSectionWithMatchingItems(from: section, filteredItems: filteredItems)
+		}
+	}
 
-    private func createSectionWithMatchingItems(from section: ListSection<Item>, filteredItems: [Item]) -> ListSection<Item>? {
-        guard !filteredItems.isEmpty else { return nil }
+	private func matchesSearchConfiguration(for item: Item, searchText: String) -> Bool {
+		if let searchConfiguration {
+			if let predicate = searchConfiguration.predicate {
+				return predicate(item, searchText)
+			} else if let searchableItem = item as? Searchable {
+				let strategy = searchConfiguration.strategy ?? PartialMatchStrategy()
+				return strategy.matches(query: searchText, in: searchableItem)
+			}
+		}
 
-        return ListSection(
-            title: section.title,
-            items: filteredItems,
-            footer: section.footer,
-        )
-    }
+		return matchesItemDescription(item: item, searchText: searchText)
+	}
 
-    private func createFilteredSectionsPublisher(from arrays: [[Item]]) -> AnyPublisher<[ListSection<Item>], Error> {
-        searchTextSubject
-            .map { searchText in
-                let sections = arrays.map { ListSection(title: nil, items: $0) }
-                self.originalSections = sections
-                return self.applySearchFilter(to: sections, searchText: searchText)
-            }
-            .eraseToAnyPublisher()
-    }
+	private func matchesItemDescription(item: Item, searchText: String) -> Bool {
+		String(describing: item).lowercased().contains(searchText.lowercased())
+	}
 
-    private func updateViewStateWithLoadedSections(_ sections: [ListSection<Item>]) {
-        viewState = .loaded(sections: sections)
-    }
+	private func createSectionWithMatchingItems(from section: ListSection<Item>, filteredItems: [Item]) -> ListSection<Item>? {
+		guard !filteredItems.isEmpty else { return nil }
 
-    private func prepareForDataLoading() {
-        clearAllSubscriptions()
-        setLoadingStateWithCurrentSections()
-    }
+		return ListSection(
+			title: section.title,
+			items: filteredItems,
+			footer: section.footer,
+		)
+	}
 
-    private func subscribeToDataProvider(_ provider: () -> AnyPublisher<[[Item]], Error>) {
-        provider()
-            .flatMap { [weak self] arrays -> AnyPublisher<[ListSection<Item>], Error> in
-                guard let self else {
-                    let sections = arrays.map { ListSection(title: nil, items: $0) }
-                    return Just(sections).setFailureType(to: Error.self).eraseToAnyPublisher()
-                }
-                return createFilteredSectionsPublisher(from: arrays)
-            }
-            .subscribe(on: ioScheduler)
-            .receive(on: scheduler)
-            .sink(
-                receiveCompletion: { [weak self] completion in
-                    self?.handleDataLoadCompletion(completion)
-                },
-                receiveValue: { [weak self] filteredSections in
-                    self?.updateViewStateWithLoadedSections(filteredSections)
-                },
-            )
-            .store(in: &cancellables)
-    }
+	private func createFilteredSectionsPublisher(from sections: [ListSection<Item>]) -> AnyPublisher<[ListSection<Item>], Error> {
+		searchTextSubject
+			.map { searchText in
+				self.originalSections = sections
+				return self.applySearchFilter(to: sections, searchText: searchText)
+			}
+			.eraseToAnyPublisher()
+	}
 
-    // MARK: - Convenience Properties
+	private func updateViewStateWithLoadedSections(_ sections: [ListSection<Item>]) {
+		viewState = .loaded(sections: sections)
+	}
 
-    var sections: [ListSection<Item>] {
-        viewState.sections
-    }
+	private func prepareForDataLoading() {
+		clearAllSubscriptions()
+		setLoadingStateWithCurrentSections()
+	}
 
-    var isLoading: Bool {
-        viewState.isLoading
-    }
+	private func subscribeToDataProvider(_ provider: () -> AnyPublisher<[ListSection<Item>], Error>) {
+		provider()
+			.flatMap { [weak self] sections -> AnyPublisher<[ListSection<Item>], Error> in
+				guard let self else {
+					return Just(sections).setFailureType(to: Error.self).eraseToAnyPublisher()
+				}
+				return createFilteredSectionsPublisher(from: sections)
+			}
+			.subscribe(on: ioScheduler)
+			.receive(on: scheduler)
+			.sink(
+				receiveCompletion: { [weak self] completion in
+					self?.handleDataLoadCompletion(completion)
+				},
+				receiveValue: { [weak self] filteredSections in
+					self?.updateViewStateWithLoadedSections(filteredSections)
+				},
+			)
+			.store(in: &cancellables)
+	}
 
-    var error: Error? {
-        viewState.error
-    }
+	// MARK: - Convenience Properties
+
+	var sections: [ListSection<Item>] {
+		viewState.sections
+	}
+
+	var isLoading: Bool {
+		viewState.isLoading
+	}
+
+	var error: Error? {
+		viewState.error
+	}
 }

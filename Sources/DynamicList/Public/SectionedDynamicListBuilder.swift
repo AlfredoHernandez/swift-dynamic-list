@@ -1,5 +1,5 @@
 //
-//  Copyright © 2025 Jesús Alfredo Hernández Alarcón. All rights reserved.
+//  Copyright © 2026 Jesús Alfredo Hernández Alarcón. All rights reserved.
 //
 
 import Combine
@@ -47,828 +47,909 @@ import SwiftUI
 /// - Note: When `detailContent` is not specified, the list will not provide navigation to detail views.
 ///   Users can handle custom actions directly in `rowContent` using `Button` or `onTapGesture`.
 public final class SectionedDynamicListBuilder<Item: Identifiable & Hashable> {
-    // MARK: - Private Properties
+	// MARK: - Private Properties
 
-    /// Static sections to display in the list
-    private var sections: [ListSection<Item>] = []
+	/// Static sections to display in the list
+	private var sections: [ListSection<Item>] = []
 
-    /// Combine publisher for reactive data loading
-    private var publisher: (() -> AnyPublisher<[[Item]], Error>)?
+	/// Combine publisher for reactive data loading. Both public entry points
+	/// (`publisher(_:)` and `sectionedPublisher(_:)`) normalize into this one
+	/// titled-sections shape at the setter, so `build()` has a single reactive
+	/// path and no precedence rules between provider flavors — the most recent
+	/// call simply wins, like every other builder setter.
+	private var sectionsPublisher: (() -> AnyPublisher<[ListSection<Item>], Error>)?
 
-    /// Custom row content builder
-    private var rowContent: ((Item) -> AnyView)?
+	/// Custom row content builder
+	private var rowContent: ((Item) -> AnyView)?
 
-    /// Custom detail content builder
-    private var detailContent: ((Item) -> AnyView?)?
+	/// Custom detail content builder
+	private var detailContent: ((Item) -> AnyView?)?
 
-    /// Custom error content builder
-    private var errorContent: ((Error) -> AnyView)?
+	/// Custom error content builder
+	private var errorContent: ((Error) -> AnyView)?
 
-    /// Custom skeleton content builder
-    private var skeletonContent: (() -> AnyView)?
+	/// Custom skeleton content builder
+	private var skeletonContent: (() -> AnyView)?
 
-    /// Skeleton row configuration for simplified skeleton creation
-    private var skeletonRowConfiguration: SectionedSkeletonRowConfiguration?
+	/// Custom per-section footer content builder
+	private var footerContent: ((ListSection<Item>) -> AnyView)?
 
-    /// Search configuration for the list
-    private var searchConfiguration: SearchConfiguration<Item>?
+	/// Skeleton row configuration for simplified skeleton creation
+	private var skeletonRowConfiguration: SectionedSkeletonRowConfiguration?
 
-    /// List configuration for appearance and behavior
-    private var listConfiguration: ListConfiguration = .default
+	/// Search configuration for the list
+	private var searchConfiguration: SearchConfiguration<Item>?
 
-    // MARK: - Private Helper Methods
+	/// List configuration for appearance and behavior
+	private var listConfiguration: ListConfiguration = .default
 
-    /// Updates the list configuration using a transformation closure
-    private func updateListConfiguration(_ transform: (ListConfiguration) -> ListConfiguration) -> Self {
-        listConfiguration = transform(listConfiguration)
-        return self
-    }
+	// MARK: - Private Helper Methods
 
-    /// Updates the search configuration using a transformation closure
-    private func updateSearchConfiguration(_ transform: (SearchConfiguration<Item>?) -> SearchConfiguration<Item>?) -> Self {
-        searchConfiguration = transform(searchConfiguration)
-        return self
-    }
+	/// Updates the list configuration using a transformation closure
+	private func updateListConfiguration(_ transform: (ListConfiguration) -> ListConfiguration) -> Self {
+		listConfiguration = transform(listConfiguration)
+		return self
+	}
 
-    /// Creates a view model based on the current configuration
-    private func createViewModel() -> SectionedDynamicListViewModel<Item> {
-        if let publisher {
-            SectionedDynamicListViewModel(dataProvider: publisher, initialSections: sections)
-        } else {
-            SectionedDynamicListViewModel(sections: sections)
-        }
-    }
+	/// Updates the search configuration using a transformation closure
+	private func updateSearchConfiguration(_ transform: (SearchConfiguration<Item>?) -> SearchConfiguration<Item>?) -> Self {
+		searchConfiguration = transform(searchConfiguration)
+		return self
+	}
 
-    /// Processes skeleton configuration and returns the appropriate skeleton content
-    @MainActor
-    private func processFinalSkeletonContent() -> (() -> AnyView)? {
-        if let config = skeletonRowConfiguration {
-            {
-                AnyView(
-                    List {
-                        ForEach(0 ..< config.sections, id: \.self) { _ in
-                            Section {
-                                ForEach(0 ..< config.itemsPerSection, id: \.self) { _ in
-                                    config.rowContentBuilder()
-                                }
-                            } header: {
-                                if let headerBuilder = config.headerContentBuilder {
-                                    headerBuilder()
-                                } else {
-                                    EmptyView()
-                                }
-                            } footer: {
-                                if let footerBuilder = config.footerContentBuilder {
-                                    footerBuilder()
-                                } else {
-                                    EmptyView()
-                                }
-                            }
-                        }
-                    }
-                    .modifier(ListStyleModifier(style: config.listStyle))
-                    .redacted(reason: .placeholder),
-                )
-            }
-        } else {
-            skeletonContent
-        }
-    }
+	/// Creates a view model based on the current configuration
+	private func createViewModel() -> SectionedDynamicListViewModel<Item> {
+		if let sectionsPublisher {
+			SectionedDynamicListViewModel(sectionsProvider: sectionsPublisher, initialSections: sections)
+		} else {
+			SectionedDynamicListViewModel(sections: sections)
+		}
+	}
 
-    /// Creates the shared content view with common configuration
-    @MainActor
-    private func createContentView(viewModel: SectionedDynamicListViewModel<Item>) -> SectionedDynamicListContent<Item> {
-        SectionedDynamicListContent(
-            viewModel: viewModel,
-            rowContent: rowContent ?? { item in AnyView(DefaultRowView(item: item)) },
-            detailContent: detailContent,
-            errorContent: errorContent,
-            skeletonContent: processFinalSkeletonContent(),
-            listConfiguration: listConfiguration,
-            searchConfiguration: searchConfiguration,
-        )
-    }
+	/// Processes skeleton configuration and returns the appropriate skeleton content
+	@MainActor
+	private func processFinalSkeletonContent() -> (() -> AnyView)? {
+		if let config = skeletonRowConfiguration {
+			{
+				AnyView(
+					List {
+						ForEach(0 ..< config.sections, id: \.self) { _ in
+							Section {
+								ForEach(0 ..< config.itemsPerSection, id: \.self) { _ in
+									config.rowContentBuilder()
+								}
+							} header: {
+								if let headerBuilder = config.headerContentBuilder {
+									headerBuilder()
+								} else {
+									EmptyView()
+								}
+							} footer: {
+								if let footerBuilder = config.footerContentBuilder {
+									footerBuilder()
+								} else {
+									EmptyView()
+								}
+							}
+						}
+					}
+					.modifier(ListStyleModifier(style: config.listStyle))
+					.redacted(reason: .placeholder),
+				)
+			}
+		} else {
+			skeletonContent
+		}
+	}
 
-    // MARK: - Initialization
+	/// Creates the shared content view with common configuration
+	@MainActor
+	private func createContentView(viewModel: SectionedDynamicListViewModel<Item>) -> SectionedDynamicListContent<Item> {
+		SectionedDynamicListContent(
+			viewModel: viewModel,
+			rowContent: rowContent ?? { item in AnyView(DefaultRowView(item: item)) },
+			detailContent: detailContent,
+			errorContent: errorContent,
+			skeletonContent: processFinalSkeletonContent(),
+			sectionFooterContent: footerContent,
+			listConfiguration: listConfiguration,
+			searchConfiguration: searchConfiguration,
+		)
+	}
 
-    /// Creates a new SectionedDynamicListBuilder instance.
-    ///
-    /// Use this initializer to start building a sectioned dynamic list configuration.
-    /// All configuration is done through the fluent API methods.
-    public init() {}
+	// MARK: - Initialization
 
-    // MARK: - Data Source Configuration
+	/// Creates a new SectionedDynamicListBuilder instance.
+	///
+	/// Use this initializer to start building a sectioned dynamic list configuration.
+	/// All configuration is done through the fluent API methods.
+	public init() {}
 
-    /// Sets static sections for the list.
-    ///
-    /// Use this method when you have a fixed array of sections that don't need to be loaded
-    /// from an external source. The sections will be displayed immediately without any loading state.
-    ///
-    /// - Parameter sections: The sections to display in the list.
-    /// - Returns: The builder instance for method chaining.
-    ///
-    /// ## Example
-    /// ```swift
-    /// SectionedDynamicListBuilder<Fruit>()
-    ///     .sections([
-    ///         ListSection(title: "Frutas Rojas", items: redFruits),
-    ///         ListSection(title: "Frutas Verdes", items: greenFruits)
-    ///     ])
-    ///     .rowContent { fruit in
-    ///         Text(fruit.name)
-    ///     }
-    ///     .build()
-    /// ```
-    @discardableResult
-    public func sections(_ sections: [ListSection<Item>]) -> Self {
-        self.sections = sections
-        return self
-    }
+	// MARK: - Data Source Configuration
 
-    /// Sets grouped items for the list with optional section titles.
-    ///
-    /// Use this method when you have arrays of arrays representing sections with optional titles.
-    ///
-    /// - Parameters:
-    ///   - groupedItems: Array of arrays representing sections
-    ///   - titles: Optional titles for each section
-    /// - Returns: The builder instance for method chaining.
-    ///
-    /// ## Example
-    /// ```swift
-    /// SectionedDynamicListBuilder<Fruit>()
-    ///     .groupedItems([redFruits, greenFruits, yellowFruits], titles: ["Rojas", "Verdes", "Amarillas"])
-    ///     .rowContent { fruit in
-    ///         Text(fruit.name)
-    ///     }
-    ///     .build()
-    /// ```
-    @discardableResult
-    public func groupedItems(_ groupedItems: [[Item]], titles: [String?] = []) -> Self {
-        let sections = zip(groupedItems, titles).map { items, title in
-            ListSection(title: title, items: items)
-        }
-        self.sections = sections
-        return self
-    }
+	/// Sets static sections for the list.
+	///
+	/// Use this method when you have a fixed array of sections that don't need to be loaded
+	/// from an external source. The sections will be displayed immediately without any loading state.
+	///
+	/// - Parameter sections: The sections to display in the list.
+	/// - Returns: The builder instance for method chaining.
+	///
+	/// ## Example
+	/// ```swift
+	/// SectionedDynamicListBuilder<Fruit>()
+	///     .sections([
+	///         ListSection(title: "Frutas Rojas", items: redFruits),
+	///         ListSection(title: "Frutas Verdes", items: greenFruits)
+	///     ])
+	///     .rowContent { fruit in
+	///         Text(fruit.name)
+	///     }
+	///     .build()
+	/// ```
+	@discardableResult
+	public func sections(_ sections: [ListSection<Item>]) -> Self {
+		self.sections = sections
+		return self
+	}
 
-    /// Sets a Combine publisher for reactive data loading.
-    ///
-    /// Use this method when you want to load data from an external source like an API,
-    /// database, or any other reactive data stream. The publisher should emit arrays of arrays.
-    /// The list will automatically handle loading states, error handling, and data updates.
-    ///
-    /// - Parameter publisher: A Combine publisher that emits arrays of arrays.
-    /// - Returns: The builder instance for method chaining.
-    ///
-    /// ## Example
-    /// ```swift
-    /// SectionedDynamicListBuilder<Fruit>()
-    ///     .publisher(apiService.fetchFruitsByCategory())
-    ///     .rowContent { fruit in
-    ///         FruitRowView(fruit: fruit)
-    ///     }
-    ///     .build()
-    /// ```
-    @discardableResult
-    public func publisher(_ publisher: @escaping () -> AnyPublisher<[[Item]], Error>) -> Self {
-        self.publisher = publisher
-        return self
-    }
+	/// Sets grouped items for the list with optional section titles.
+	///
+	/// Use this method when you have arrays of arrays representing sections with optional titles.
+	///
+	/// - Parameters:
+	///   - groupedItems: Array of arrays representing sections
+	///   - titles: Optional titles for each section
+	/// - Returns: The builder instance for method chaining.
+	///
+	/// ## Example
+	/// ```swift
+	/// SectionedDynamicListBuilder<Fruit>()
+	///     .groupedItems([redFruits, greenFruits, yellowFruits], titles: ["Rojas", "Verdes", "Amarillas"])
+	///     .rowContent { fruit in
+	///         Text(fruit.name)
+	///     }
+	///     .build()
+	/// ```
+	@discardableResult
+	public func groupedItems(_ groupedItems: [[Item]], titles: [String?] = []) -> Self {
+		let sections = zip(groupedItems, titles).map { items, title in
+			ListSection(title: title, items: items)
+		}
+		self.sections = sections
+		return self
+	}
 
-    // MARK: - Content Configuration
+	/// Sets a Combine publisher for reactive data loading.
+	///
+	/// Use this method when you want to load data from an external source like an API,
+	/// database, or any other reactive data stream. The publisher should emit arrays of arrays.
+	/// The list will automatically handle loading states, error handling, and data updates.
+	///
+	/// - Parameter publisher: A Combine publisher that emits arrays of arrays.
+	/// - Returns: The builder instance for method chaining.
+	///
+	/// ## Example
+	/// ```swift
+	/// SectionedDynamicListBuilder<Fruit>()
+	///     .publisher(apiService.fetchFruitsByCategory())
+	///     .rowContent { fruit in
+	///         FruitRowView(fruit: fruit)
+	///     }
+	///     .build()
+	/// ```
+	@discardableResult
+	public func publisher(_ publisher: @escaping () -> AnyPublisher<[[Item]], Error>) -> Self {
+		// Normalize at the boundary: arrays render as untitled sections, so the
+		// builder stores exactly one reactive shape. For titled groups use
+		// ``sectionedPublisher(_:)``.
+		sectionsPublisher = {
+			publisher()
+				.map { arrays in arrays.map { ListSection(title: nil, items: $0) } }
+				.eraseToAnyPublisher()
+		}
+		return self
+	}
 
-    /// Sets custom row content for each item in the list.
-    ///
-    /// This method allows you to define how each item should be displayed in the list.
-    /// The content builder receives the item and should return a SwiftUI view.
-    ///
-    /// - Parameter content: A view builder that creates the row view for each item.
-    /// - Returns: The builder instance for method chaining.
-    @discardableResult
-    public func rowContent(@ViewBuilder _ content: @escaping (Item) -> some View) -> Self {
-        rowContent = { item in
-            AnyView(content(item))
-        }
-        return self
-    }
+	/// Sets a Combine publisher for reactive data loading with titled sections.
+	///
+	/// Use this method when the reactive stream carries section titles: the
+	/// publisher emits ``ListSection`` values directly, so every emission can
+	/// name its groups (unlike ``publisher(_:)``, whose arrays render untitled).
+	///
+	/// - Parameter publisher: A Combine publisher that emits titled sections.
+	/// - Returns: The builder instance for method chaining.
+	///
+	/// ## Example
+	/// ```swift
+	/// SectionedDynamicListBuilder<Fruit>()
+	///     .sectionedPublisher {
+	///         apiService.fetchFruitCatalog()
+	///             .map { catalog in
+	///                 [
+	///                     ListSection(title: "Red", items: catalog.red),
+	///                     ListSection(title: "Green", items: catalog.green),
+	///                 ]
+	///             }
+	///             .eraseToAnyPublisher()
+	///     }
+	///     .build()
+	/// ```
+	@discardableResult
+	public func sectionedPublisher(_ publisher: @escaping () -> AnyPublisher<[ListSection<Item>], Error>) -> Self {
+		sectionsPublisher = publisher
+		return self
+	}
 
-    /// Sets custom detail content for when an item is selected.
-    ///
-    /// This method allows you to define the detail view that will be displayed when
-    /// a user taps on an item in the list. The content builder receives the selected item.
-    /// You can return `nil` to disable navigation for specific items.
-    ///
-    /// - Parameter content: A view builder that creates the detail view for an item.
-    /// - Returns: The builder instance for method chaining.
-    @discardableResult
-    public func detailContent(@ViewBuilder _ content: @escaping (Item) -> some View) -> Self {
-        detailContent = { item in
-            AnyView(content(item))
-        }
-        return self
-    }
+	// MARK: - Content Configuration
 
-    /// Sets custom detail content with optional navigation.
-    ///
-    /// Use this method when you want to conditionally enable navigation for specific items.
-    /// Return `nil` to disable navigation for items that shouldn't have a detail view.
-    ///
-    /// - Parameter content: A view builder closure that creates the detail view for each item or returns nil.
-    /// - Returns: The builder instance for method chaining.
-    ///
-    /// ## Example
-    /// ```swift
-    /// SectionedDynamicListBuilder<User>()
-    ///     .sections(sections)
-    ///     .optionalDetailContent { user in
-    ///         if user.name == "A" {
-    ///             Text("ITEM A")
-    ///         } else {
-    ///             nil // No navigation for other users
-    ///         }
-    ///     }
-    ///     .build()
-    /// ```
-    @discardableResult
-    public func optionalDetailContent(_ content: @escaping (Item) -> AnyView?) -> Self {
-        detailContent = content
-        return self
-    }
+	/// Sets custom row content for each item in the list.
+	///
+	/// This method allows you to define how each item should be displayed in the list.
+	/// The content builder receives the item and should return a SwiftUI view.
+	///
+	/// - Parameter content: A view builder that creates the row view for each item.
+	/// - Returns: The builder instance for method chaining.
+	@discardableResult
+	public func rowContent(@ViewBuilder _ content: @escaping (Item) -> some View) -> Self {
+		rowContent = { item in
+			AnyView(content(item))
+		}
+		return self
+	}
 
-    /// Sets custom error content for when loading fails.
-    ///
-    /// This method allows you to define a custom error view that will be displayed
-    /// when the data loading fails. The content builder receives the error that occurred.
-    ///
-    /// - Parameter content: A view builder that creates the error view.
-    /// - Returns: The builder instance for method chaining.
-    @discardableResult
-    public func errorContent(@ViewBuilder _ content: @escaping (Error) -> some View) -> Self {
-        errorContent = { error in
-            AnyView(content(error))
-        }
-        return self
-    }
+	/// Sets custom detail content for when an item is selected.
+	///
+	/// This method allows you to define the detail view that will be displayed when
+	/// a user taps on an item in the list. The content builder receives the selected item.
+	/// You can return `nil` to disable navigation for specific items.
+	///
+	/// - Parameter content: A view builder that creates the detail view for an item.
+	/// - Returns: The builder instance for method chaining.
+	@discardableResult
+	public func detailContent(@ViewBuilder _ content: @escaping (Item) -> some View) -> Self {
+		detailContent = { item in
+			AnyView(content(item))
+		}
+		return self
+	}
 
-    /// Sets custom skeleton content for the loading state.
-    ///
-    /// Use this method to provide a custom skeleton view that will be displayed when the list
-    /// is in a loading state with no items available. This allows you to create skeleton
-    /// layouts that match your actual content structure.
-    ///
-    /// - Parameter content: A view builder that creates the skeleton view.
-    /// - Returns: The builder instance for method chaining.
-    @discardableResult
-    public func skeletonContent(@ViewBuilder _ content: @escaping () -> some View) -> Self {
-        skeletonContent = {
-            AnyView(content())
-        }
-        return self
-    }
+	/// Sets custom detail content with optional navigation.
+	///
+	/// Use this method when you want to conditionally enable navigation for specific items.
+	/// Return `nil` to disable navigation for items that shouldn't have a detail view.
+	///
+	/// - Parameter content: A view builder closure that creates the detail view for each item or returns nil.
+	/// - Returns: The builder instance for method chaining.
+	///
+	/// ## Example
+	/// ```swift
+	/// SectionedDynamicListBuilder<User>()
+	///     .sections(sections)
+	///     .optionalDetailContent { user in
+	///         if user.name == "A" {
+	///             Text("ITEM A")
+	///         } else {
+	///             nil // No navigation for other users
+	///         }
+	///     }
+	///     .build()
+	/// ```
+	@discardableResult
+	public func optionalDetailContent(_ content: @escaping (Item) -> AnyView?) -> Self {
+		detailContent = content
+		return self
+	}
 
-    /// Sets custom skeleton content using a single row view for sectioned lists.
-    ///
-    /// Use this method to provide a single row view that will be repeated to create
-    /// a sectioned skeleton loading state. This is more convenient than creating the entire
-    /// skeleton list manually.
-    ///
-    /// - Parameters:
-    ///   - sections: The number of sections to display. Defaults to 3.
-    ///   - itemsPerSection: The number of items per section. Defaults to 4.
-    ///   - content: A view builder that creates a single skeleton row view.
-    /// - Returns: The builder instance for method chaining.
-    ///
-    /// ## Example
-    /// ```swift
-    /// SectionedDynamicListBuilder<User>()
-    ///     .publisher(apiService.fetchUsersByCategory())
-    ///     .skeletonRow(sections: 2, itemsPerSection: 5) {
-    ///         HStack {
-    ///             Circle()
-    ///                 .fill(Color.gray.opacity(0.3))
-    ///                 .frame(width: 50, height: 50)
-    ///
-    ///             VStack(alignment: .leading) {
-    ///                 RoundedRectangle(cornerRadius: 4)
-    ///                     .fill(Color.gray.opacity(0.3))
-    ///                     .frame(height: 20)
-    ///                     .frame(maxWidth: .infinity * 0.8)
-    ///
-    ///                 RoundedRectangle(cornerRadius: 4)
-    ///                     .fill(Color.gray.opacity(0.2))
-    ///                     .frame(height: 16)
-    ///                     .frame(maxWidth: .infinity * 0.6)
-    ///             }
-    ///
-    ///             Spacer()
-    ///         }
-    ///         .padding(.vertical, 8)
-    ///     }
-    ///     .build()
-    /// ```
-    @discardableResult
-    public func skeletonRow(
-        sections: Int = 3,
-        itemsPerSection: Int = 4,
-        @ViewBuilder _ content: @escaping () -> some View,
-    ) -> Self {
-        skeletonRowConfiguration = SectionedSkeletonRowConfiguration(
-            sections: sections,
-            itemsPerSection: itemsPerSection,
-            listStyle: listConfiguration.style,
-            rowContent: content,
-        )
-        skeletonContent = nil // Clear any existing skeleton content
-        return self
-    }
+	/// Sets custom error content for when loading fails.
+	///
+	/// This method allows you to define a custom error view that will be displayed
+	/// when the data loading fails. The content builder receives the error that occurred.
+	///
+	/// - Parameter content: A view builder that creates the error view.
+	/// - Returns: The builder instance for method chaining.
+	@discardableResult
+	public func errorContent(@ViewBuilder _ content: @escaping (Error) -> some View) -> Self {
+		errorContent = { error in
+			AnyView(content(error))
+		}
+		return self
+	}
 
-    /// Sets custom skeleton content with header and footer views for sectioned lists.
-    ///
-    /// Use this method to provide custom skeleton views for rows, headers, and footers
-    /// that will be repeated to create a complete sectioned skeleton loading state.
-    ///
-    /// - Parameters:
-    ///   - sections: The number of sections to display. Defaults to 3.
-    ///   - itemsPerSection: The number of items per section. Defaults to 4.
-    ///   - rowContent: A view builder that creates a single skeleton row view.
-    ///   - headerContent: A view builder that creates a skeleton header view.
-    ///   - footerContent: A view builder that creates a skeleton footer view.
-    /// - Returns: The builder instance for method chaining.
-    ///
-    /// ## Example
-    /// ```swift
-    /// SectionedDynamicListBuilder<User>()
-    ///     .publisher(apiService.fetchUsersByCategory())
-    ///     .skeletonRow(
-    ///         sections: 2,
-    ///         itemsPerSection: 5,
-    ///         rowContent: {
-    ///             HStack {
-    ///                 Circle()
-    ///                     .fill(Color.gray.opacity(0.3))
-    ///                     .frame(width: 50, height: 50)
-    ///                 VStack(alignment: .leading) {
-    ///                     RoundedRectangle(cornerRadius: 4)
-    ///                         .fill(Color.gray.opacity(0.3))
-    ///                         .frame(height: 20)
-    ///                         .frame(maxWidth: .infinity * 0.8)
-    ///                 }
-    ///                 Spacer()
-    ///             }
-    ///         },
-    ///         headerContent: {
-    ///             RoundedRectangle(cornerRadius: 6)
-    ///                 .fill(Color.blue.opacity(0.3))
-    ///                 .frame(height: 30)
-    ///                 .frame(maxWidth: .infinity * 0.7)
-    ///         },
-    ///         footerContent: {
-    ///             RoundedRectangle(cornerRadius: 4)
-    ///                 .fill(Color.gray.opacity(0.2))
-    ///                 .frame(height: 15)
-    ///                 .frame(maxWidth: .infinity * 0.4)
-    ///         }
-    ///     )
-    ///     .build()
-    /// ```
-    @discardableResult
-    public func skeletonRow(
-        sections: Int = 3,
-        itemsPerSection: Int = 4,
-        @ViewBuilder rowContent: @escaping () -> some View,
-        @ViewBuilder headerContent: @escaping () -> some View,
-        @ViewBuilder footerContent: @escaping () -> some View,
-    ) -> Self {
-        skeletonRowConfiguration = SectionedSkeletonRowConfiguration(
-            sections: sections,
-            itemsPerSection: itemsPerSection,
-            listStyle: listConfiguration.style,
-            rowContent: rowContent,
-            headerContent: { AnyView(headerContent()) },
-            footerContent: { AnyView(footerContent()) },
-        )
-        skeletonContent = nil // Clear any existing skeleton content
-        return self
-    }
+	/// Sets custom footer content for every section in the list.
+	///
+	/// By default a section's ``ListSection/footer`` string renders as plain
+	/// text. Use this method to take over that rendering with any SwiftUI
+	/// view — the closure receives each ``ListSection``, so you can style its
+	/// `footer`, branch on its `title`, or return nothing for sections that
+	/// need no footer.
+	///
+	/// - Parameter content: A view builder that creates the footer view for a section.
+	/// - Returns: The builder instance for method chaining.
+	///
+	/// ## Example
+	/// ```swift
+	/// SectionedDynamicListBuilder<SettingsItem>()
+	///     .sectionedPublisher(settingsSections)
+	///     .footerContent { section in
+	///         if let footer = section.footer {
+	///             VStack(spacing: 2) {
+	///                 Text(footer).font(.footnote)
+	///                 Text("Developed by @you").font(.caption2)
+	///             }
+	///             .frame(maxWidth: .infinity)
+	///             .multilineTextAlignment(.center)
+	///         }
+	///     }
+	///     .build()
+	/// ```
+	@discardableResult
+	public func footerContent(@ViewBuilder _ content: @escaping (ListSection<Item>) -> some View) -> Self {
+		footerContent = { section in
+			AnyView(content(section))
+		}
+		return self
+	}
 
-    /// Sets custom skeleton content with only header view for sectioned lists.
-    ///
-    /// Use this method when you want to customize only the header skeleton view
-    /// while keeping the default footer behavior (no footer).
-    ///
-    /// - Parameters:
-    ///   - sections: The number of sections to display. Defaults to 3.
-    ///   - itemsPerSection: The number of items per section. Defaults to 4.
-    ///   - rowContent: A view builder that creates a single skeleton row view.
-    ///   - headerContent: A view builder that creates a skeleton header view.
-    /// - Returns: The builder instance for method chaining.
-    ///
-    /// ## Example
-    /// ```swift
-    /// SectionedDynamicListBuilder<User>()
-    ///     .publisher(apiService.fetchUsersByCategory())
-    ///     .skeletonRow(
-    ///         sections: 2,
-    ///         itemsPerSection: 5,
-    ///         rowContent: {
-    ///             HStack {
-    ///                 Circle().fill(Color.gray.opacity(0.3)).frame(width: 50, height: 50)
-    ///                 Text("Loading...").foregroundColor(.gray)
-    ///                 Spacer()
-    ///             }
-    ///         },
-    ///         headerContent: {
-    ///             Text("Section Loading...")
-    ///                 .font(.headline)
-    ///                 .foregroundColor(.blue.opacity(0.7))
-    ///         }
-    ///     )
-    ///     .build()
-    /// ```
-    @discardableResult
-    public func skeletonRow(
-        sections: Int = 3,
-        itemsPerSection: Int = 4,
-        @ViewBuilder rowContent: @escaping () -> some View,
-        @ViewBuilder headerContent: @escaping () -> some View,
-    ) -> Self {
-        skeletonRowConfiguration = SectionedSkeletonRowConfiguration(
-            sections: sections,
-            itemsPerSection: itemsPerSection,
-            listStyle: listConfiguration.style,
-            rowContent: rowContent,
-            headerContent: { AnyView(headerContent()) },
-            footerContent: nil,
-        )
-        skeletonContent = nil // Clear any existing skeleton content
-        return self
-    }
+	/// Sets custom skeleton content for the loading state.
+	///
+	/// Use this method to provide a custom skeleton view that will be displayed when the list
+	/// is in a loading state with no items available. This allows you to create skeleton
+	/// layouts that match your actual content structure.
+	///
+	/// - Parameter content: A view builder that creates the skeleton view.
+	/// - Returns: The builder instance for method chaining.
+	@discardableResult
+	public func skeletonContent(@ViewBuilder _ content: @escaping () -> some View) -> Self {
+		skeletonContent = {
+			AnyView(content())
+		}
+		return self
+	}
 
-    /// Sets custom skeleton content with only footer view for sectioned lists.
-    ///
-    /// Use this method when you want to customize only the footer skeleton view
-    /// while keeping the default header behavior (no header).
-    ///
-    /// - Parameters:
-    ///   - sections: The number of sections to display. Defaults to 3.
-    ///   - itemsPerSection: The number of items per section. Defaults to 4.
-    ///   - rowContent: A view builder that creates a single skeleton row view.
-    ///   - footerContent: A view builder that creates a skeleton footer view.
-    /// - Returns: The builder instance for method chaining.
-    ///
-    /// ## Example
-    /// ```swift
-    /// SectionedDynamicListBuilder<User>()
-    ///     .publisher(apiService.fetchUsersByCategory())
-    ///     .skeletonRow(
-    ///         sections: 2,
-    ///         itemsPerSection: 5,
-    ///         rowContent: {
-    ///             HStack {
-    ///                 Circle().fill(Color.gray.opacity(0.3)).frame(width: 50, height: 50)
-    ///                 Text("Loading...").foregroundColor(.gray)
-    ///                 Spacer()
-    ///             }
-    ///         },
-    ///         footerContent: {
-    ///             Text("More info...")
-    ///                 .font(.caption)
-    ///                 .foregroundColor(.gray.opacity(0.7))
-    ///         }
-    ///     )
-    ///     .build()
-    /// ```
-    @discardableResult
-    public func skeletonRow(
-        sections: Int = 3,
-        itemsPerSection: Int = 4,
-        @ViewBuilder rowContent: @escaping () -> some View,
-        @ViewBuilder footerContent: @escaping () -> some View,
-    ) -> Self {
-        skeletonRowConfiguration = SectionedSkeletonRowConfiguration(
-            sections: sections,
-            itemsPerSection: itemsPerSection,
-            listStyle: listConfiguration.style,
-            rowContent: rowContent,
-            headerContent: nil,
-            footerContent: { AnyView(footerContent()) },
-        )
-        skeletonContent = nil // Clear any existing skeleton content
-        return self
-    }
+	/// Sets custom skeleton content using a single row view for sectioned lists.
+	///
+	/// Use this method to provide a single row view that will be repeated to create
+	/// a sectioned skeleton loading state. This is more convenient than creating the entire
+	/// skeleton list manually.
+	///
+	/// - Parameters:
+	///   - sections: The number of sections to display. Defaults to 3.
+	///   - itemsPerSection: The number of items per section. Defaults to 4.
+	///   - content: A view builder that creates a single skeleton row view.
+	/// - Returns: The builder instance for method chaining.
+	///
+	/// ## Example
+	/// ```swift
+	/// SectionedDynamicListBuilder<User>()
+	///     .publisher(apiService.fetchUsersByCategory())
+	///     .skeletonRow(sections: 2, itemsPerSection: 5) {
+	///         HStack {
+	///             Circle()
+	///                 .fill(Color.gray.opacity(0.3))
+	///                 .frame(width: 50, height: 50)
+	///
+	///             VStack(alignment: .leading) {
+	///                 RoundedRectangle(cornerRadius: 4)
+	///                     .fill(Color.gray.opacity(0.3))
+	///                     .frame(height: 20)
+	///                     .frame(maxWidth: .infinity * 0.8)
+	///
+	///                 RoundedRectangle(cornerRadius: 4)
+	///                     .fill(Color.gray.opacity(0.2))
+	///                     .frame(height: 16)
+	///                     .frame(maxWidth: .infinity * 0.6)
+	///             }
+	///
+	///             Spacer()
+	///         }
+	///         .padding(.vertical, 8)
+	///     }
+	///     .build()
+	/// ```
+	@discardableResult
+	public func skeletonRow(
+		sections: Int = 3,
+		itemsPerSection: Int = 4,
+		@ViewBuilder _ content: @escaping () -> some View,
+	) -> Self {
+		skeletonRowConfiguration = SectionedSkeletonRowConfiguration(
+			sections: sections,
+			itemsPerSection: itemsPerSection,
+			listStyle: listConfiguration.style,
+			rowContent: content,
+		)
+		skeletonContent = nil // Clear any existing skeleton content
+		return self
+	}
 
-    /// Sets the navigation title for the list.
-    ///
-    /// - Parameter title: The title to display in the navigation bar.
-    /// - Returns: The builder instance for method chaining.
-    @discardableResult
-    public func title(_ title: String) -> Self {
-        updateListConfiguration { config in
-            ListConfiguration(
-                style: config.style,
-                navigationBarHidden: config.navigationBarHidden,
-                title: title,
-                showSkeletonOnRefresh: config.showSkeletonOnRefresh,
-            )
-        }
-    }
+	/// Sets custom skeleton content with header and footer views for sectioned lists.
+	///
+	/// Use this method to provide custom skeleton views for rows, headers, and footers
+	/// that will be repeated to create a complete sectioned skeleton loading state.
+	///
+	/// - Parameters:
+	///   - sections: The number of sections to display. Defaults to 3.
+	///   - itemsPerSection: The number of items per section. Defaults to 4.
+	///   - rowContent: A view builder that creates a single skeleton row view.
+	///   - headerContent: A view builder that creates a skeleton header view.
+	///   - footerContent: A view builder that creates a skeleton footer view.
+	/// - Returns: The builder instance for method chaining.
+	///
+	/// ## Example
+	/// ```swift
+	/// SectionedDynamicListBuilder<User>()
+	///     .publisher(apiService.fetchUsersByCategory())
+	///     .skeletonRow(
+	///         sections: 2,
+	///         itemsPerSection: 5,
+	///         rowContent: {
+	///             HStack {
+	///                 Circle()
+	///                     .fill(Color.gray.opacity(0.3))
+	///                     .frame(width: 50, height: 50)
+	///                 VStack(alignment: .leading) {
+	///                     RoundedRectangle(cornerRadius: 4)
+	///                         .fill(Color.gray.opacity(0.3))
+	///                         .frame(height: 20)
+	///                         .frame(maxWidth: .infinity * 0.8)
+	///                 }
+	///                 Spacer()
+	///             }
+	///         },
+	///         headerContent: {
+	///             RoundedRectangle(cornerRadius: 6)
+	///                 .fill(Color.blue.opacity(0.3))
+	///                 .frame(height: 30)
+	///                 .frame(maxWidth: .infinity * 0.7)
+	///         },
+	///         footerContent: {
+	///             RoundedRectangle(cornerRadius: 4)
+	///                 .fill(Color.gray.opacity(0.2))
+	///                 .frame(height: 15)
+	///                 .frame(maxWidth: .infinity * 0.4)
+	///         }
+	///     )
+	///     .build()
+	/// ```
+	@discardableResult
+	public func skeletonRow(
+		sections: Int = 3,
+		itemsPerSection: Int = 4,
+		@ViewBuilder rowContent: @escaping () -> some View,
+		@ViewBuilder headerContent: @escaping () -> some View,
+		@ViewBuilder footerContent: @escaping () -> some View,
+	) -> Self {
+		skeletonRowConfiguration = SectionedSkeletonRowConfiguration(
+			sections: sections,
+			itemsPerSection: itemsPerSection,
+			listStyle: listConfiguration.style,
+			rowContent: rowContent,
+			headerContent: { AnyView(headerContent()) },
+			footerContent: { AnyView(footerContent()) },
+		)
+		skeletonContent = nil // Clear any existing skeleton content
+		return self
+	}
 
-    /// Hides the navigation bar.
-    ///
-    /// Use this method when you want to hide the navigation bar entirely.
-    /// Useful for full-screen experiences or when embedding in custom navigation.
-    ///
-    /// - Returns: The builder instance for method chaining.
-    @discardableResult
-    public func hideNavigationBar() -> Self {
-        updateListConfiguration { config in
-            ListConfiguration(
-                style: config.style,
-                navigationBarHidden: true,
-                title: config.title,
-                showSkeletonOnRefresh: config.showSkeletonOnRefresh,
-            )
-        }
-    }
+	/// Sets custom skeleton content with only header view for sectioned lists.
+	///
+	/// Use this method when you want to customize only the header skeleton view
+	/// while keeping the default footer behavior (no footer).
+	///
+	/// - Parameters:
+	///   - sections: The number of sections to display. Defaults to 3.
+	///   - itemsPerSection: The number of items per section. Defaults to 4.
+	///   - rowContent: A view builder that creates a single skeleton row view.
+	///   - headerContent: A view builder that creates a skeleton header view.
+	/// - Returns: The builder instance for method chaining.
+	///
+	/// ## Example
+	/// ```swift
+	/// SectionedDynamicListBuilder<User>()
+	///     .publisher(apiService.fetchUsersByCategory())
+	///     .skeletonRow(
+	///         sections: 2,
+	///         itemsPerSection: 5,
+	///         rowContent: {
+	///             HStack {
+	///                 Circle().fill(Color.gray.opacity(0.3)).frame(width: 50, height: 50)
+	///                 Text("Loading...").foregroundColor(.gray)
+	///                 Spacer()
+	///             }
+	///         },
+	///         headerContent: {
+	///             Text("Section Loading...")
+	///                 .font(.headline)
+	///                 .foregroundColor(.blue.opacity(0.7))
+	///         }
+	///     )
+	///     .build()
+	/// ```
+	@discardableResult
+	public func skeletonRow(
+		sections: Int = 3,
+		itemsPerSection: Int = 4,
+		@ViewBuilder rowContent: @escaping () -> some View,
+		@ViewBuilder headerContent: @escaping () -> some View,
+	) -> Self {
+		skeletonRowConfiguration = SectionedSkeletonRowConfiguration(
+			sections: sections,
+			itemsPerSection: itemsPerSection,
+			listStyle: listConfiguration.style,
+			rowContent: rowContent,
+			headerContent: { AnyView(headerContent()) },
+			footerContent: nil,
+		)
+		skeletonContent = nil // Clear any existing skeleton content
+		return self
+	}
 
-    /// Sets the list style for the list.
-    ///
-    /// Use this method to customize the appearance of the list with different styles
-    /// like `.plain`, `.inset`, `.grouped`, etc.
-    ///
-    /// - Parameter style: The list style type to apply to the list.
-    /// - Returns: The builder instance for method chaining.
-    ///
-    /// ## Example
-    /// ```swift
-    /// SectionedDynamicListBuilder<User>()
-    ///     .sections(sections)
-    ///     .listStyle(.grouped)
-    ///     .build()
-    /// ```
-    ///
-    /// ## Available Styles
-    /// - `.automatic` - Default system style
-    /// - `.plain` - Simple list without background
-    /// - `.inset` - List with inset appearance
-    /// - `.grouped` - Grouped list style (iOS only)
-    /// - `.insetGrouped` - Inset grouped style (iOS only)
-    @discardableResult
-    public func listStyle(_ style: ListStyleType) -> Self {
-        updateListConfiguration { config in
-            ListConfiguration(
-                style: style,
-                navigationBarHidden: config.navigationBarHidden,
-                title: config.title,
-                showSkeletonOnRefresh: config.showSkeletonOnRefresh,
-            )
-        }
-    }
+	/// Sets custom skeleton content with only footer view for sectioned lists.
+	///
+	/// Use this method when you want to customize only the footer skeleton view
+	/// while keeping the default header behavior (no header).
+	///
+	/// - Parameters:
+	///   - sections: The number of sections to display. Defaults to 3.
+	///   - itemsPerSection: The number of items per section. Defaults to 4.
+	///   - rowContent: A view builder that creates a single skeleton row view.
+	///   - footerContent: A view builder that creates a skeleton footer view.
+	/// - Returns: The builder instance for method chaining.
+	///
+	/// ## Example
+	/// ```swift
+	/// SectionedDynamicListBuilder<User>()
+	///     .publisher(apiService.fetchUsersByCategory())
+	///     .skeletonRow(
+	///         sections: 2,
+	///         itemsPerSection: 5,
+	///         rowContent: {
+	///             HStack {
+	///                 Circle().fill(Color.gray.opacity(0.3)).frame(width: 50, height: 50)
+	///                 Text("Loading...").foregroundColor(.gray)
+	///                 Spacer()
+	///             }
+	///         },
+	///         footerContent: {
+	///             Text("More info...")
+	///                 .font(.caption)
+	///                 .foregroundColor(.gray.opacity(0.7))
+	///         }
+	///     )
+	///     .build()
+	/// ```
+	@discardableResult
+	public func skeletonRow(
+		sections: Int = 3,
+		itemsPerSection: Int = 4,
+		@ViewBuilder rowContent: @escaping () -> some View,
+		@ViewBuilder footerContent: @escaping () -> some View,
+	) -> Self {
+		skeletonRowConfiguration = SectionedSkeletonRowConfiguration(
+			sections: sections,
+			itemsPerSection: itemsPerSection,
+			listStyle: listConfiguration.style,
+			rowContent: rowContent,
+			headerContent: nil,
+			footerContent: { AnyView(footerContent()) },
+		)
+		skeletonContent = nil // Clear any existing skeleton content
+		return self
+	}
 
-    /// Enables showing skeleton view during refresh operations.
-    ///
-    /// Use this method to show the custom skeleton view even during refresh operations,
-    /// not just during initial loading. By default, skeleton is only shown when the list
-    /// is empty and loading.
-    ///
-    /// - Returns: The builder instance for method chaining.
-    ///
-    /// ## Example
-    /// ```swift
-    /// SectionedDynamicListBuilder<User>()
-    ///     .publisher(apiService.fetchUsersByCategory())
-    ///     .skeletonRow(sections: 2, itemsPerSection: 3) {
-    ///         Text("Loading...")
-    ///     }
-    ///     .showSkeletonOnRefresh()
-    ///     .build()
-    /// ```
-    @discardableResult
-    public func showSkeletonOnRefresh() -> Self {
-        updateListConfiguration { config in
-            ListConfiguration(
-                style: config.style,
-                navigationBarHidden: config.navigationBarHidden,
-                title: config.title,
-                showSkeletonOnRefresh: true,
-            )
-        }
-    }
+	/// Sets the navigation title for the list.
+	///
+	/// - Parameter title: The title to display in the navigation bar.
+	/// - Returns: The builder instance for method chaining.
+	@discardableResult
+	public func title(_ title: String) -> Self {
+		updateListConfiguration { config in
+			ListConfiguration(
+				style: config.style,
+				navigationBarHidden: config.navigationBarHidden,
+				title: title,
+				showSkeletonOnRefresh: config.showSkeletonOnRefresh,
+			)
+		}
+	}
 
-    /// Sets the complete list configuration.
-    ///
-    /// Use this method when you want to set multiple list properties at once.
-    ///
-    /// - Parameter configuration: The list configuration to apply.
-    /// - Returns: The builder instance for method chaining.
-    ///
-    /// ## Example
-    /// ```swift
-    /// SectionedDynamicListBuilder<User>()
-    ///     .sections(sections)
-    ///     .listConfiguration(ListConfiguration(
-    ///         style: .grouped,
-    ///         navigationBarHidden: false,
-    ///         title: "Users"
-    ///     ))
-    ///     .build()
-    /// ```
-    @discardableResult
-    public func listConfiguration(_ configuration: ListConfiguration) -> Self {
-        listConfiguration = configuration
-        return self
-    }
+	/// Hides the navigation bar.
+	///
+	/// Use this method when you want to hide the navigation bar entirely.
+	/// Useful for full-screen experiences or when embedding in custom navigation.
+	///
+	/// - Returns: The builder instance for method chaining.
+	@discardableResult
+	public func hideNavigationBar() -> Self {
+		updateListConfiguration { config in
+			ListConfiguration(
+				style: config.style,
+				navigationBarHidden: true,
+				title: config.title,
+				showSkeletonOnRefresh: config.showSkeletonOnRefresh,
+			)
+		}
+	}
 
-    // MARK: - Search Configuration
+	/// Sets the list style for the list.
+	///
+	/// Use this method to customize the appearance of the list with different styles
+	/// like `.plain`, `.inset`, `.grouped`, etc.
+	///
+	/// - Parameter style: The list style type to apply to the list.
+	/// - Returns: The builder instance for method chaining.
+	///
+	/// ## Example
+	/// ```swift
+	/// SectionedDynamicListBuilder<User>()
+	///     .sections(sections)
+	///     .listStyle(.grouped)
+	///     .build()
+	/// ```
+	///
+	/// ## Available Styles
+	/// - `.automatic` - Default system style
+	/// - `.plain` - Simple list without background
+	/// - `.inset` - List with inset appearance
+	/// - `.grouped` - Grouped list style (iOS only)
+	/// - `.insetGrouped` - Inset grouped style (iOS only)
+	@discardableResult
+	public func listStyle(_ style: ListStyleType) -> Self {
+		updateListConfiguration { config in
+			ListConfiguration(
+				style: style,
+				navigationBarHidden: config.navigationBarHidden,
+				title: config.title,
+				showSkeletonOnRefresh: config.showSkeletonOnRefresh,
+			)
+		}
+	}
 
-    /// Enables search functionality with configurable parameters.
-    ///
-    /// This method provides a unified interface for enabling search functionality with various
-    /// configurations. All parameters are optional with sensible defaults.
-    ///
-    /// - Parameters:
-    ///   - prompt: The placeholder text for the search field. Defaults to "Buscar...".
-    ///   - predicate: A closure that determines if an item matches the search text.
-    ///                If provided, this overrides the default Searchable protocol behavior.
-    ///   - strategy: The search strategy to use for matching when using Searchable items.
-    ///               Defaults to PartialMatchStrategy().
-    ///   - placement: The placement configuration for the search field.
-    ///                Defaults to .automatic.
-    /// - Returns: The builder instance for method chaining.
-    ///
-    /// ## Examples
-    ///
-    /// **Basic search with default settings:**
-    /// ```swift
-    /// SectionedDynamicListBuilder<User>()
-    ///     .sections(sections)
-    ///     .searchable()
-    ///     .build()
-    /// ```
-    ///
-    /// **Search with custom prompt:**
-    /// ```swift
-    /// SectionedDynamicListBuilder<User>()
-    ///     .sections(sections)
-    ///     .searchable(prompt: "Buscar usuarios...")
-    ///     .build()
-    /// ```
-    ///
-    /// **Search with custom predicate:**
-    /// ```swift
-    /// SectionedDynamicListBuilder<User>()
-    ///     .sections(sections)
-    ///     .searchable(
-    ///         prompt: "Buscar por nombre o email...",
-    ///         predicate: { user, searchText in
-    ///             user.name.lowercased().contains(searchText.lowercased()) ||
-    ///             user.email.lowercased().contains(searchText.lowercased())
-    ///         }
-    ///     )
-    ///     .build()
-    /// ```
-    ///
-    /// **Search with custom strategy:**
-    /// ```swift
-    /// SectionedDynamicListBuilder<User>()
-    ///     .sections(sections)
-    ///     .searchable(
-    ///         prompt: "Buscar usuarios...",
-    ///         strategy: TokenizedMatchStrategy()
-    ///     )
-    ///     .build()
-    /// ```
-    ///
-    /// **Search with custom placement:**
-    /// ```swift
-    /// SectionedDynamicListBuilder<User>()
-    ///     .sections(sections)
-    ///     .searchable(
-    ///         prompt: "Buscar usuarios...",
-    ///         placement: .navigationBarDrawer
-    ///     )
-    ///     .build()
-    /// ```
-    ///
-    /// **Complete custom configuration:**
-    /// ```swift
-    /// SectionedDynamicListBuilder<User>()
-    ///     .sections(sections)
-    ///     .searchable(
-    ///         prompt: "Buscar por nombre o email...",
-    ///         predicate: { user, searchText in
-    ///             user.name.lowercased().contains(searchText.lowercased()) ||
-    ///             user.email.lowercased().contains(searchText.lowercased())
-    ///         },
-    ///         placement: .navigationBarDrawer
-    ///     )
-    ///     .build()
-    /// ```
-    ///
-    /// ## Requirements
-    /// - Items should conform to `Searchable` protocol for automatic filtering when no predicate is provided
-    /// - If predicate is provided, it takes precedence over the Searchable protocol behavior
-    @discardableResult
-    public func searchable(
-        prompt: String = DynamicListPresenter.searchPrompt,
-        predicate: ((Item, String) -> Bool)? = nil,
-        strategy: SearchStrategy? = nil,
-        placement: SearchFieldPlacement = .automatic,
-    ) -> Self {
-        searchConfiguration = SearchConfiguration.enabled(
-            prompt: prompt,
-            predicate: predicate,
-            strategy: strategy,
-            placement: placement,
-        )
-        return self
-    }
+	/// Enables showing skeleton view during refresh operations.
+	///
+	/// Use this method to show the custom skeleton view even during refresh operations,
+	/// not just during initial loading. By default, skeleton is only shown when the list
+	/// is empty and loading.
+	///
+	/// - Returns: The builder instance for method chaining.
+	///
+	/// ## Example
+	/// ```swift
+	/// SectionedDynamicListBuilder<User>()
+	///     .publisher(apiService.fetchUsersByCategory())
+	///     .skeletonRow(sections: 2, itemsPerSection: 3) {
+	///         Text("Loading...")
+	///     }
+	///     .showSkeletonOnRefresh()
+	///     .build()
+	/// ```
+	@discardableResult
+	public func showSkeletonOnRefresh() -> Self {
+		updateListConfiguration { config in
+			ListConfiguration(
+				style: config.style,
+				navigationBarHidden: config.navigationBarHidden,
+				title: config.title,
+				showSkeletonOnRefresh: true,
+			)
+		}
+	}
 
-    /// Sets the search placement configuration.
-    ///
-    /// Use this method to configure where the search field appears without changing
-    /// other search settings. If no search configuration exists, this will create one
-    /// with default settings.
-    ///
-    /// - Parameter placement: The placement configuration for the search field.
-    /// - Returns: The builder instance for method chaining.
-    @discardableResult
-    public func searchPlacement(_ placement: SearchFieldPlacement) -> Self {
-        updateSearchConfiguration { existingConfig in
-            if let config = existingConfig {
-                SearchConfiguration.enabled(
-                    prompt: config.prompt,
-                    predicate: config.predicate,
-                    strategy: config.strategy,
-                    placement: placement,
-                )
-            } else {
-                SearchConfiguration.enabled(placement: placement)
-            }
-        }
-    }
+	/// Sets the complete list configuration.
+	///
+	/// Use this method when you want to set multiple list properties at once.
+	///
+	/// - Parameter configuration: The list configuration to apply.
+	/// - Returns: The builder instance for method chaining.
+	///
+	/// ## Example
+	/// ```swift
+	/// SectionedDynamicListBuilder<User>()
+	///     .sections(sections)
+	///     .listConfiguration(ListConfiguration(
+	///         style: .grouped,
+	///         navigationBarHidden: false,
+	///         title: "Users"
+	///     ))
+	///     .build()
+	/// ```
+	@discardableResult
+	public func listConfiguration(_ configuration: ListConfiguration) -> Self {
+		listConfiguration = configuration
+		return self
+	}
 
-    /// Sets the search configuration directly.
-    ///
-    /// Use this method when you want to set the complete search configuration
-    /// at once, rather than using individual search methods.
-    ///
-    /// - Parameter configuration: The search configuration to use.
-    /// - Returns: The builder instance for method chaining.
-    ///
-    /// ## Example
-    /// ```swift
-    /// let searchConfig = SearchConfiguration<User>(
-    ///     prompt: "Buscar usuarios...",
-    ///     strategy: TokenizedMatchStrategy(),
-    ///     placement: .automatic
-    /// )
-    ///
-    /// SectionedDynamicListBuilder<User>()
-    ///     .sections(sections)
-    ///     .searchConfiguration(searchConfig)
-    ///     .build()
-    /// ```
-    @discardableResult
-    public func searchConfiguration(_ configuration: SearchConfiguration<Item>) -> Self {
-        searchConfiguration = configuration
-        return self
-    }
+	// MARK: - Search Configuration
 
-    // MARK: - Build Methods
+	/// Enables search functionality with configurable parameters.
+	///
+	/// This method provides a unified interface for enabling search functionality with various
+	/// configurations. All parameters are optional with sensible defaults.
+	///
+	/// - Parameters:
+	///   - prompt: The placeholder text for the search field. Defaults to "Buscar...".
+	///   - predicate: A closure that determines if an item matches the search text.
+	///                If provided, this overrides the default Searchable protocol behavior.
+	///   - strategy: The search strategy to use for matching when using Searchable items.
+	///               Defaults to PartialMatchStrategy().
+	///   - placement: The placement configuration for the search field.
+	///                Defaults to .automatic.
+	/// - Returns: The builder instance for method chaining.
+	///
+	/// ## Examples
+	///
+	/// **Basic search with default settings:**
+	/// ```swift
+	/// SectionedDynamicListBuilder<User>()
+	///     .sections(sections)
+	///     .searchable()
+	///     .build()
+	/// ```
+	///
+	/// **Search with custom prompt:**
+	/// ```swift
+	/// SectionedDynamicListBuilder<User>()
+	///     .sections(sections)
+	///     .searchable(prompt: "Buscar usuarios...")
+	///     .build()
+	/// ```
+	///
+	/// **Search with custom predicate:**
+	/// ```swift
+	/// SectionedDynamicListBuilder<User>()
+	///     .sections(sections)
+	///     .searchable(
+	///         prompt: "Buscar por nombre o email...",
+	///         predicate: { user, searchText in
+	///             user.name.lowercased().contains(searchText.lowercased()) ||
+	///             user.email.lowercased().contains(searchText.lowercased())
+	///         }
+	///     )
+	///     .build()
+	/// ```
+	///
+	/// **Search with custom strategy:**
+	/// ```swift
+	/// SectionedDynamicListBuilder<User>()
+	///     .sections(sections)
+	///     .searchable(
+	///         prompt: "Buscar usuarios...",
+	///         strategy: TokenizedMatchStrategy()
+	///     )
+	///     .build()
+	/// ```
+	///
+	/// **Search with custom placement:**
+	/// ```swift
+	/// SectionedDynamicListBuilder<User>()
+	///     .sections(sections)
+	///     .searchable(
+	///         prompt: "Buscar usuarios...",
+	///         placement: .navigationBarDrawer
+	///     )
+	///     .build()
+	/// ```
+	///
+	/// **Complete custom configuration:**
+	/// ```swift
+	/// SectionedDynamicListBuilder<User>()
+	///     .sections(sections)
+	///     .searchable(
+	///         prompt: "Buscar por nombre o email...",
+	///         predicate: { user, searchText in
+	///             user.name.lowercased().contains(searchText.lowercased()) ||
+	///             user.email.lowercased().contains(searchText.lowercased())
+	///         },
+	///         placement: .navigationBarDrawer
+	///     )
+	///     .build()
+	/// ```
+	///
+	/// ## Requirements
+	/// - Items should conform to `Searchable` protocol for automatic filtering when no predicate is provided
+	/// - If predicate is provided, it takes precedence over the Searchable protocol behavior
+	@discardableResult
+	public func searchable(
+		prompt: String = DynamicListPresenter.searchPrompt,
+		predicate: ((Item, String) -> Bool)? = nil,
+		strategy: SearchStrategy? = nil,
+		placement: SearchFieldPlacement = .automatic,
+	) -> Self {
+		searchConfiguration = SearchConfiguration.enabled(
+			prompt: prompt,
+			predicate: predicate,
+			strategy: strategy,
+			placement: placement,
+		)
+		return self
+	}
 
-    /// Builds a complete SectionedDynamicList with NavigationStack.
-    ///
-    /// This method creates a fully functional sectioned dynamic list wrapped in its own NavigationStack.
-    /// Use this when you want a standalone list that manages its own navigation.
-    ///
-    /// - Returns: A SwiftUI view containing the configured sectioned dynamic list.
-    @MainActor
-    public func build() -> some View {
-        let viewModel = createViewModel()
+	/// Sets the search placement configuration.
+	///
+	/// Use this method to configure where the search field appears without changing
+	/// other search settings. If no search configuration exists, this will create one
+	/// with default settings.
+	///
+	/// - Parameter placement: The placement configuration for the search field.
+	/// - Returns: The builder instance for method chaining.
+	@discardableResult
+	public func searchPlacement(_ placement: SearchFieldPlacement) -> Self {
+		updateSearchConfiguration { existingConfig in
+			if let config = existingConfig {
+				SearchConfiguration.enabled(
+					prompt: config.prompt,
+					predicate: config.predicate,
+					strategy: config.strategy,
+					placement: placement,
+				)
+			} else {
+				SearchConfiguration.enabled(placement: placement)
+			}
+		}
+	}
 
-        return SectionedDynamicListWrapper(
-            viewModel: viewModel,
-            rowContent: rowContent ?? { item in AnyView(DefaultRowView(item: item)) },
-            detailContent: detailContent,
-            errorContent: errorContent,
-            skeletonContent: processFinalSkeletonContent(),
-            listConfiguration: listConfiguration,
-            searchConfiguration: searchConfiguration,
-        )
-    }
+	/// Sets the search configuration directly.
+	///
+	/// Use this method when you want to set the complete search configuration
+	/// at once, rather than using individual search methods.
+	///
+	/// - Parameter configuration: The search configuration to use.
+	/// - Returns: The builder instance for method chaining.
+	///
+	/// ## Example
+	/// ```swift
+	/// let searchConfig = SearchConfiguration<User>(
+	///     prompt: "Buscar usuarios...",
+	///     strategy: TokenizedMatchStrategy(),
+	///     placement: .automatic
+	/// )
+	///
+	/// SectionedDynamicListBuilder<User>()
+	///     .sections(sections)
+	///     .searchConfiguration(searchConfig)
+	///     .build()
+	/// ```
+	@discardableResult
+	public func searchConfiguration(_ configuration: SearchConfiguration<Item>) -> Self {
+		searchConfiguration = configuration
+		return self
+	}
 
-    /// Builds a SectionedDynamicList without NavigationStack for embedding in existing navigation.
-    ///
-    /// Use this method when you want to embed the list within an existing NavigationStack
-    /// or when you need to manage navigation at a higher level. This prevents navigation
-    /// conflicts and allows for more flexible navigation patterns.
-    ///
-    /// - Returns: A SwiftUI view containing the configured sectioned dynamic list without navigation wrapper.
-    @MainActor
-    public func buildWithoutNavigation() -> some View {
-        let viewModel = createViewModel()
-        return createContentView(viewModel: viewModel)
-    }
+	// MARK: - Build Methods
+
+	/// Builds a complete SectionedDynamicList with NavigationStack.
+	///
+	/// This method creates a fully functional sectioned dynamic list wrapped in its own NavigationStack.
+	/// Use this when you want a standalone list that manages its own navigation.
+	///
+	/// - Returns: A SwiftUI view containing the configured sectioned dynamic list.
+	@MainActor
+	public func build() -> some View {
+		let viewModel = createViewModel()
+
+		return SectionedDynamicListWrapper(
+			viewModel: viewModel,
+			rowContent: rowContent ?? { item in AnyView(DefaultRowView(item: item)) },
+			detailContent: detailContent,
+			errorContent: errorContent,
+			skeletonContent: processFinalSkeletonContent(),
+			sectionFooterContent: footerContent,
+			listConfiguration: listConfiguration,
+			searchConfiguration: searchConfiguration,
+		)
+	}
+
+	/// Builds a SectionedDynamicList without NavigationStack for embedding in existing navigation.
+	///
+	/// Use this method when you want to embed the list within an existing NavigationStack
+	/// or when you need to manage navigation at a higher level. This prevents navigation
+	/// conflicts and allows for more flexible navigation patterns.
+	///
+	/// - Returns: A SwiftUI view containing the configured sectioned dynamic list without navigation wrapper.
+	@MainActor
+	public func buildWithoutNavigation() -> some View {
+		let viewModel = createViewModel()
+		return createContentView(viewModel: viewModel)
+	}
 }

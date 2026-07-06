@@ -1,5 +1,5 @@
 //
-//  Copyright © 2025 Jesús Alfredo Hernández Alarcón. All rights reserved.
+//  Copyright © 2026 Jesús Alfredo Hernández Alarcón. All rights reserved.
 //
 
 import SwiftUI
@@ -10,31 +10,33 @@ import SwiftUI
 /// error handling, and navigation. It's used by both `SectionedDynamicListWrapper` and
 /// the `buildWithoutNavigation()` method.
 struct SectionedDynamicListContent<Item: Identifiable & Hashable>: View {
-    private let unifiedContent: UnifiedDynamicListContent<Item>
+	private let unifiedContent: UnifiedDynamicListContent<Item>
 
-    init(
-        viewModel: SectionedDynamicListViewModel<Item>,
-        rowContent: @escaping (Item) -> AnyView,
-        detailContent: ((Item) -> AnyView?)?,
-        errorContent: ((Error) -> AnyView)?,
-        skeletonContent: (() -> AnyView)?,
-        listConfiguration: ListConfiguration,
-        searchConfiguration: SearchConfiguration<Item>?,
-    ) {
-        let listType = ListType.sectioned(sections: viewModel.sections)
-        unifiedContent = UnifiedDynamicListContent(
-            viewModel: viewModel,
-            listType: listType,
-            rowContent: rowContent,
-            detailContent: detailContent,
-            errorContent: errorContent,
-            skeletonContent: skeletonContent,
-            listConfiguration: listConfiguration,
-            searchConfiguration: searchConfiguration,
-        )
-    }
+	init(
+		viewModel: SectionedDynamicListViewModel<Item>,
+		rowContent: @escaping (Item) -> AnyView,
+		detailContent: ((Item) -> AnyView?)?,
+		errorContent: ((Error) -> AnyView)?,
+		skeletonContent: (() -> AnyView)?,
+		sectionFooterContent: ((ListSection<Item>) -> AnyView)? = nil,
+		listConfiguration: ListConfiguration,
+		searchConfiguration: SearchConfiguration<Item>?,
+	) {
+		let listType = ListType.sectioned(sections: viewModel.sections)
+		unifiedContent = UnifiedDynamicListContent(
+			viewModel: viewModel,
+			listType: listType,
+			rowContent: rowContent,
+			detailContent: detailContent,
+			errorContent: errorContent,
+			skeletonContent: skeletonContent,
+			sectionFooterContent: sectionFooterContent,
+			listConfiguration: listConfiguration,
+			searchConfiguration: searchConfiguration,
+		)
+	}
 
-    var body: some View {
-        unifiedContent
-    }
+	var body: some View {
+		unifiedContent
+	}
 }
