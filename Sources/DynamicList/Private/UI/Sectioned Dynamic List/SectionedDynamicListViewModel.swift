@@ -269,15 +269,6 @@ final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: Dynami
 		)
 	}
 
-	private func createFilteredSectionsPublisher(from sections: [ListSection<Item>]) -> AnyPublisher<[ListSection<Item>], Error> {
-		searchTextSubject
-			.map { searchText in
-				self.originalSections = sections
-				return self.applySearchFilter(to: sections, searchText: searchText)
-			}
-			.eraseToAnyPublisher()
-	}
-
 	private func updateViewStateWithLoadedSections(_ sections: [ListSection<Item>]) {
 		viewState = .loaded(sections: sections)
 	}
@@ -288,12 +279,17 @@ final class SectionedDynamicListViewModel<Item: Identifiable & Hashable>: Dynami
 	}
 
 	private func subscribeToDataProvider(_ provider: () -> AnyPublisher<[ListSection<Item>], Error>) {
+		// A single combined chain shares one search subscription per data
+		// source: `flatMap`ping the search subject here would stack a new
+		// pipeline on every provider emission, re-running stale snapshots
+		// on each search change.
 		provider()
-			.flatMap { [weak self] sections -> AnyPublisher<[ListSection<Item>], Error> in
-				guard let self else {
-					return Just(sections).setFailureType(to: Error.self).eraseToAnyPublisher()
-				}
-				return createFilteredSectionsPublisher(from: sections)
+			.handleEvents(receiveOutput: { [weak self] sections in
+				self?.originalSections = sections
+			})
+			.combineLatest(searchTextSubject)
+			.map { [weak self] sections, searchText in
+				self?.applySearchFilter(to: sections, searchText: searchText) ?? sections
 			}
 			.subscribe(on: ioScheduler)
 			.receive(on: scheduler)

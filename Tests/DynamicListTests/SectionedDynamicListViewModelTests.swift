@@ -160,6 +160,29 @@ struct SectionedDynamicListViewModelTests {
 		#expect(viewModel.viewState.sections.map(\.title) == ["New"])
 	}
 
+	@Test("Search runs one filter pass over the latest emission only")
+	func multiEmissionProvider_doesNotStackSearchPipelines() {
+		let subject = PassthroughSubject<[ListSection<TestItem>], Error>()
+		let viewModel = SectionedDynamicListViewModel(
+			sectionsProvider: subject.eraseToAnyPublisher,
+			scheduler: .immediate,
+			ioScheduler: .immediate,
+		)
+		var predicateRuns = 0
+		viewModel.setSearchConfiguration(SearchConfiguration.enabled(prompt: "Search", predicate: { _, _ in
+			predicateRuns += 1
+			return true
+		}))
+		viewModel.loadData()
+		subject.send([ListSection(title: "First", items: [TestItem(name: "A", category: "a")])])
+		subject.send([ListSection(title: "Second", items: [TestItem(name: "B", category: "b")])])
+
+		viewModel.searchText = "query"
+
+		#expect(predicateRuns == 1, "Each search change must filter only the latest data snapshot; stacked pipelines re-run stale ones")
+		#expect(viewModel.viewState.sections.map(\.title) == ["Second"])
+	}
+
 	@Test("Init displays error state on data provider failure")
 	func init_displaysErrorStateOnDataProviderFailure() {
 		let testError = NSError(domain: "Test", code: 1, userInfo: nil)
